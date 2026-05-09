@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Exo+2:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; }
+  body {
+    background: #030714;
+    color: #e2e8f0;
+    font-family: 'Exo 2', sans-serif;
+    overflow: hidden;
+    min-height: 100vh;
+  }
+
+  .bg-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .bg-gradient-1 { background: radial-gradient(ellipse at center, rgba(20,60,120,0.45), rgba(5,15,35,0.7) 45%, #030714 85%); }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes cardIn { from { opacity:0; transform:scale(.9) translateY(24px); } to { opacity:1; transform:scale(1) translateY(0); } }
+
+  .heading { font-family:'Cinzel',serif; }
+  .mono    { font-family:'Share Tech Mono',monospace; }
+
+  .stage { position:relative; width:100vw; height:100vh; overflow:hidden; z-index:1; isolation:isolate; }
+
+  /* FACTION SCREEN */
+  #race-screen {
+    position:fixed; inset:0; z-index:200;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    background: radial-gradient(ellipse at center, rgba(5,12,35,0.97) 0%, rgba(2,6,18,0.99) 100%);
+  }
+  #race-screen.hidden { display:none; }
+
+  .rs-title { text-align:center; margin-bottom:44px; animation: fadeUp 0.5s ease both; }
+  .rs-title h1 {
+    font-family:'Cinzel',serif; font-size:28px;
+    letter-spacing:0.4em; text-transform:uppercase;
+    color:#e2e8f0; font-weight:900;
+    text-shadow:0 0 50px rgba(80,210,255,0.35), 0 2px 0 rgba(0,0,0,.8);
+    margin-bottom:8px;
+  }
+  .rs-title p { font-family:'Exo 2',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.5em; color:rgba(100,180,255,0.45); text-transform:uppercase; }
+
+  .rs-cards { display:flex; gap:24px; }
+  .rs-card {
+    width:240px; height:380px; border-radius:6px; border:1px solid;
+    cursor:pointer; position:relative; overflow:hidden;
+    transition:transform .3s ease, border-color .3s ease;
+    animation: cardIn 0.45s ease both;
+    display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .rs-card:nth-child(1) { animation-delay:.1s; }
+  .rs-card:nth-child(2) { animation-delay:.2s; }
+  .rs-card:nth-child(3) { animation-delay:.3s; }
+
+  .rs-card[data-race="Shinigami"] { --rc: 200,215,255; border-color: rgba(200,215,255,0.25); }
+  .rs-card[data-race="Hollow"]    { --rc: 255,90,90;   border-color: rgba(255,90,90,0.25); }
+  .rs-card[data-race="Quincy"]    { --rc: 130,190,255; border-color: rgba(130,190,255,0.25); }
+
+  .rs-card-bg {
+    position:absolute; inset:0;
+    background-size:cover; background-position:center;
+    transition: transform .4s ease;
+  }
+  .rs-card:hover .rs-card-bg { transform: scale(1.04); }
+
+  .rs-card-top-overlay {
+    position:absolute; inset:0;
+    background: linear-gradient(to bottom,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.15) 35%,rgba(0,0,0,0.05) 55%,rgba(0,0,0,0.7) 75%,rgba(0,0,0,0.92) 100%);
+    pointer-events:none;
+  }
+
+  .rs-card::after {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at center, rgba(var(--rc),0.12) 0%, transparent 70%);
+    pointer-events:none; opacity:0;
+    transition: opacity .3s ease;
+  }
+  .rs-card:hover { transform:translateY(-10px) scale(1.02); border-color:rgba(var(--rc),0.65) !important; box-shadow:0 20px 60px rgba(0,0,0,.6), 0 0 40px rgba(var(--rc),0.18), inset 0 0 0 1px rgba(var(--rc),0.1); }
+  .rs-card:hover::after { opacity:1; }
+
+  .rs-card-name {
+    position:relative; z-index:2;
+    padding:18px 20px 0;
+    font-family:'Cinzel',serif; font-size:20px; font-weight:900;
+    letter-spacing:0.12em; text-transform:uppercase;
+    color:#fff; text-shadow:0 0 20px rgba(var(--rc),0.8), 0 2px 8px rgba(0,0,0,.9);
+    line-height:1;
+  }
+
+  .rs-faction-icon {
+    position:relative; z-index:2;
+    padding:0 20px;
+    margin-top:10px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .rs-faction-icon .icon-line {
+    flex:1; height:1px;
+    background: linear-gradient(to right, rgba(var(--rc),0.6), transparent);
+  }
+
+  .rs-card-desc {
+    position:relative; z-index:2;
+    padding:0 18px 22px;
+    font-family:'Exo 2',sans-serif; font-size:12px;
+    color:rgba(220,228,245,0.85); line-height:1.6; font-weight:500;
+    text-shadow: 0 1px 4px rgba(0,0,0,.9);
+  }
+
+  .rs-card-select {
+    position:absolute; bottom:0; left:0; right:0; z-index:3;
+    height:3px;
+    background: linear-gradient(to right, transparent, rgba(var(--rc),0.9), transparent);
+    opacity:0; transition: opacity .3s ease;
+  }
+  .rs-card:hover .rs-card-select { opacity:1; }
+
+  .rs-card[data-race="Shinigami"] .rs-card-bg {
+    background-image: url('https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=600&q=80');
+    filter: brightness(0.55) saturate(0.7) hue-rotate(180deg);
+  }
+  .rs-card[data-race="Hollow"] .rs-card-bg {
+    background-image: url('https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=600&q=80');
+    filter: brightness(0.45) saturate(0.5) hue-rotate(330deg);
+  }
+  .rs-card[data-race="Quincy"] .rs-card-bg {
+    background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&q=80');
+    filter: brightness(0.5) saturate(0.65) hue-rotate(200deg);
+  }
+
+  /* TREE VIEWPORT — GPU composited, no repaints on pan */
+  #tree-viewport {
+    position:absolute; left:0; top:0;
+    width:100vw; height:100vh; overflow:hidden;
+    cursor:grab; z-index:2; pointer-events:auto;
+  }
+  #tree-viewport.panning { cursor:grabbing; }
+  #tree-inner {
+    position:absolute; width:3200px; height:3200px; pointer-events:none;
+    will-change: transform;
+    contain: layout style;
+    transform-origin: 0 0;
+  }
+  #tree-inner svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  #node-layer { position:absolute; inset:0; width:3200px; height:3200px; pointer-events:none; contain: layout style; }
+
+  .core {
+    position:absolute; left:1200px; top:1200px;
+    width:130px; height:130px; border-radius:50%;
+    background:radial-gradient(circle,rgba(230,250,255,1) 0%,rgba(120,220,255,.95) 20%,rgba(60,160,230,.7) 45%,rgba(20,80,180,.3) 75%,transparent 100%);
+    transform:translate3d(-50%,-50%,0);
+    pointer-events:none;
+    will-change: transform;
+  }
+
+  .spoke-label {
+    position:absolute; transform:translate(-50%,-50%);
+    font-family:'Cinzel',serif; font-size:11px;
+    letter-spacing:.2em; text-transform:uppercase; font-weight:700;
+    white-space:nowrap; pointer-events:none;
+    text-shadow: 0 1px 4px rgba(0,0,0,1), 0 0 10px currentColor;
+  }
+
+  .skill-node {
+    position:absolute;
+    width:28px; height:28px; border-radius:50%; border:2px solid;
+    cursor:pointer;
+    transition: transform .07s ease;
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:auto;
+    transform: translate3d(-50%,-50%,0);
+  }
+  .skill-node:hover { transform:translate3d(-50%,-50%,0) scale(1.18); }
+
+  .skill-node.shift-ready {
+    outline: 2px solid rgba(110,230,255,.85);
+    outline-offset: 3px;
+  }
+
+  /* ULTIMATE NODE */
+  .skill-node.ultimate {
+    width:56px; height:56px; border-width:2px; z-index:6;
+  }
+  .skill-node.ultimate.locked {
+    box-shadow: none;
+  }
+
+  /* SPECIAL (big circle) */
+  .skill-node.special {
+    width:52px; height:52px; border-width:2.5px; z-index:6;
+    background: radial-gradient(circle,rgba(var(--sc),1) 0%,rgba(var(--sc),.85) 25%,rgba(var(--sc),.35) 60%,rgba(3,7,20,.8) 100%);
+    border-color: rgba(var(--sc),.9);
+  }
+  .skill-node.special.locked {
+    background: radial-gradient(circle,rgba(var(--sc),.25) 0%,rgba(var(--sc),.1) 50%,rgba(3,7,20,.9) 100%);
+    border-color: rgba(var(--sc),.3);
+    box-shadow: none;
+  }
+  .skill-node.special.available {
+    border-color: rgba(255,230,80,1) !important;
+    background: radial-gradient(circle,rgba(var(--sc),.5) 0%,rgba(255,220,40,.2) 50%,rgba(3,7,20,.7) 100%);
+  }
+  .skill-node.special.unlocked {
+    background: radial-gradient(circle,rgba(var(--sc),1) 0%,rgba(var(--sc),.9) 30%,rgba(var(--sc),.45) 65%,rgba(3,7,20,.7) 100%);
+    border-color: rgba(var(--sc),1);
+  }
+
+  .skill-node[data-spoke="hakuda"]   { --sc:255,130,20; }
+  .skill-node[data-spoke="sense"]    { --sc:255,235,210; }
+  .skill-node[data-spoke="strength"] { --sc:255,60,80; }
+  .skill-node[data-spoke="speed"]    { --sc:50,180,255; }
+  .skill-node[data-spoke="misc"]     { --sc:230,235,255; }
+  .skill-node[data-spoke="race"]     { --sc:255,85,178; }
+
+  .skill-node.locked    { border-color:rgba(var(--sc),.18); background:rgba(3,6,14,.92); box-shadow: none; }
+  .skill-node.available {
+    border-color:rgba(255,230,80,1);
+    background:radial-gradient(circle, rgba(255,220,40,.22) 0%, rgba(var(--sc),.1) 65%, transparent 100%);
+  }
+  .skill-node.available:hover {
+    border-color:rgba(255,240,100,1);
+  }
+  .skill-node.unlocked  { border-color:rgba(var(--sc),1); background:radial-gradient(circle, rgba(var(--sc),.4) 0%, rgba(var(--sc),.18) 55%, rgba(3,6,14,.7) 100%); }
+  .skill-node.maxed     { border-color:rgba(252,211,77,.95); background:linear-gradient(135deg,rgba(160,100,20,.7),rgba(70,45,10,.9)); }
+  .skill-node.selected  { transform:translate3d(-50%,-50%,0) scale(1.15) !important; outline:2px solid rgba(var(--sc),.9); outline-offset:3px; }
+  .skill-node.ultimate.selected { transform:translate3d(-50%,-50%,0) scale(1.1) !important; outline:3px solid rgba(var(--sc),1); outline-offset:5px; }
+
+  /* Level number — centered inside the circle via parent flexbox */
+  .skill-node .node-level {
+    font-family:'Share Tech Mono',monospace;
+    font-size:11px; font-weight:700; line-height:1;
+    color:#ffffff;
+    text-shadow: 0 0 6px rgba(0,0,0,1), 0 1px 2px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,.8);
+    pointer-events:none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: geometricPrecision;
+  }
+  .skill-node.ultimate .node-level { font-size:14px; }
+  .skill-node.maxed .node-level { color:#fcd34d; text-shadow: 0 0 6px rgba(0,0,0,1), 0 0 10px rgba(252,211,77,.5); }
+  .skill-node .lock-icon {
+    position:absolute; bottom:-4px; right:-4px;
+    width:14px; height:14px; background:#030714;
+    border:1px solid rgba(var(--sc),.3); border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    color:rgba(var(--sc),.5);
+  }
+  .skill-node .lock-icon svg { width:8px; height:8px; }
+
+  /* HUD */
+  .hud { position:absolute; z-index:5; }
+  .hud-tl { top:18px; left:18px; width:320px; }
+  .hud-tr { top:18px; right:18px; width:240px; text-align:right; }
+  .hud-bl { bottom:18px; left:18px; width:300px; }
+  .hud-br { bottom:18px; right:18px; width:320px; }
+  .hud-bc { bottom:14px; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; }
+
+  .panel {
+    position:relative; background:rgba(6,14,31,.93);
+    border:1px solid rgba(34,150,220,.3); border-radius:4px;
+    padding:12px 14px;
+    box-shadow:0 0 20px rgba(20,60,120,.25);
+  }
+  .panel.violet { border-color:rgba(180,180,200,.3); }
+  .panel.amber  { border-color:rgba(252,211,77,.35); }
+  .panel.slate  { border-color:rgba(100,116,139,.35); background:rgba(10,18,32,.93); }
+  .panel .corner { position:absolute; width:10px; height:10px; border-color:currentColor; }
+  .panel .corner.tl { top:-1px; left:-1px; border-top:2px solid; border-left:2px solid; }
+  .panel .corner.tr { top:-1px; right:-1px; border-top:2px solid; border-right:2px solid; }
+  .panel .corner.bl { bottom:-1px; left:-1px; border-bottom:2px solid; border-left:2px solid; }
+  .panel .corner.br { bottom:-1px; right:-1px; border-bottom:2px solid; border-right:2px solid; }
+  .panel.cyan .corner   { color:rgba(80,210,255,.7); }
+  .panel.violet .corner { color:rgba(220,225,240,.6); }
+  .panel.amber .corner  { color:rgba(252,211,77,.7); }
+  .panel.slate .corner  { color:rgba(148,163,184,.6); }
+
+  .panel-title { font-family:'Cinzel',serif; font-size:12px; letter-spacing:.22em; text-transform:uppercase; font-weight:700; color:#a5e7ff; }
+  .panel.violet .panel-title { color:#ffffff; }
+  .panel.violet .panel-sub { color:rgba(220,225,240,.5); }
+  .panel.amber  .panel-title { color:#fde68a; }
+  .panel-sub { font-family:'Exo 2',sans-serif; font-size:10px; font-weight:600; letter-spacing:.25em; text-transform:uppercase; color:rgba(165,231,255,.55); margin-top:1px; }
+
+  .level-block { margin-bottom:10px; }
+  .level-block .row { display:flex; align-items:center; gap:10px; }
+  .level-block .row .lbl { font-family:'Exo 2',sans-serif; font-size:10px; font-weight:700; letter-spacing:.4em; color:rgba(150,220,255,.65); text-transform:uppercase; }
+  .level-block .row .line { flex:1; height:1px; background:linear-gradient(to right,rgba(80,210,255,.4),transparent); }
+  .level-num { font-family:'Cinzel',serif; font-size:38px; font-weight:900; letter-spacing:.08em; line-height:1; margin-top:2px; color:#67e8f9; }
+
+  .bp-row-top { display:flex; align-items:baseline; justify-content:space-between; }
+  .bp-counter { font-family:'Share Tech Mono',monospace; font-size:13px; }
+  .bp-counter b { color:#67e8f9; font-size:15px; font-weight:700; }
+  .bp-counter span { color:#475569; }
+  .bp-bar { position:relative; height:11px; margin:8px 0 10px; background:#040b1a; border:1px solid rgba(80,210,255,.22); border-radius:2px; overflow:hidden; }
+  .bp-bar .fill { position:absolute; inset:0 auto 0 0; background:linear-gradient(90deg,#06b6d4,#22d3ee,#67e8f9); transition:width .25s ease; }
+  .bp-bar .ticks { position:absolute; inset:0; background:linear-gradient(90deg,transparent 0,transparent 24%,rgba(255,255,255,.08) 25%,transparent 26%,transparent 49%,rgba(255,255,255,.08) 50%,transparent 51%,transparent 74%,rgba(255,255,255,.08) 75%,transparent 76%); }
+  .stat-row { display:flex; align-items:center; gap:6px; padding:4px 2px; }
+  .stat-row .swatch { width:5px; height:18px; border-radius:2px; background:#1a3050; }
+  .stat-row .name { flex:1; font-family:'Exo 2',sans-serif; font-size:13px; font-weight:700; letter-spacing:.06em; color:#e2e8f0; }
+  .stat-row .name.dim { color:#64748b; }
+  .stat-row .name .plus { font-size:11px; margin-left:3px; }
+  .btn-tiny { width:22px; height:22px; border:1px solid rgba(71,85,105,.85); background:transparent; border-radius:2px; color:#cbd5e1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .12s ease, border-color .12s ease, color .12s ease; font-family:'Share Tech Mono',monospace; font-size:13px; line-height:1; }
+  .btn-tiny:hover:not(:disabled) { border-color:rgba(110,220,255,.7); background:rgba(80,210,255,.15); color:#a5e7ff; }
+  .btn-tiny.violet:hover:not(:disabled) { border-color:rgba(255,255,255,.7); background:rgba(255,255,255,.15); color:#ffffff; }
+  .btn-tiny:disabled { opacity:.25; cursor:not-allowed; }
+  .stat-row .val { font-family:'Share Tech Mono',monospace; font-size:13px; width:32px; text-align:center; color:#94a3b8; }
+  .stat-row .val.has { color:#a5e7ff; }
+  .panel-foot { margin-top:8px; padding-top:6px; border-top:1px solid rgba(80,210,255,.1); text-align:center; font-family:'Exo 2',sans-serif; font-size:10px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:#64748b; }
+  .panel-foot b { color:rgba(80,210,255,.7); font-weight:700; }
+
+  .hud-tr .info-line {
+    background:rgba(4,10,24,.88);
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:4px; padding:8px 14px; margin-bottom:6px;
+    position:relative; text-align:left;
+  }
+  .info-line.cyan  { border-color:rgba(80,180,255,.25); }
+  .info-line.red   { border-color:rgba(255,80,80,.25); }
+  .info-line.sp-line { border-color:rgba(255,160,40,.28); }
+  .info-line.frags { border-color:rgba(120,140,255,.28); background:rgba(4,10,24,.88); }
+  .info-line.green { border-color:rgba(52,200,140,.28); }
+  .info-line .label {
+    font-family:'Exo 2',sans-serif; font-size:9px; font-weight:800;
+    letter-spacing:.35em; text-transform:uppercase;
+    color:rgba(160,185,220,.55); display:block; margin-bottom:1px;
+  }
+  .info-line.cyan .label { color:rgba(130,200,255,.55); }
+  .info-line.red  .label { color:rgba(255,130,130,.55); }
+  .info-line.sp-line .label { color:rgba(255,180,80,.55); }
+  .info-line.frags .label { color:rgba(160,170,255,.55); }
+  .info-line.green .label { color:rgba(80,210,160,.55); }
+  .info-line .num {
+    font-family:'Cinzel',serif; font-weight:700; font-size:18px;
+    display:inline; line-height:1;
+    color:#e8f0ff;
+  }
+  .info-line.cyan .num { color:#7dd8ff; }
+  .info-line.red  .num { color:#ff8080; }
+  .info-line.sp-line .num { color:#ffb84a; }
+  .info-line.frags .num { color:#a0a8ff; }
+  .info-line.green .num { color:#50d8a8; }
+  .info-line .total { font-family:'Share Tech Mono',monospace; color:rgba(150,165,185,.4); font-size:12px; margin-left:2px; }
+
+  .race-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(6,14,31,.93); border:1px solid rgba(120,120,120,.4); border-radius:4px; padding:7px 12px; font-family:'Cinzel',serif; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#c0c8d8; margin-bottom:8px; }
+  .race-badge .dot { width:6px; height:6px; border-radius:50%; }
+
+  /* FREE TOKENS */
+  .free-token-btn {
+    display:flex; align-items:center; gap:8px;
+    background:rgba(6,14,31,.93); border:1px solid rgba(252,211,77,.35);
+    border-radius:4px; padding:8px 12px; margin-bottom:8px;
+    cursor:pointer; width:100%; text-align:left;
+    transition:border-color .15s ease, background .15s ease;
+    position:relative;
+  }
+  .free-token-btn:hover:not(:disabled) { border-color:rgba(252,211,77,.7); background:rgba(252,211,77,.06); }
+  .free-token-btn:disabled { opacity:.35; cursor:not-allowed; }
+  .free-token-btn .corner { position:absolute; width:8px; height:8px; border-color:rgba(252,211,77,.6); }
+  .free-token-btn .corner.tl { top:-1px; left:-1px; border-top:2px solid; border-left:2px solid; }
+  .free-token-btn .corner.tr { top:-1px; right:-1px; border-top:2px solid; border-right:2px solid; }
+  .free-token-btn .corner.bl { bottom:-1px; left:-1px; border-bottom:2px solid; border-left:2px solid; }
+  .free-token-btn .corner.br { bottom:-1px; right:-1px; border-bottom:2px solid; border-right:2px solid; }
+  .free-token-btn .ft-icon { font-size:15px; flex-shrink:0; }
+  .free-token-btn .ft-text { flex:1; }
+  .free-token-btn .ft-label { font-family:'Cinzel',serif; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:#fde68a; font-weight:700; }
+  .free-token-btn .ft-sub   { font-family:'Exo 2',sans-serif; font-size:10px; font-weight:600; color:#64748b; letter-spacing:.08em; margin-top:1px; }
+  .free-token-btn .ft-count { font-family:'Share Tech Mono',monospace; font-size:18px; font-weight:700; color:#fde68a; }
+  .free-token-btn:disabled .ft-label { color:#475569; }
+  .free-token-btn:disabled .ft-count { color:#475569; }
+
+  /* diamond */
+  .attr-panel-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px; }
+  .diamond-wrap { position:relative; width:100%; aspect-ratio:1/1; margin-top:6px; }
+  .diamond-wrap svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .attr-stat { position:absolute; display:flex; flex-direction:column; align-items:center; gap:3px; z-index:2; }
+  .attr-stat.top    { top:-4px;    left:50%; transform:translateX(-50%); }
+  .attr-stat.right  { right:-4px;  top:50%;  transform:translateY(-50%); }
+  .attr-stat.bottom { bottom:-4px; left:50%; transform:translateX(-50%); }
+  .attr-stat.left   { left:-4px;   top:50%;  transform:translateY(-50%); }
+  .attr-stat .name { font-family:'Cinzel',serif; font-size:10px; letter-spacing:.2em; text-transform:uppercase; font-weight:700; color:rgba(255,255,255,.6); }
+  .attr-stat .name.has { color:#ffffff; text-shadow:0 0 8px rgba(255,255,255,.5); }
+  .attr-stat .ctrl { display:flex; align-items:center; gap:3px; background:rgba(10,10,26,.92); border:1px solid rgba(180,180,200,.35); border-radius:3px; padding:3px 4px; }
+  .attr-stat .ctrl .val { font-family:'Share Tech Mono',monospace; font-size:11px; width:28px; text-align:center; color:#94a3b8; }
+  .attr-stat .ctrl .val.has { color:#ffffff; font-weight:700; }
+  .attr-stat .ctrl .btn-tiny { width:18px; height:18px; font-size:11px; }
+
+  /* SELECTED SKILL PANEL */
+  .sel-empty { text-align:center; padding:16px 12px; }
+  .sel-empty .head { font-family:'Cinzel',serif; font-size:11px; letter-spacing:.25em; text-transform:uppercase; color:#64748b; font-weight:700; }
+  .sel-empty .sub  { font-family:'Exo 2',sans-serif; font-size:11px; font-weight:600; color:#475569; margin-top:4px; }
+
+  .sk-name { font-family:'Cinzel',serif; font-size:16px; font-weight:700; letter-spacing:.04em; line-height:1.1; margin-bottom:3px; }
+  .sk-level { font-family:'Exo 2',sans-serif; font-size:14px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px; }
+  .sk-level.unlocked { color:#67e8f9; }
+  .sk-level.maxed    { color:#fcd34d; }
+  .sk-level.locked   { color:#475569; }
+
+  .sk-divider { height:1px; background:linear-gradient(to right,rgba(80,140,220,.4),transparent); margin:7px 0; }
+  .sk-section-label { font-family:'Exo 2',sans-serif; font-size:12px; font-weight:800; letter-spacing:.15em; text-transform:uppercase; color:rgba(80,210,255,.6); margin-bottom:4px; }
+  .sk-chips { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:7px; }
+  .sk-chip { font-family:'Exo 2',sans-serif; font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:3px 9px; border-radius:3px; border:1px solid; }
+  .sk-chip.sp       { color:#67e8f9; border-color:rgba(80,210,255,.4); background:rgba(80,210,255,.08); }
+  .sk-chip.st       { color:#6ee7b7; border-color:rgba(52,211,153,.4); background:rgba(52,211,153,.08); }
+  .sk-chip.attr-met { color:#86efac; border-color:rgba(134,239,172,.4); background:rgba(134,239,172,.08); }
+
+  .sk-upgrade-note { font-family:'Exo 2',sans-serif; font-size:13px; font-weight:700; letter-spacing:.05em; color:rgba(252,211,77,.85); background:rgba(252,211,77,.06); border:1px solid rgba(252,211,77,.2); border-radius:3px; padding:5px 9px; margin-bottom:7px; }
+
+  .sel-segments { display:flex; gap:3px; margin-bottom:9px; }
+  .sel-seg { flex:1; height:5px; background:rgba(51,65,85,.6); border-radius:2px; }
+  .sel-seg.on    { background:#67e8f9; }
+  .sel-seg.maxed { background:#fcd34d; }
+
+  .sel-action { width:100%; padding:9px; border-radius:3px; font-family:'Exo 2',sans-serif; font-size:14px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; border:1px solid; cursor:pointer; transition:background .15s ease, border-color .15s ease; }
+  .sel-action.unlock { background:rgba(34,150,220,.18); color:#d6eeff; border-color:rgba(110,220,255,.5); }
+  .sel-action.unlock:hover:not(:disabled) { background:rgba(34,150,220,.32); border-color:rgba(150,235,255,.85); box-shadow:0 0 12px rgba(80,210,255,.4); }
+  .sel-action.unlock:disabled { background:rgba(15,23,42,.5); color:#475569; border-color:rgba(51,65,85,.6); cursor:not-allowed; }
+  .sel-action.refund { background:rgba(251,113,133,.12); color:#fda4af; border-color:rgba(251,113,133,.45); margin-top:6px; }
+  .sel-action.refund:hover:not(:disabled) { background:rgba(251,113,133,.25); border-color:rgba(251,113,133,.8); }
+  .sel-locked-msg { font-family:'Exo 2',sans-serif; font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; text-align:center; color:#64748b; background:rgba(30,41,59,.4); border:1px solid #334155; border-radius:3px; padding:8px; }
+  .sel-maxed { font-family:'Cinzel',serif; text-align:center; font-size:14px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; background:rgba(252,211,77,.15); color:#fde68a; border:1px solid rgba(252,211,77,.55); border-radius:3px; padding:9px; }
+  .sel-upgrade-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .sel-up-btn { padding:9px 6px; border-radius:3px; border:1px solid; font-family:'Exo 2',sans-serif; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:1px; transition:background .15s ease, border-color .15s ease; }
+  .sel-up-btn b  { font-size:14px; font-weight:800; letter-spacing:.04em; }
+  .sel-up-btn em { font-style:normal; font-size:12px; font-weight:700; opacity:.8; letter-spacing:.04em; }
+  .sel-up-btn.sp { background:rgba(255,160,40,.15); color:#ffcf7a; border-color:rgba(255,165,50,.5); }
+  .sel-up-btn.sp:hover:not(:disabled) { background:rgba(255,160,40,.3); border-color:rgba(255,185,80,.9); box-shadow:0 0 12px rgba(255,160,40,.35); }
+  .sel-up-btn.af { background:linear-gradient(135deg,rgba(70,140,255,.15),rgba(160,90,255,.1)); color:#a5c8ff; border-color:rgba(100,150,255,.5); }
+  .sel-up-btn.af:hover:not(:disabled) { background:linear-gradient(135deg,rgba(70,140,255,.28),rgba(160,90,255,.18)); border-color:rgba(140,170,255,.9); box-shadow:0 0 14px rgba(80,140,255,.4); }
+  .sel-up-btn:disabled { opacity:.25; cursor:not-allowed; }
+
+  /* HINT STRIP */
+  .hint-strip {
+    margin-top: 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .hint-item {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 5px 12px;
+    background: rgba(4,9,22,.82);
+    border: 1px solid rgba(80,140,220,.18);
+    border-radius: 4px;
+    width: 100%;
+  }
+  .hint-key {
+    font-family: 'Exo 2', sans-serif; font-size: 10px;
+    font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(80,210,255,.9);
+  }
+  .hint-sep {
+    font-family: 'Share Tech Mono', monospace; font-size: 9px;
+    color: rgba(80,140,220,.35);
+  }
+  .hint-text {
+    font-family: 'Exo 2', sans-serif; font-size: 10px;
+    font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(140,165,200,.55);
+  }
+
+  /* RESET / CHANGE RACE BTNS */
+  .reset-btn { background:rgba(0,0,0,.4); border:1px solid rgba(71,85,105,.7); color:#94a3b8; border-radius:3px; padding:7px 18px; cursor:pointer; font-family:'Exo 2',sans-serif; font-size:11px; font-weight:700; letter-spacing:.25em; text-transform:uppercase; transition:background .18s ease, border-color .18s ease, color .18s ease; }
+  .reset-btn:hover { border-color:rgba(251,113,133,.55); background:rgba(251,113,133,.1); color:#fda4af; }
+  .change-race-btn { background:rgba(0,0,0,.4); border:1px solid rgba(140,140,160,.4); color:#a0a8b8; border-radius:3px; padding:7px 14px; cursor:pointer; font-family:'Exo 2',sans-serif; font-size:11px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; transition:background .18s ease, border-color .18s ease, color .18s ease; }
+  .change-race-btn:hover { border-color:rgba(180,185,200,.8); background:rgba(150,155,175,.1); color:#d0d5e8; }
+
+  /* TREE TITLE */
+  .tree-title { position:absolute; top:18px; left:50%; transform:translateX(-50%); text-align:center; pointer-events:none; z-index:4; }
+  .tree-title .row { display:flex; align-items:center; justify-content:center; gap:12px; }
+  .tree-title .line { width:60px; height:1px; background:linear-gradient(to right,transparent,rgba(80,210,255,.6)); }
+  .tree-title .line.r { background:linear-gradient(to left,transparent,rgba(80,210,255,.6)); }
+  .tree-title h1 { font-family:'Cinzel',serif; font-size:17px; letter-spacing:.4em; text-transform:uppercase; color:#cbd5e1; font-weight:700; }
+  .tree-title p  { font-family:'Exo 2',sans-serif; font-size:10px; font-weight:600; letter-spacing:.35em; color:#475569; text-transform:uppercase; margin-top:4px; }
+
+  /* TOOLTIP */
+  #skill-tooltip {
+    display:none; position:fixed; z-index:100; pointer-events:none;
+    background:rgba(4,9,22,.98); border:1px solid rgba(80,140,220,.45);
+    border-radius:6px; padding:13px 15px; min-width:210px; max-width:260px;
+    left:0; top:0;
+    will-change: transform;
+  }
+  .tt-name { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:#e2e8f0; margin-bottom:2px; letter-spacing:.04em; }
+  .tt-level { font-family:'Exo 2',sans-serif; font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px; }
+  .tt-divider { height:1px; background:rgba(80,140,220,.2); margin:7px 0; }
+  .tt-section { font-family:'Exo 2',sans-serif; font-size:11px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:rgba(80,210,255,.55); margin-bottom:3px; }
+  .tt-chips { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:5px; }
+  .tt-chip { font-family:'Exo 2',sans-serif; font-size:12px; font-weight:800; letter-spacing:.06em; padding:2px 7px; border-radius:2px; border:1px solid; text-transform:uppercase; }
+  .tt-chip.sp { color:#67e8f9; border-color:rgba(80,210,255,.4); background:rgba(80,210,255,.08); }
+  .tt-chip.st { color:#6ee7b7; border-color:rgba(52,211,153,.4); background:rgba(52,211,153,.08); }
+  .tt-note { font-family:'Exo 2',sans-serif; font-size:12px; font-weight:700; color:rgba(252,211,77,.8); margin-bottom:4px; }
+  .tt-status { font-family:'Exo 2',sans-serif; font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; margin-top:5px; }
+  .tt-status.locked   { color:#64748b; }
+  .tt-status.avail    { color:#67e8f9; }
+  .tt-status.unlocked { color:#a3e635; }
+  .tt-status.maxed    { color:#fcd34d; }
+
+  .pan-hint { position:absolute; bottom:52px; left:50%; transform:translateX(-50%); font-family:'Exo 2',sans-serif; font-size:10px; font-weight:600; letter-spacing:.25em; text-transform:uppercase; color:#334155; pointer-events:none; z-index:3; }
+
+  /* LAYOUT EDITOR — hidden from users. To restore: remove display:none from #edit-layout-btn and #edit-mode-banner styles */
+  #edit-layout-btn { display: none !important; }
+  #edit-mode-banner { display: none !important; }
+
+  #save-layout-btn {
+    background:rgba(52,211,153,.15); border:1px solid rgba(52,211,153,.6); color:#6ee7b7;
+    border-radius:3px; padding:7px 14px; cursor:pointer;
+    font-family:'Exo 2',sans-serif; font-size:11px; font-weight:700;
+    letter-spacing:.2em; text-transform:uppercase;
+    transition:background .18s ease, border-color .18s ease;
+    display:none;
+  }
+  #save-layout-btn:hover { background:rgba(52,211,153,.28); border-color:rgba(52,211,153,.9); }
+  #save-layout-btn.visible { display:block; }
+
+  .skill-node.node-type {
+    width: 20px; height: 20px;
+    border-radius: 3px;
+    border-width: 2px;
+    transform: translate3d(-50%, -50%, 0) rotate(45deg);
+  }
+  .skill-node.node-type:hover { transform: translate3d(-50%,-50%,0) rotate(45deg) scale(1.3); }
+  .skill-node.node-type.selected { transform: translate3d(-50%,-50%,0) rotate(45deg) scale(1.18) !important; }
+  .skill-node.node-type.locked { border-color: rgba(var(--sc),.4); background: rgba(var(--sc),.08); }
+  .skill-node.node-type.available {
+    border-color: rgba(255,230,80,1);
+    background: radial-gradient(circle at center, rgba(255,220,40,.45) 0%, rgba(var(--sc),.18) 70%);
+    box-shadow: 0 0 10px rgba(255,200,20,.45);
+  }
+  .skill-node.node-type.unlocked {
+    border-color: rgba(var(--sc),1);
+    background: radial-gradient(circle at center, rgba(var(--sc),1) 0%, rgba(var(--sc),.7) 40%, rgba(var(--sc),.25) 100%);
+    box-shadow: 0 0 10px rgba(var(--sc),.5);
+  }
+  .skill-node.node-type .lock-icon { transform: rotate(-45deg); bottom: -3px; right: -3px; width: 12px; height: 12px; }
+  .skill-node.node-type .lock-icon svg { width: 7px; height: 7px; }
+
+  /* ULTIMATE label */
+  .sk-ultimate-tag {
+    display: inline-block; font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.25em; text-transform: uppercase; color: #c084fc;
+    background: rgba(192, 132, 252, 0.1); border: 1px solid rgba(192, 132, 252, 0.4);
+    border-radius: 3px; padding: 2px 8px; margin-bottom: 5px;
+    text-shadow: 0 0 10px rgba(192, 132, 252, 0.6);
+  }
+  .tt-ultimate-tag {
+    display: inline-block; font-family: 'Cinzel', serif; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: #c084fc;
+    background: rgba(192, 132, 252, 0.1); border: 1px solid rgba(192, 132, 252, 0.35);
+    border-radius: 2px; padding: 1px 6px; margin-bottom: 3px;
+    text-shadow: 0 0 8px rgba(192, 132, 252, 0.5);
+  }
+
+  /* FREE MODAL */
+  #free-modal-overlay {
+    position:fixed; inset:0; z-index:300;
+    background:rgba(1,4,14,.75);
+    align-items:center; justify-content:center;
+    display:flex;
+    opacity:0; pointer-events:none;
+    transition: opacity .18s ease;
+    will-change: opacity;
+  }
+  #free-modal-overlay.open { opacity:1; pointer-events:auto; }
+  #free-modal {
+    background:rgba(6,12,28,.97); border:1px solid rgba(252,211,77,.4);
+    border-radius:8px; padding:24px 22px; width:360px; max-height:80vh;
+    display:flex; flex-direction:column; gap:14px;
+    box-shadow:0 0 60px rgba(252,211,77,.1),0 20px 60px rgba(0,0,0,.6);
+    transform:scale(.96) translateY(8px);
+    transition: transform .18s ease;
+    will-change: transform;
+  }
+  #free-modal-overlay.open #free-modal { transform:scale(1) translateY(0); }
+  .fm-title { font-family:'Cinzel',serif; font-size:13px; font-weight:700; letter-spacing:.25em; text-transform:uppercase; color:#fde68a; }
+  .fm-sub { font-family:'Exo 2',sans-serif; font-size:14px; font-weight:600; color:#64748b; margin-top:3px; letter-spacing:.04em; }
+  .fm-list { overflow-y:auto; max-height:340px; display:flex; flex-direction:column; gap:6px; flex:1; }
+  .fm-list::-webkit-scrollbar { width:4px; }
+  .fm-list::-webkit-scrollbar-track { background:rgba(255,255,255,.03); }
+  .fm-list::-webkit-scrollbar-thumb { background:rgba(252,211,77,.3); border-radius:2px; }
+  .fm-skill-row { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:4px; border:1px solid rgba(252,211,77,.15); background:rgba(252,211,77,.04); cursor:pointer; transition:border-color .12s ease, background .12s ease; }
+  .fm-skill-row:hover { border-color:rgba(252,211,77,.5); background:rgba(252,211,77,.1); }
+  .fm-skill-name  { font-family:'Exo 2',sans-serif; font-size:14px; font-weight:800; color:#e2e8f0; flex:1; letter-spacing:.04em; }
+  .fm-skill-spoke { font-family:'Exo 2',sans-serif; font-size:10px; font-weight:700; color:#475569; letter-spacing:.12em; text-transform:uppercase; }
+  .fm-skill-level { font-family:'Share Tech Mono',monospace; font-size:11px; color:#fde68a; letter-spacing:.1em; }
+  .fm-cancel { padding:10px; border-radius:3px; border:1px solid rgba(71,85,105,.5); background:transparent; color:#64748b; cursor:pointer; width:100%; font-family:'Exo 2',sans-serif; font-size:14px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; transition:border-color .12s ease, color .12s ease; }
+  .fm-cancel:hover { border-color:#94a3b8; color:#94a3b8; }
+  .fm-empty { font-family:'Exo 2',sans-serif; font-size:14px; font-weight:700; color:#475569; text-align:center; padding:20px 0; letter-spacing:.06em; }
+
+  /* CREDITS */
+  .rs-credits {
+    position:absolute; bottom:26px; left:0; right:0;
+    text-align:center; pointer-events:none;
+    animation: fadeUp 0.7s ease 0.6s both;
+  }
+  .rs-credits-badge {
+    display: inline-flex; flex-direction: column; align-items: center; gap: 6px;
+    background: rgba(6, 12, 32, 0.82); border: 1px solid rgba(80, 200, 255, 0.22);
+    border-radius: 8px; padding: 10px 28px 12px;
+    box-shadow: 0 0 30px rgba(80, 180, 255, 0.08), 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .rs-credits-line { font-family:'Exo 2',sans-serif; font-size:9px; font-weight:800; letter-spacing:.5em; text-transform:uppercase; color:rgba(120,160,220,.55); }
+  .rs-credits-names {
+    font-family:'Cinzel',serif; font-size:15px; font-weight:700; letter-spacing:.22em;
+    background: linear-gradient(90deg, #50c8ff, #c084fc, #f472b6, #50c8ff);
+    background-size: 300% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    animation: shimmer 4s linear infinite, fadeUp 0.7s ease 0.8s both;
+  }
+  @keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: 300% center; } }
+</style>
+</head>
+<body>
+
+<div class="bg-layer bg-gradient-1"></div>
+<div class="bg-layer" style="pointer-events:none">
+  <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="4%" cy="12%" r="0.6" fill="white" opacity="0.8"></circle>
+    <circle cx="11%" cy="31%" r="0.4" fill="white" opacity="0.5"></circle>
+    <circle cx="18%" cy="8%" r="0.7" fill="white" opacity="0.6"></circle>
+    <circle cx="26%" cy="47%" r="0.3" fill="white" opacity="0.4"></circle>
+    <circle cx="33%" cy="19%" r="0.5" fill="white" opacity="0.7"></circle>
+    <circle cx="42%" cy="73%" r="0.8" fill="white" opacity="0.9"></circle>
+    <circle cx="49%" cy="4%" r="0.35" fill="white" opacity="0.5"></circle>
+    <circle cx="55%" cy="64%" r="0.5" fill="white" opacity="0.6"></circle>
+    <circle cx="61%" cy="28%" r="0.6" fill="white" opacity="0.8"></circle>
+    <circle cx="68%" cy="88%" r="0.3" fill="white" opacity="0.4"></circle>
+    <circle cx="73%" cy="16%" r="0.7" fill="white" opacity="0.7"></circle>
+    <circle cx="79%" cy="53%" r="0.4" fill="white" opacity="0.5"></circle>
+    <circle cx="86%" cy="9%" r="0.5" fill="white" opacity="0.6"></circle>
+    <circle cx="92%" cy="38%" r="0.8" fill="white" opacity="0.9"></circle>
+    <circle cx="97%" cy="76%" r="0.35" fill="white" opacity="0.5"></circle>
+    <circle cx="3%" cy="84%" r="0.5" fill="white" opacity="0.6"></circle>
+    <circle cx="20%" cy="75%" r="0.6" fill="white" opacity="0.7"></circle>
+    <circle cx="80%" cy="20%" r="0.45" fill="white" opacity="0.5"></circle>
+  </svg>
+</div>
+
+<!-- Faction Selection -->
+<div id="race-screen" class="hidden">
+  <div class="rs-title">
+    <h1>Choose Your Faction</h1>
+    <p>Your faction determines your unique skill branch</p>
+  </div>
+  <div class="rs-cards">
+    <div class="rs-card" data-race="Quincy">
+      <div class="rs-card-bg"></div>
+      <div class="rs-card-top-overlay"></div>
+      <div>
+        <div class="rs-card-name">Quincy</div>
+        <div class="rs-faction-icon"><div class="icon-line"></div></div>
+      </div>
+      <div class="rs-card-desc">Descendants of the ancient Quincy King, gifted with the power to absorb and shape reishi into deadly Spirit Weapons. Cold, precise, and relentless.</div>
+      <div class="rs-card-select"></div>
+    </div>
+    <div class="rs-card" data-race="Shinigami">
+      <div class="rs-card-bg"></div>
+      <div class="rs-card-top-overlay"></div>
+      <div>
+        <div class="rs-card-name">Shinigami</div>
+        <div class="rs-faction-icon"><div class="icon-line"></div></div>
+      </div>
+      <div class="rs-card-desc">Guardians of the balance between worlds, wielding Zanpakuto forged from their own soul. They channel raw reiatsu through Kidō and Shunpo.</div>
+      <div class="rs-card-select"></div>
+    </div>
+    <div class="rs-card" data-race="Hollow">
+      <div class="rs-card-bg"></div>
+      <div class="rs-card-top-overlay"></div>
+      <div>
+        <div class="rs-card-name">Hollow</div>
+        <div class="rs-faction-icon"><div class="icon-line"></div></div>
+      </div>
+      <div class="rs-card-desc">Souls consumed by despair, reborn as Arrancar — Hollows who have shattered their masks to gain Shinigami-like powers. They wield Cero, Hierro, Bala, and terrifying Zanpakutō-like Resurrección.</div>
+      <div class="rs-card-select"></div>
+    </div>
+  </div>
+  <div class="rs-credits">
+    <div class="rs-credits-badge">
+      <div class="rs-credits-line">VV Builder crafted by</div>
+      <div class="rs-credits-names">Bryceexi &amp; Zentuba</div>
+    </div>
+  </div>
+</div>
+
+<!-- Free Skill Modal -->
+<div id="free-modal-overlay">
+  <div id="free-modal">
+    <div>
+      <div class="fm-title" id="fm-title">✦ Free Refund</div>
+      <div class="fm-sub" id="fm-sub">Pick any unlocked skill to refund for free</div>
+    </div>
+    <div class="fm-list" id="fm-list"></div>
+    <button class="fm-cancel" id="fm-cancel">Cancel</button>
+  </div>
+</div>
+
+<!-- Main Stage -->
+<div class="stage" id="stage">
+  <div class="tree-title">
+    <div class="row">
+      <span class="line"></span>
+      <h1 class="heading">Skill Tree</h1>
+      <span class="line r"></span>
+    </div>
+    <p>Click &amp; drag to pan · Scroll to zoom</p>
+  </div>
+
+  <!-- TL: Level + Build Points -->
+  <div class="hud hud-tl">
+    <div class="level-block">
+      <div class="row"><span class="lbl mono">Character</span><span class="line"></span></div>
+      <div class="level-num"><span>LVL </span><span class="mono">100</span></div>
+    </div>
+    <div class="panel cyan" id="bp-panel">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div class="bp-row-top">
+        <h3 class="panel-title">Build Points</h3>
+        <div class="bp-counter"><b id="bp-remaining">400</b><span> / 400</span></div>
+      </div>
+      <div class="panel-sub">Distribute</div>
+      <div class="bp-bar"><div class="fill" id="bp-fill" style="width:0%"></div><div class="ticks"></div></div>
+      <div id="bp-stats"></div>
+      <div class="panel-foot" style="display:none"></div>
+    </div>
+    <!-- HINT STRIP: "Shift + Click" for both entries -->
+    <div class="hint-strip">
+      <div class="hint-item">
+        <span class="hint-key">Shift + Click</span>
+        <span class="hint-sep">·</span>
+        <span class="hint-text">+10</span>
+      </div>
+      <div class="hint-item">
+        <span class="hint-key">Shift + Click</span>
+        <span class="hint-sep">·</span>
+        <span class="hint-text">Quick Unlock</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TR: Resources + Free tokens -->
+  <div class="hud hud-tr">
+    <div class="race-badge" id="race-badge">
+      <div class="dot" id="race-dot" style="background: rgb(220, 230, 255);"></div>
+      <span id="race-badge-text">Shinigami</span>
+    </div>
+    <div class="info-line frags">
+      <span class="label">Ascension Fragments</span>
+      <span class="num" id="frag-num">6</span><span class="total"> / 6</span>
+    </div>
+    <div class="info-line sp-line">
+      <span class="label">Skill Points</span>
+      <span class="num" id="sp-num">100</span><span class="total"> / 100</span>
+    </div>
+    <div class="info-line green">
+      <span class="label">Soul Tokens</span>
+      <span class="num" id="ryo-num">50,000</span>
+    </div>
+    <button class="free-token-btn" id="free-refund-btn">
+      <span class="ft-icon">↩</span>
+      <span class="ft-text">
+        <div class="ft-label">Free Refund</div>
+        <div class="ft-sub">Click to pick a skill</div>
+      </span>
+      <span class="ft-count" id="free-refund-count">1</span>
+    </button>
+    <button class="free-token-btn" id="free-upgrade-btn">
+      <span class="ft-icon">✦</span>
+      <span class="ft-text">
+        <div class="ft-label">Free Level Up</div>
+        <div class="ft-sub">Click to pick a skill</div>
+      </span>
+      <span class="ft-count" id="free-upgrade-count">1</span>
+    </button>
+  </div>
+
+  <!-- BL: Attributes -->
+  <div class="hud hud-bl">
+    <div class="panel violet">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div class="attr-panel-head">
+        <h3 class="panel-title">Attributes</h3>
+        <div class="bp-counter"><b id="ap-remaining" style="color:#e2e8f0">400</b><span> / 400</span></div>
+      </div>
+      <div class="panel-sub" style="color:rgba(220,225,240,.5)">Allocate</div>
+      <div class="diamond-wrap">
+        <svg viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="dGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.5)"></stop>
+              <stop offset="50%" stop-color="rgba(180,190,210,0.2)"></stop>
+              <stop offset="100%" stop-color="rgba(255,255,255,0.5)"></stop>
+            </linearGradient>
+            <linearGradient id="dFill" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="rgba(20,25,40,0.95)"></stop>
+              <stop offset="100%" stop-color="rgba(8,12,25,0.98)"></stop>
+            </linearGradient>
+          </defs>
+          <polygon points="100,18 182,100 100,182 18,100" fill="url(#dFill)" stroke="url(#dGrad)" stroke-width="1.5"></polygon>
+          <polygon points="100,42 158,100 100,158 42,100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="3 4"></polygon>
+          <line x1="100" y1="18" x2="100" y2="182" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"></line>
+          <line x1="18" y1="100" x2="182" y2="100" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"></line>
+          <polygon id="attr-poly" points="100,82 118,100 100,118 82,100" fill="rgba(80,180,255,0.5)" stroke="rgba(150,210,255,0.8)" stroke-width="1.5"></polygon>
+        </svg>
+        <div id="attr-stats"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BR: Selected Skill -->
+  <div class="hud hud-br">
+    <div class="panel slate" id="sel-panel">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div id="sel-content"><div class="sel-empty"><div class="head">No Skill Selected</div><div class="sub">Click a node in the skill tree</div></div></div>
+    </div>
+  </div>
+
+  <!-- BC: Reset + Change Race (Edit Layout hidden — restore by removing display:none from #edit-layout-btn CSS) -->
+  <div class="hud hud-bc">
+    <button class="reset-btn" id="reset-btn">↺ Reset Build</button>
+    <button class="change-race-btn" id="change-race-btn">◈ Change Race</button>
+    <!-- Edit Layout button intentionally hidden. To restore: find "#edit-layout-btn { display: none !important; }" in CSS and remove it -->
+    <button id="edit-layout-btn">✎ Edit Layout</button>
+    <button id="save-layout-btn">⬇ Save Layout</button>
+  </div>
+  <!-- Edit mode banner intentionally hidden via CSS. To restore: find "#edit-mode-banner { display: none !important; }" and remove it -->
+  <div id="edit-mode-banner">✎ Edit Mode — Drag any node to reposition · Lines update live</div>
+
+  <div class="pan-hint">Drag to explore · Scroll to zoom</div>
+
+  <div id="tree-viewport">
+    <div id="tree-inner" style="transform-origin: 0px 0px; transform: translate3d(0px, 0px, 0px) scale(1);">
+      <svg id="tree-svg" viewBox="0 0 3200 3200" width="3200" height="3200">
+        <defs>
+          <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(180,235,255,1)"></stop>
+            <stop offset="30%" stop-color="rgba(80,210,255,0.8)"></stop>
+            <stop offset="70%" stop-color="rgba(40,140,220,0.3)"></stop>
+            <stop offset="100%" stop-color="rgba(20,80,160,0)"></stop>
+          </radialGradient>
+        </defs>
+        <circle cx="1200" cy="1200" r="120" fill="none" stroke="rgba(80,170,255,0.05)" stroke-width="1" stroke-dasharray="2 6"></circle>
+        <circle cx="1200" cy="1200" r="210" fill="none" stroke="rgba(80,170,255,0.04)" stroke-width="1" stroke-dasharray="2 6"></circle>
+        <circle cx="1200" cy="1200" r="295" fill="none" stroke="rgba(80,170,255,0.04)" stroke-width="1" stroke-dasharray="2 6"></circle>
+        <circle cx="1200" cy="1200" r="380" fill="none" stroke="rgba(80,170,255,0.03)" stroke-width="1"></circle>
+        <circle cx="1200" cy="1200" r="460" fill="none" stroke="rgba(80,170,255,0.03)" stroke-width="1"></circle>
+        <g id="lines"></g>
+        <circle cx="1200" cy="1200" r="95" fill="url(#coreGlow)"></circle>
+      </svg>
+      <div class="core"></div>
+      <div id="node-layer"></div>
+    </div>
+  </div>
+
+  <div id="skill-tooltip" style="display:none;"></div>
+</div>
+
+<script>
+/* ===================== CONSTANTS ===================== */
+const TOTAL_BUILD_POINTS     = 400;
+const TOTAL_ATTRIBUTE_POINTS = 400;
+const TOTAL_SKILL_POINTS     = 100;
+const TOTAL_FRAGMENTS        = 6;
+const TOTAL_SOUL_TOKENS      = 50000;
+const MAX_SKILL_LEVEL        = 8;
+const SP_PER_UPGRADE         = 2;
+const AF_PER_UPGRADE         = 1;
+
+const BUILD_STATS = [
+  { id:'reserves', name:'Reserves', accent:'#4dd2ff' },
+  { id:'haste',    name:'Haste',    accent:'#34d399' },
+  { id:'potency',  name:'Potency',  accent:'#f87171' },
+  { id:'mettle',   name:'Mettle',   accent:'#fbbf24' },
+  { id:'shunpo',   name:'Shunpo',   accent:'#a78bfa' },
+];
+const ATTRIBUTES = [
+  { id:'hakuda',   name:'Hakuda',   pos:'top',    color:'#ff8214' },
+  { id:'strength', name:'Strength', pos:'right',  color:'#ff3c50' },
+  { id:'kido',     name:'Kido',     pos:'bottom', color:'#ff50b4' },
+  { id:'speed',    name:'Speed',    pos:'left',   color:'#32b4ff' },
+];
+
+const SPOKE_COLORS = {
+  hakuda:   '255,130,20',
+  sense:    '255,235,210',
+  strength: '255,60,80',
+  speed:    '50,180,255',
+  misc:     '230,235,255',
+  race:     '255,85,178',
+};
+
+const ATTR_COLORS = {
+  hakuda:   '255,130,20',
+  strength: '255,60,80',
+  kido:     '255,80,180',
+  speed:    '50,180,255',
+};
+
+/* ===================== RACE TREES ===================== */
+const RACE_TREES = {
+  'Shinigami': [
+    { id:'sk_byakurai', name:'Byakurai', costSP:6, costCash:0, req:{kido:28}, accentColor:'255,85,178',
+      desc:'Blue kido beam.',
+      upgradeNote:'Lvl 4: Applies an after-shock that deals a small % of the ability\'s damage when landed',
+      stats:{ reiCost:24.0, reiCostPerLv:-1.1, cd:27.5, cdPerLv:-0.4, dmg:null, dmgPerLv:null, posture:null, posturePerLv:null } },
+    { id:'sk_sai', name:'Sai', costSP:7, costCash:0, req:{kido:56}, accentColor:'255,85,178',
+      desc:'Lock an opponent\'s hands together preventing them from attacking. Ineffective against stronger opponents.',
+      upgradeNote:'Lvl 7: Your Sai now ignores block',
+      stats:{ reiCost:30.0, reiCostPerLv:-1.4, cd:40.0, cdPerLv:-0.6, dmg:null, dmgPerLv:null, posture:null, posturePerLv:null } },
+  ],
+  'Hollow': [
+    { id:'rc1', name:'Bala', costSP:5, costCash:0, req:{kido:35},
+      desc:'A weaker blast-like counterpart to Cero.', upgradeNote:'Lvl 7: Bala tracks to nearest opponent' },
+    { id:'rc2', name:'Cero', costSP:8, costCash:0, req:{kido:50},
+      desc:'Concentrate your reiatsu into a charged beam that eviscerates anyone hit. Executes low health opponents.', upgradeNote:null },
+    { id:'rc3', name:'Kido Node', costSP:2, costCash:0, req:{}, passive:true, noLevel:true,
+      desc:'Increase Kido scaling. Central node — branches into Cero variants and Hierro.', upgradeNote:null },
+  ],
+  'Quincy': [
+    { id:'qrc1', name:'Conjure Weapon', costSP:4, costCash:0, req:{kido:12}, passive:true, noLevel:true,
+      desc:'Conjure a basic spirit bow by pressing E. (Passive —)', upgradeNote:null },
+    { id:'qrc2', name:'Heilig Pfeil', costSP:7, costCash:0, req:{kido:60},
+      desc:'Conjure an arrow and throw it.', upgradeNote:null },
+    { id:'qrc3', name:'Kido Node', costSP:2, costCash:0, req:{}, passive:true, noLevel:true,
+      desc:'Increase Kido scaling.', upgradeNote:null },
+  ],
+};
+
+/* ===================== BRANCH NODE ARRAYS ===================== */
+const MISC_BRANCHES = [
+  { id:'mcA1', name:'Spiritual Potential', spokeId:'misc', parent:'mc3', costSP:0, costCash:3500, req:{}, noLevel:true, desc:'Gain the ability to fill up your aura bar when fighting players. Once filled, you can unleash your spiritual pressure and gain a short-term buff.', upgradeNote:null, bx:852, by:1431 },
+  { id:'mcA2', name:'Spiritual Pressure', spokeId:'misc', parent:'mcA1', costSP:0, costCash:4500, req:{}, noLevel:true, desc:'Flex your spiritual power (keybind in settings), affecting weaker opponents to varying degrees.', upgradeNote:null, bx:774, by:1474 },
+  { id:'mcB1', name:'Manual Rushdown', spokeId:'misc', parent:'mc3', costSP:0, costCash:3500, req:{}, noLevel:true, desc:'Hold shift and flashstep to manually use rushdown on a target with added startup.', upgradeNote:null, bx:932, by:1516 },
+  { id:'mcB2', name:'Overhead Counter', spokeId:'misc', parent:'mcB1', mutexWith:'mcB4', costSP:0, costCash:2500, req:{hakuda:40}, noLevel:true, desc:'Counter weapon-based overheaded swings on deflect, increasing the enemies posture significantly.', upgradeNote:null, accentColor:'255,130,20', bx:855, by:1514 },
+  { id:'mcB3', name:'Slippery Fighter', spokeId:'misc', parent:'mcB1', costSP:0, costCash:4000, req:{}, noLevel:true, desc:'Press Counter after winning a clash to launch your opponent into the air.', upgradeNote:null, bx:890, by:1557 },
+  { id:'mcB4', name:'Advanced Counter 1', spokeId:'misc', parent:'mcB1', mutexWith:'mcB2', costSP:0, costCash:2500, req:{strength:40}, noLevel:true, desc:'Counter specific melee attacks with your foot, increasing the enemies posture significantly.', upgradeNote:null, accentColor:'255,60,80', bx:960, by:1592 },
+  { id:'mcB2a', name:'One Way Ticket to Hell', spokeId:'misc', parent:'mcB2', costSP:4, costCash:0, req:{hakuda:125}, noLevel:true, desc:'Winning a clash when the opponent is low on health and high on posture will cause you to impale them with your fist.', upgradeNote:null, accentColor:'255,130,20', bx:796, by:1556 },
+  { id:'mcB4a', name:'Clash Proficiency', spokeId:'misc', parent:'mcB4', costSP:4, costCash:0, req:{strength:80}, noLevel:true, desc:'Winning a clash when the opponent has low health and medium posture initiates an execution.', upgradeNote:null, accentColor:'255,60,80', bx:908, by:1636 }
+];
+
+const STR_BRANCHES = [
+  { id:'stA1', name:'Tenran', spokeId:'strength', parent:'st2', costSP:8, costCash:0, req:{strength:85,kido:35}, desc:'Send out a whirlwind from the tip of your sword.', upgradeNote:'Lvl 3: Tenran sucks people in when blocked', accentColor:'220,60,140', bx:1496, by:1273 },
+  { id:'stA2', name:'Melee-Kido Specialist', spokeId:'strength', parent:'stA1', costSP:3, costCash:0, req:{strength:90,kido:40}, passive:true, desc:'Landing a basic attack shortly before a kido move buffs its damage.', upgradeNote:null, accentColor:'220,60,140', bx:1459, by:1361 },
+  { id:'stA3', name:'Kido Node', spokeId:'strength', parent:'stA1', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'220,60,140', bx:1567, by:1324 },
+  { id:'stA4', name:'Kinetic Force', spokeId:'strength', parent:'stA3', costSP:5, costCash:0, req:{strength:140,kido:50}, desc:'Strike a pose, in which you gather reiatsu, and activate kido-enhancement for your next basic attack.', upgradeNote:'Lvl 3: Gain extra reiatsu on completed cast·Lvl 4: Gain enhanced reiatsu regeneration for 2.5 seconds after completed cast·Lvl 5: Recasting Kinetic Force very quickly after a completed pose will slice out 2 energy slashes', accentColor:'220,60,140', bx:1654, by:1361 },
+  { id:'stA5', name:'Kido Node', spokeId:'strength', parent:'stA4', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'220,60,140', bx:1731, by:1403 },
+  { id:'stA6', name:'Blood Tax', spokeId:'strength', parent:'stA5', costSP:11, costCash:0, req:{strength:275,kido:100}, desc:'Strengthen a powerful slash with impressive range using your own blood, does not require full ultimate bar. If cast with full ultimate bar, perform a 2nd equally devastating slash.', upgradeNote:'Lvl 5: Landing the move on an enemy with low health will auto execute them', accentColor:'220,60,140', bx:1825, by:1473 },
+  { id:'stB1', name:'Strength Node', spokeId:'strength', parent:'st2', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Strength scaling.', upgradeNote:null, bx:1519, by:1192 },
+  { id:'stB2', name:'Cyclone', spokeId:'strength', parent:'stB1', costSP:7, costCash:0, req:{strength:88}, desc:'A single AOE slash.', upgradeNote:'Lvl 3: Edge hits deal more damage and cause bleed·Lvl 4: Dash during startup', bx:1597, by:1165 },
+  { id:'stB3', name:'Vault Slash', spokeId:'strength', parent:'stB2', costSP:8, costCash:0, req:{strength:156}, desc:'Roll into an overhead slash.', upgradeNote:'Lvl 6: Can feint the slash·Lvl 7: Dodge frames at move start', bx:1689, by:1179 },
+  { id:'stB1a', name:'Fell Crescent', spokeId:'strength', parent:'stB3', costSP:8, costCash:0, req:{strength:160,speed:20}, desc:'Leap backwards and attack your previous position.', upgradeNote:'Lvl 3: Riposte frames on startup·Lvl 8: Execute low health enemies', accentColor:'80,120,255', bx:1774, by:1246 },
+  { id:'stB1b', name:'Speed Node', spokeId:'strength', parent:'stB1a', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed scaling.', upgradeNote:null, accentColor:'80,120,255', bx:1850, by:1220 },
+  { id:'stB1c', name:'Speed Node', spokeId:'strength', parent:'stB1a', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed scaling.', upgradeNote:null, accentColor:'80,120,255', bx:1852, by:1322 },
+  { id:'stB1d', name:'One Mind', spokeId:'strength', parent:'stB1c', costSP:10, costCash:0, req:{strength:265,speed:95}, desc:'A onslaught of relentless slashes, with a powerful strike at the end.', upgradeNote:'Lvl 3: Riposte frames in One Mind', accentColor:'80,120,255', bx:1938, by:1363 },
+  { id:'stB2a', name:'Strength Node', spokeId:'strength', parent:'stB3', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Strength scaling.', upgradeNote:null, bx:1773, by:1146 },
+  { id:'stB2b', name:'Overwhelming Strength', spokeId:'strength', parent:'stB2a', costSP:3, costCash:0, req:{strength:195}, desc:'Guardbreaking an opponent will wound them. While wounded, their posture damage taken is increased significantly.', upgradeNote:null, bx:1777, by:1061 },
+  { id:'stC1', name:'Overhead Strike', spokeId:'strength', parent:'stB2a', costSP:8, costCash:0, req:{strength:196}, desc:'An overhead strike with poor damage, but extremely high posture damage.', upgradeNote:'Lvl 3: Overhead Strike restores posture regardless of it being blocked or parried·Lvl 5: Gain hyperarmor for the first .75s of startup·Lvl 6: Overhead Strike inflicts bleed·Lvl 7: Overhead Strike deals 2x posture damage to enemies under 30% health', bx:1883, by:1126 },
+  { id:'stC2', name:'Trained Body', spokeId:'strength', parent:'stC1', costSP:4, costCash:0, req:{strength:230}, passive:true, desc:'Actions that cancel posture regen will reduce the cancellation time.', upgradeNote:null, bx:1970, by:1089 },
+  { id:'stC3', name:'Blade Catch', spokeId:'strength', parent:'stC2', costSP:3, costCash:0, req:{strength:270}, noLevel:true, passive:true, desc:'Your \'unblockable counter\' is more posture-effective. Additionally, disrupt the aura of those weaker than you, or those at low HP.', upgradeNote:null, bx:2054, by:1035 },
+  { id:'stC3b', name:'Wall Specialist', spokeId:'strength', parent:'stC3', costSP:6, costCash:0, req:{strength:315}, passive:true, desc:'Pressing Counter while facing a wallbanged enemy will grab them and slam them into the ground.', upgradeNote:'Lvl 4: Apply concussion to enemies', bx:2127, by:1081 },
+  { id:'stC4', name:'Piercing Draw', spokeId:'strength', parent:'stC3', costSP:9, costCash:0, req:{strength:310}, desc:'Use your strength to cause a ripple effect via shockwaves erupting from the ground when you strike it.', upgradeNote:'Lvl 3: Super armor from Piercing Draw lingers·Lvl 6: You can rushdown from hit ragdolled opponents', bx:2146, by:976 },
+  { id:'stC5a', name:'Trained Body Mastery', spokeId:'strength', parent:'stC4', costSP:6, costCash:0, req:{strength:350}, noLevel:true, passive:true, desc:'Deflecting projectiles now reflects them towards the caster.', upgradeNote:null, bx:2146, by:895 },
+  { id:'stC5b', name:'Strength Node', spokeId:'strength', parent:'stC4', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Strength scaling.', upgradeNote:null, bx:2242, by:967 },
+  { id:'stC6', name:'Brute Force', spokeId:'strength', parent:'stC5b', costSP:9, costCash:0, req:{strength:375}, desc:'Guard your body with your blade, reducing all incoming damage by 90%, then reflect all damage back in a spinning hurl.', upgradeNote:'Lvl 3: Returned damage bypasses riposte frames·Lvl 8: Slice off low HP opponents heads if you absorb any damage at all', bx:2310, by:937 },
+  { id:'stD1', name:'Strength Node', spokeId:'strength', parent:'stC1', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Strength scaling.', upgradeNote:null, bx:1954, by:1178 },
+  { id:'stD2', name:'Heavy Hitter', spokeId:'strength', parent:'stD1', costSP:3, costCash:0, req:{strength:235}, passive:true, desc:'Hitting someone\'s block reduces your posture slightly.', upgradeNote:null, bx:2035, by:1225 },
+  { id:'stD3', name:'Poise', spokeId:'strength', parent:'stD2', costSP:3, costCash:0, req:{strength:268}, noLevel:true, passive:true, desc:'Increase penetration through armor and armor-like techniques.', upgradeNote:null, bx:2119, by:1268 },
+  { id:'stD4', name:'Skyscraper', spokeId:'strength', parent:'stD3', costSP:9, costCash:0, req:{strength:280}, desc:'Strong attack that grants hyperarmor, has a lengthy wind-up.', upgradeNote:'Lvl 4: Gain riposte frames on startup·Lvl 5: Follow-up attack used by using shunpo after landing the move·Lvl 6: Follow-up becomes amped on-hit if opponent is below 40%', bx:2208, by:1307 },
+  { id:'stD5a', name:'Impale', spokeId:'strength', parent:'stD4', costSP:11, costCash:0, req:{strength:324}, desc:'Impale an opponent and slam them back down to the ground, inflicting bleed.', upgradeNote:'Lvl 6: Impale can automatically execute low HP opponents', bx:2207, by:1410 },
+  { id:'stD5a2', name:'Strength Node', spokeId:'strength', parent:'stD5a', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Strength scaling.', upgradeNote:null, bx:2288, by:1462 },
+  { id:'stD5b', name:'Berserker', spokeId:'strength', parent:'stD4', costSP:6, costCash:0, req:{strength:345}, passive:true, desc:'Enter a state of rage caused by anguish when entering low HP. Increases melee damage dealt by 15%–30% based on missing HP.', upgradeNote:null, bx:2300, by:1282 },
+  { id:'stD6a', name:'Bloodlust', spokeId:'strength', parent:'stD5b', costSP:2, costCash:0, req:{strength:360}, noLevel:true, passive:true, desc:'Posture executing an enemy can trigger Berserker.', upgradeNote:null, bx:2392, by:1263 },
+  { id:'stD6b', name:'Guillotine Drop', spokeId:'strength', parent:'stD5b', costSP:11, costCash:0, req:{strength:380}, desc:'Jump high in the air towards your opponent before attacking them with an impactful slam.', upgradeNote:null, bx:2279, by:1194 }
+];
+
+const HK_KIDO='255,110,190', HK_STR='255,70,50', HK_SPD='60,160,255', HK_PURE='255,130,20';
+const HAKUDA_BRANCHES = [
+  { id:'hkP1', name:'Iron Guard', spokeId:'hakuda', parent:'hk2', costSP:0, costCash:0, req:{hakuda:70}, noLevel:true, desc:'You no longer take chip damage from blocking.', upgradeNote:null, bx:1272, by:926 },
+  { id:'hkP2', name:'Side Switcher', spokeId:'hakuda', parent:'hkP1', costSP:3, costCash:0, req:{hakuda:90}, desc:'Swapping between hakuda and your primary weapon is much faster.', upgradeNote:null, bx:1346, by:868 },
+  { id:'hkK0', name:'Kido Node', spokeId:'hakuda', parent:'hk3', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido Scaling.', upgradeNote:null, accentColor:'255,110,190', bx:1118, by:830 },
+  { id:'hkK1', name:'Surge Fist', spokeId:'hakuda', parent:'hkK0', costSP:7, costCash:0, req:{hakuda:50,kido:20}, desc:'Concentrate your reiatsu into a small pressurized blast projectile and release it.', upgradeNote:'Lvl 4: Unlock an air variant of Surge Fist when holding jump while casting the ability.', accentColor:'255,110,190', bx:1042, by:787 },
+  { id:'hkK2', name:'Reiatsu Blasts', spokeId:'hakuda', parent:'hkK1', costSP:8, costCash:0, req:{hakuda:90,kido:50}, desc:'Summon homing blasts of reiatsu from the ground.', upgradeNote:null, accentColor:'255,110,190', bx:989, by:834 },
+  { id:'hkK3', name:'Stagger Kicks', spokeId:'hakuda', parent:'hkK1', costSP:8, costCash:0, req:{hakuda:65,kido:45}, desc:'Perform three advancing kicks.', upgradeNote:'Lvl 3: Landing all 3 kicks will apply Concussion on the third kick', accentColor:'255,110,190', bx:985, by:751 },
+  { id:'hkK4', name:'Hakudo Kai', spokeId:'hakuda', parent:'hkK3', costSP:4, costCash:0, req:{hakuda:73,kido:55}, passive:true, desc:'Every 3rd basic attack deals bonus Kido scaling damage.', upgradeNote:null, accentColor:'255,110,190', bx:916, by:754 },
+  { id:'hkK5', name:'Blast Punisher', spokeId:'hakuda', parent:'hkK4', costSP:9, costCash:0, req:{hakuda:100,kido:70}, desc:'Shoot energy blasts from your hands. Lock onto an enemy if hit.', upgradeNote:null, accentColor:'255,110,190', bx:847, by:736 },
+  { id:'hkK6', name:'Kido Node', spokeId:'hakuda', parent:'hkK3', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido Scaling.', upgradeNote:null, accentColor:'255,110,190', bx:937, by:686 },
+  { id:'hkK7', name:'Dragon Fist', spokeId:'hakuda', parent:'hkK6', costSP:9, costCash:0, req:{hakuda:136,kido:76}, desc:'Perform a reiatsu-infused uppercut that ragdolls the opponent on the second hit.', upgradeNote:'Lvl 3: Gain Super Armor during the end-lag·Lvl 5: Perform "Demon Flash" during the 2nd hit·Lvl 7: "Demon Flash" can execute', accentColor:'255,110,190', bx:895, by:633 },
+  { id:'hkK8a', name:'Kido Node', spokeId:'hakuda', parent:'hkK7', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido Scaling.', upgradeNote:null, accentColor:'255,110,190', bx:889, by:577 },
+  { id:'hkK9a', name:'God Fist', spokeId:'hakuda', parent:'hkK8a', costSP:13, costCash:0, req:{hakuda:315,kido:85}, desc:'I\'ve been saving this! God Fist!', upgradeNote:null, accentColor:'255,110,190', bx:913, by:501 },
+  { id:'hkK8b', name:'Kido Node', spokeId:'hakuda', parent:'hkK7', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido Scaling.', upgradeNote:null, accentColor:'255,110,190', bx:828, by:631 },
+  { id:'hkK9b', name:'Burst Rush', spokeId:'hakuda', parent:'hkK8b', costSP:10, costCash:0, req:{hakuda:200,kido:80}, desc:'YOU\'RE THROUGH!', upgradeNote:null, accentColor:'255,110,190', bx:791, by:572 },
+  { id:'hkDL', name:'Dragon Lash', spokeId:'hakuda', parent:'hk3', costSP:7, costCash:0, req:{hakuda:56}, desc:'A mid range, high-stun aerial kick.', upgradeNote:null, bx:1200, by:790 },
+  { id:'hkS1', name:'Executioner', spokeId:'hakuda', parent:'hkDL', costSP:3, costCash:0, req:{hakuda:115,strength:5}, passive:true, desc:'Temporarily gain a 20% output boost after executing someone.', upgradeNote:null, accentColor:'255,70,50', bx:1297, by:770 },
+  { id:'hkS2', name:'Strength Node', spokeId:'hakuda', parent:'hkS1', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Strength Scaling.', upgradeNote:null, accentColor:'255,70,50', bx:1377, by:746 },
+  { id:'hkS3', name:'Suplex', spokeId:'hakuda', parent:'hkS2', costSP:8, costCash:0, req:{hakuda:115,strength:28}, desc:'Lunge a short distance forward, then attempt to perform a stylish suplex.', upgradeNote:'Lvl 3: Landing the grab on the first frame causes bonus dmg·Lvl 6: Cancel enemy theme and pop yours', accentColor:'255,70,50', bx:1453, by:693 },
+  { id:'hkS4', name:'The Underdog', spokeId:'hakuda', parent:'hkS3', costSP:3, costCash:0, req:{hakuda:115,strength:28}, noLevel:true, passive:true, desc:'If there is a 30% HP gap between you and your opponent, your next basic attack deals +5 enemy health percent bonus damage (25s CD).', upgradeNote:null, accentColor:'255,70,50', bx:1535, by:645 },
+  { id:'hkS5a', name:'Swinging Throw', spokeId:'hakuda', parent:'hkS4', costSP:8, costCash:0, req:{hakuda:120,strength:54}, desc:'Grab your opponent by the waist and violently swing them around, then throw them at full force to finish.', upgradeNote:'Lvl 4: Landing the grab on the first frame causes bonus dmg·Lvl 6: You can pick up ragdolled opponents', accentColor:'255,70,50', bx:1663, by:633 },
+  { id:'hkS6a', name:'Strength Node', spokeId:'hakuda', parent:'hkS5a', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Strength Scaling.', upgradeNote:null, accentColor:'255,70,50', bx:1773, by:626 },
+  { id:'hkS7a', name:'Death Fist', spokeId:'hakuda', parent:'hkS5a', costSP:11, costCash:0, req:{hakuda:200,strength:100}, desc:'Secret technique of Death Kwon Do...', upgradeNote:'Lvl 8: Landing the move on an enemy with low health will auto execute them', accentColor:'255,70,50', bx:1715, by:559 },
+  { id:'hkS5b', name:'Strength Node', spokeId:'hakuda', parent:'hkS4', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Strength Scaling.', upgradeNote:null, accentColor:'255,70,50', bx:1518, by:552 },
+  { id:'hkS6b', name:'Muscle Up', spokeId:'hakuda', parent:'hkS5b', costSP:7, costCash:0, req:{hakuda:160,strength:60}, desc:'Flex your muscle and gain 90% damage reduction.', upgradeNote:null, accentColor:'255,70,50', bx:1527, by:459 },
+  { id:'hkS7b', name:'Grappler\'s Gambit', spokeId:'hakuda', parent:'hkS6b', costSP:6, costCash:0, req:{hakuda:188,strength:60}, passive:true, desc:'Pressing Counter while near a ragdolled will mount you on top of opponent and beat them down (40s CD).', upgradeNote:'Lvl 8: Grappler\'s Gambit now works on crumpled opponents', accentColor:'255,70,50', bx:1606, by:427 },
+  { id:'hkS8b', name:'Jaguar Rush', spokeId:'hakuda', parent:'hkS6b', costSP:10, costCash:0, req:{hakuda:200,strength:80}, desc:'Enter a sprint stance; once your dash is completed, if nearby an opponent, attempt a RKO.', upgradeNote:'Lvl 6: Concusses enemies', accentColor:'255,70,50', bx:1543, by:350 },
+  { id:'hkS9a', name:'Strength Node', spokeId:'hakuda', parent:'hkS8b', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Strength Scaling.', upgradeNote:null, accentColor:'255,70,50', bx:1608, by:268 },
+  { id:'hkS9b', name:'Screwdriver', spokeId:'hakuda', parent:'hkS9a', costSP:13, costCash:0, req:{hakuda:300,strength:100}, desc:'Thrash around your opponent.', upgradeNote:null, accentColor:'255,70,50', bx:1677, by:197 },
+  { id:'hkV1', name:'Aerial Flip', spokeId:'hakuda', parent:'hkDL', costSP:7, costCash:0, req:{hakuda:100,speed:15}, desc:'Flip towards an airborne opponent, grab them out of the air and slam them to the ground with you.', upgradeNote:'Lvl 5: Apply concussion prone to enemies·Lvl 6: Aerial flip is now unblockable', accentColor:'60,160,255', bx:1242, by:664 },
+  { id:'hkV2', name:'Speed Node', spokeId:'hakuda', parent:'hkV1', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed Scaling.', upgradeNote:null, accentColor:'60,160,255', bx:1275, by:583 },
+  { id:'hkV3', name:'Flash Kick', spokeId:'hakuda', parent:'hkV2', costSP:3, costCash:0, req:{hakuda:130,speed:20}, desc:'Spin around and launch your opponent into the air with a powerful kick.', upgradeNote:null, accentColor:'60,160,255', bx:1306, by:506 },
+  { id:'hkV4', name:'Speed Node', spokeId:'hakuda', parent:'hkV3', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed Scaling.', upgradeNote:null, accentColor:'60,160,255', bx:1248, by:485 },
+  { id:'hkV5s', name:'Punisher Drive', spokeId:'hakuda', parent:'hkV4', costSP:8, costCash:0, req:{hakuda:185,speed:50}, desc:'Think you can keep up? After a short startup turn briefly invisible and barrage your opponent with a flurry of attacks.', upgradeNote:null, accentColor:'60,160,255', bx:1224, by:405 },
+  { id:'hkV5', name:'Flash Strike', spokeId:'hakuda', parent:'hkV3', costSP:9, costCash:0, req:{hakuda:155,speed:65}, desc:'Focus and warp your enemies perception of you, then teleport to them and deliver a strong kick.', upgradeNote:'Lvl 6: Deal additional damage / posture damage when used right up close', accentColor:'60,160,255', bx:1340, by:432 },
+  { id:'hkV6s', name:'Blur', spokeId:'hakuda', parent:'hkV5', costSP:4, costCash:0, req:{hakuda:180,speed:90}, passive:true, desc:'Dealing basic hakuda damage will refill your shunpo stamina.', upgradeNote:null, accentColor:'60,160,255', bx:1412, by:402 },
+  { id:'hkV6', name:'Speed Node', spokeId:'hakuda', parent:'hkV5', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed Scaling.', upgradeNote:null, accentColor:'60,160,255', bx:1363, by:327 },
+  { id:'hkV7', name:'Fight Back', spokeId:'hakuda', parent:'hkV6', costSP:4, costCash:0, req:{hakuda:195,speed:65}, passive:true, desc:'Landing 3 consecutive attacks will empower your 4th.', upgradeNote:null, accentColor:'60,160,255', bx:1353, by:252 },
+  { id:'hkV8a', name:'Flash Counter', spokeId:'hakuda', parent:'hkV7', costSP:8, costCash:0, req:{hakuda:250,speed:100}, desc:'Enter a counter pose where you negate all incoming melee damage and retaliate with a spinning kick.', upgradeNote:null, accentColor:'60,160,255', bx:1315, by:189 },
+  { id:'hkV8b', name:'Speed Node', spokeId:'hakuda', parent:'hkV7', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed Scaling.', upgradeNote:null, accentColor:'60,160,255', bx:1411, by:206 },
+  { id:'hkV9', name:'Incinerator', spokeId:'hakuda', parent:'hkV8b', costSP:9, costCash:0, req:{hakuda:250,speed:100}, desc:'Do a rushing knee; on contact, connect into a barrage of flaming kicks.', upgradeNote:'Lvl 4: Perform a flip instead of the traditional spinning kicks·Lvl 6: Scorch your opponents on the final hit', accentColor:'60,160,255', bx:1431, by:123 },
+  { id:'hkH1', name:'Hard Pressure', spokeId:'hakuda', parent:'hkDL', costSP:3, costCash:0, req:{hakuda:76}, passive:true, desc:'Landing a blunt attack off a flash step will increase the posture damage.', upgradeNote:null, bx:1128, by:744 },
+  { id:'hkH2', name:'Hakuda Node', spokeId:'hakuda', parent:'hkH1', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Hakuda Scaling.', upgradeNote:null, bx:1090, by:672 },
+  { id:'hkH3s', name:'Dust Kick', spokeId:'hakuda', parent:'hkH2', costSP:8, costCash:0, req:{hakuda:112}, desc:'Cloud your opponent\'s vision.', upgradeNote:'Lvl 3: Dust Kick ignores ragdoll', bx:1024, by:660 },
+  { id:'hkH4s', name:'Boxer\'s Footwork', spokeId:'hakuda', parent:'hkH3s', costSP:3, costCash:0, req:{hakuda:168}, noLevel:true, passive:true, desc:'Enter a state in which you dodge attacks instead of parrying for 12s after perfect parrying 3 times in quick succession.', upgradeNote:null, bx:996, by:606 },
+  { id:'hkH5', name:'Drop Kick', spokeId:'hakuda', parent:'hkH2', costSP:8, costCash:0, req:{hakuda:144}, desc:'Lunge forwards dealing light posture damage.', upgradeNote:'Lvl 5: Drop Kick is fully rotatable·Lvl 6: Apply concussion on landed hits', bx:1080, by:591 },
+  { id:'hkH6', name:'Breaker Fist', spokeId:'hakuda', parent:'hkH5', costSP:8, costCash:0, req:{hakuda:200}, desc:'Rupture the ground, then cause it to burst — transfers up to 25% of your posture to your opponent if landed.', upgradeNote:'Lvl 4: The second strike of Breaker Fist hits ragdolled/crumpled opponents', bx:1053, by:494 },
+  { id:'hkH7s', name:'Shoulder Throw', spokeId:'hakuda', parent:'hkH6', costSP:6, costCash:0, req:{hakuda:240}, noLevel:true, passive:true, desc:'Pressing Counter while near a posture-broken opponent will flip them over your shoulder. (30s CD)', upgradeNote:null, bx:990, by:468 },
+  { id:'hkH8', name:'Hakuda Node', spokeId:'hakuda', parent:'hkH6', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Hakuda Scaling.', upgradeNote:null, bx:1058, by:419 },
+  { id:'hkH9s', name:'Fighter\'s Tempo', spokeId:'hakuda', parent:'hkH8', costSP:7, costCash:0, req:{hakuda:240}, desc:'Strike a pose, reducing your posture and making all of your melee attacks reduce your posture.', upgradeNote:'Lvl 4: Fighter\'s Tempo becomes uncancellable', bx:1121, by:380 },
+  { id:'hkH9', name:'Sweep Kick', spokeId:'hakuda', parent:'hkH8', costSP:9, costCash:0, req:{hakuda:260}, desc:'Sweep kick which stuns the target in place.', upgradeNote:null, bx:993, by:356 },
+  { id:'hkH10', name:'Tempest Combo', spokeId:'hakuda', parent:'hkH9', costSP:10, costCash:0, req:{hakuda:300}, desc:'Enter a state of ferocity and unleash a barrage of strong left and rights.', upgradeNote:null, bx:1076, by:282 },
+  { id:'hkH11a', name:'Spirit Breaker', spokeId:'hakuda', parent:'hkH10', costSP:6, costCash:0, req:{hakuda:340}, passive:true, desc:'Pressing Counter while facing a wallbanged enemy will grab them and slam them into the ground.', upgradeNote:'Lvl 4: Apply concussion to enemies', bx:1136, by:221 },
+  { id:'hkH12a', name:'Spirit Breaking Cannon', spokeId:'hakuda', parent:'hkH11a', costSP:12, costCash:0, req:{hakuda:400}, desc:'Grab your opponent then drag them through the floor. Unblockable.', upgradeNote:null, bx:1176, by:159 },
+  { id:'hkH11b', name:'Hakuda Node', spokeId:'hakuda', parent:'hkH10', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Hakuda Scaling.', upgradeNote:null, bx:994, by:253 },
+  { id:'hkH12b', name:'Ground Slam', spokeId:'hakuda', parent:'hkH11b', costSP:10, costCash:0, req:{hakuda:375}, desc:'An aerial slam attack. Gain bonus damage based on landing height, ignores crumple.', upgradeNote:'Lvl 4: Your max height multiplier is changed from 1.2x → 1.3x', bx:919, by:209 }
+];
+
+const SPEED_BRANCHES = [
+  { id:'spK3', name:'Speed Node', spokeId:'speed', parent:'sp_clone', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed scaling.', upgradeNote:null, accentColor:'30,130,200', bx:1243, by:1516 },
+  { id:'spK4', name:'Flash Surprise', spokeId:'speed', parent:'spK3', costSP:8, costCash:0, req:{speed:92}, desc:'Teleport behind your opponent for a slash attack.', upgradeNote:'Lvl 3: Gain riposte frames after the initial startup·Lvl 6: Knockback on hit and block', accentColor:'50,180,255', bx:1225, by:1629 },
+  { id:'spK5', name:'Kumo Kiri', spokeId:'speed', parent:'spK4', costSP:7, costCash:0, req:{speed:100,kido:32}, desc:'Enter a stance where you counter ANY incoming attacks, then perform a kick.', upgradeNote:'Lvl 7: Countering a ranged attack will skip the kick portion, teleport you in front of them and slash', accentColor:'255,170,220', bx:1117, by:1643 },
+  { id:'spK6', name:'Kido Node', spokeId:'speed', parent:'spK5', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'220,130,190', bx:1051, by:1678 },
+  { id:'spK7', name:'Rapid Recovery', spokeId:'speed', parent:'spK6', costSP:2, costCash:0, req:{speed:140,kido:40}, noLevel:true, passive:true, desc:'Your reiatsu regeneration speed slightly scales with the speed stat.', upgradeNote:null, accentColor:'255,170,220', bx:1000, by:1740 },
+  { id:'spK8', name:'Dragon Cleaver', spokeId:'speed', parent:'spK7', costSP:11, costCash:0, req:{speed:210,kido:50}, desc:'Commit to 2 wide area slashes, before kicking the opponent away.', upgradeNote:'Lvl 7: The attack becomes supercharged, draining reiatsu on connected hit', accentColor:'255,170,220', bx:862, by:1731 },
+  { id:'spK9', name:'Fireworks', spokeId:'speed', parent:'spK7', costSP:8, costCash:0, req:{speed:205,kido:60}, desc:'Ignite flammable dust for a blinding attack.', upgradeNote:'Lvl 4: Fireworks cancels enemy ragdolls', accentColor:'255,170,220', bx:990, by:1835 },
+  { id:'spK10', name:'Kido Node', spokeId:'speed', parent:'spK9', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'220,130,190', bx:886, by:1861 },
+  { id:'spK11', name:'Flying Cyclone', spokeId:'speed', parent:'spK9', costSP:7, costCash:0, req:{speed:220,kido:85}, desc:'A whirlwind projectile which shreds through enemies in its wake.', upgradeNote:'Lvl 3: You can rushdown to hit enemies·Lvl 4: Refreshes rushdown cooldown', accentColor:'255,170,220', bx:959, by:1936 },
+  { id:'spS1', name:'Hyperspeed', spokeId:'speed', parent:'spK3', costSP:3, costCash:0, req:{speed:108}, noLevel:true, passive:true, desc:'Your dash\'s invincibility frames cooldown is reduced.', upgradeNote:null, accentColor:'220,40,50', bx:1329, by:1559 },
+  { id:'spS2', name:'Afterimage Slash', spokeId:'speed', parent:'spS1', costSP:8, costCash:0, req:{speed:124,strength:10}, desc:'Leave a clone in your place to attack.', upgradeNote:'Lvl 3: Your afterimage\'s strike is no longer able to be advanced countered', accentColor:'220,40,50', bx:1383, by:1623 },
+  { id:'spS3', name:'Speed Node', spokeId:'speed', parent:'spS2', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed scaling.', upgradeNote:null, accentColor:'170,30,40', bx:1422, by:1686 },
+  { id:'spS4', name:'Judgement Cut', spokeId:'speed', parent:'spS3', costSP:8, costCash:0, req:{speed:165,strength:30}, desc:'Flash forward in a straight line before attacking, tracks onto moving enemies.', upgradeNote:'Lvl 7: Landing this move on low HP opponents will dismember their arm', accentColor:'220,40,50', bx:1462, by:1758 },
+  { id:'spS5', name:'Strength Node', spokeId:'speed', parent:'spS4', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Strength scaling.', upgradeNote:null, accentColor:'170,30,40', bx:1492, by:1837 },
+  { id:'spS6', name:'Swift Fakeout', spokeId:'speed', parent:'spS5', costSP:3, costCash:0, req:{speed:210,strength:40}, noLevel:true, passive:true, desc:'Cancelling your Shunpo quickly with a dash makes it travel further and applies damage reduction.', upgradeNote:null, accentColor:'180,35,45', bx:1568, by:1840 },
+  { id:'spS7', name:'Strength Node', spokeId:'speed', parent:'spS5', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Strength scaling.', upgradeNote:null, accentColor:'170,30,40', bx:1486, by:1919 },
+  { id:'spS8a', name:'Agile Body', spokeId:'speed', parent:'spS7', costSP:4, costCash:0, req:{speed:260,strength:65}, noLevel:true, passive:true, desc:'If you are about to be parry-executed mid battle, avoid the execution and regenerate posture.', upgradeNote:null, accentColor:'220,40,50', bx:1577, by:1982 },
+  { id:'spS9a', name:'Double Strike', spokeId:'speed', parent:'spS8a', costSP:9, costCash:0, req:{speed:290,strength:70}, desc:'Advance forwards, awaiting enemy contact.', upgradeNote:null, accentColor:'220,40,50', bx:1640, by:2059 },
+  { id:'spS8b', name:'Whirlwind Cutter', spokeId:'speed', parent:'spS7', costSP:10, costCash:0, req:{speed:220,strength:50}, desc:'Perform three soaring strikes; the third strike teleports you to the nearest opponent.', upgradeNote:'Lvl 3: Gain riposte frames after the first slash·Lvl 4: The second slash is true, provided you landed the first one', accentColor:'220,40,50', bx:1427, by:1981 },
+  { id:'spS9b', name:'Final Breath', spokeId:'speed', parent:'spS8b', costSP:12, costCash:0, req:{speed:330,strength:70}, desc:'Ashes to ashes.', upgradeNote:'Lvl 3: Auto execute low health opponents in your wake·Lvl 5: Refresh a random cooldown of a speed-strength skill when landed', accentColor:'220,40,50', bx:1461, by:2084 },
+  { id:'spP1', name:'Vortex Edge', spokeId:'speed', parent:'spK4', costSP:7, costCash:0, req:{speed:148}, desc:'Retreat before flashing forwards with a slash of your weapon.', upgradeNote:'Lvl 5: Pressing parry during startup will cause you to strike from above', accentColor:'50,180,255', bx:1263, by:1712 },
+  { id:'spP2', name:'Speed Node', spokeId:'speed', parent:'spP1', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed scaling.', upgradeNote:null, accentColor:'30,130,200', bx:1202, by:1793 },
+  { id:'spP3', name:'False Cutter', spokeId:'speed', parent:'spP2', costSP:8, costCash:0, req:{speed:208}, desc:'Feint before lunging forwards.', upgradeNote:null, accentColor:'50,180,255', bx:1234, by:1870 },
+  { id:'spP4a', name:'Launcher', spokeId:'speed', parent:'spP3', costSP:8, costCash:0, req:{speed:250}, desc:'Launch an enemy into the air.', upgradeNote:null, accentColor:'50,180,255', bx:1176, by:1928 },
+  { id:'spP5a1', name:'Reiatsu Conservation', spokeId:'speed', parent:'spP4a', costSP:3, costCash:0, req:{speed:290}, noLevel:true, passive:true, desc:'Hitting someone directly after a flash step restores 75% of the shunpo bar spent.', upgradeNote:null, accentColor:'30,130,200', bx:1116, by:1880 },
+  { id:'spP5a2', name:'Flash Execute', spokeId:'speed', parent:'spP4a', costSP:9, costCash:0, req:{speed:310}, desc:'Auto-execute opponents who have low HP.', upgradeNote:'Lvl 5: Using on a guardbroken opponent has a much higher kill threshold·Lvl 7: Flash Execute is useable on knocked people', accentColor:'50,180,255', bx:1089, by:1970 },
+  { id:'spP6a2', name:'Light Feet', spokeId:'speed', parent:'spP5a2', costSP:3, costCash:0, req:{speed:360}, noLevel:true, passive:true, desc:'After 3 perfect parries in quick succession, enter a dodge state for 12s.', upgradeNote:null, accentColor:'30,130,200', bx:1057, by:2063 },
+  { id:'spP4b', name:'Afterimage Clones', spokeId:'speed', parent:'spP3', costSP:6, costCash:0, req:{speed:255}, noLevel:true, passive:true, desc:'While stunned, use Shunpo to create afterimages around you that let you escape stun.', upgradeNote:null, accentColor:'30,130,200', bx:1261, by:1953 },
+  { id:'spP5b', name:'Speed Node', spokeId:'speed', parent:'spP4b', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed scaling.', upgradeNote:null, accentColor:'30,130,200', bx:1297, by:2038 },
+  { id:'spP6b', name:'Compound Rush', spokeId:'speed', parent:'spP5b', costSP:8, costCash:0, req:{speed:295}, desc:'Lunge towards an opponent. If the hit lands, kick off them and fall backwards.', upgradeNote:'Lvl 4: Press Counter after hitting an enemy to do a 2-part attack', accentColor:'50,180,255', bx:1265, by:2118 },
+  { id:'spP7c', name:'Blade Flow', spokeId:'speed', parent:'spP6b', costSP:11, costCash:0, req:{speed:355}, desc:'While you were progging Hakuda, I studied the blade.', upgradeNote:'Lvl 6: Inflict bleed', accentColor:'50,180,255', bx:1184, by:2188 },
+  { id:'spP8c', name:'Feint Mastery', spokeId:'speed', parent:'spP7c', costSP:9, costCash:0, req:{speed:380}, noLevel:true, passive:true, desc:'You can cancel basic attacks by flash stepping.', upgradeNote:null, accentColor:'30,130,200', bx:1190, by:2302 },
+  { id:'spP9c1', name:'Speed Node', spokeId:'speed', parent:'spP8c', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed scaling.', upgradeNote:null, accentColor:'30,130,200', bx:1138, by:2391 },
+  { id:'spP9c2', name:'Phantom Trifecta', spokeId:'speed', parent:'spP8c', costSP:10, costCash:0, req:{speed:420}, noLevel:true, passive:true, desc:'Landing 3 consecutive attacks on a single opponent causes an afterimage to strike them.', upgradeNote:null, accentColor:'30,130,200', bx:1254, by:2389 },
+  { id:'spP7d', name:'Flash Skewer', spokeId:'speed', parent:'spP6b', costSP:9, costCash:0, req:{speed:365}, desc:'Disappear briefly before reappearing to surprise your opponent with a lethal strike.', upgradeNote:'Lvl 2: Your skewer bypasses riposte frames', accentColor:'50,180,255', bx:1352, by:2162 },
+  { id:'spP8d', name:'Flash Trick', spokeId:'speed', parent:'spP7d', costSP:3, costCash:0, req:{speed:380}, noLevel:true, passive:true, desc:'Dashing before flash stepping creates a clone.', upgradeNote:null, accentColor:'30,130,200', bx:1326, by:2233 },
+  { id:'spP9d', name:'Speed Node', spokeId:'speed', parent:'spP7d', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed scaling.', upgradeNote:null, accentColor:'30,130,200', bx:1433, by:2216 },
+  { id:'spP10d', name:'High-Speed Movement', spokeId:'speed', parent:'spP9d', costSP:6, costCash:0, req:{speed:420}, desc:'Shunpo to your mouse position — windup scales with teleport distance.', upgradeNote:null, accentColor:'50,180,255', bx:1490, by:2310 }
+];
+
+const QUINCY_BRANCHES = [
+  { id:'qrc6', name:'Blut Arterie', spokeId:'race', parent:'qrc3', costSP:5, costCash:0, req:{kido:60}, noLevel:true, desc:'The offensive form of Blut which grants inhuman attack power.', upgradeNote:'Lvl 4: No longer passively saps Blut Bar·Lvl 8: +15% weapon dmg', accentColor:'255,85,178', bx:846, by:1134 },
+  { id:'qrc7', name:'Kido Node', spokeId:'race', parent:'qrc6', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:806, by:1094 },
+  { id:'qrc8', name:'Mondlicht', spokeId:'race', parent:'qrc7', costSP:9, costCash:0, req:{kido:220}, noLevel:true, desc:'Deliver a lethal moonlight strike.', upgradeNote:null, accentColor:'255,85,178', bx:745, by:1077 },
+  { id:'qrc4', name:'Blut Vene', spokeId:'race', parent:'qrc3', costSP:5, costCash:0, req:{kido:90}, noLevel:true, desc:'The defensive form of Blut, which grants the user inhuman durability.', upgradeNote:'Lvl 3: No longer passively saps Blut Bar.', accentColor:'255,85,178', bx:848, by:1255 },
+  { id:'qrc5', name:'Reishi Gather', spokeId:'race', parent:'qrc4', costSP:4, costCash:0, req:{kido:100}, noLevel:true, passive:true, desc:'Gather reiatsu from the atmosphere, increasing reiatsu regeneration rate by 7.5%.', upgradeNote:null, accentColor:'255,85,178', bx:802, by:1289 },
+  { id:'qb1', name:'Medallion Specialist', spokeId:'race', parent:'qrc3', costSP:1, costCash:0, req:{kido:60}, noLevel:true, passive:true, desc:'You have begun specialization into your quincy medallion.', upgradeNote:null, accentColor:'255,85,178', bx:775, by:1205 },
+  { id:'qb2', name:'Reishi Flash', spokeId:'race', parent:'qb1', costSP:7, costCash:0, req:{kido:100}, noLevel:true, desc:'Throw up an energy ball that blinds surrounding opponents.', upgradeNote:'Lvl 4: The first flare now burns your opponents retinas', accentColor:'255,85,178', bx:692, by:1205 },
+  { id:'qb3a', name:'Heilig Pfeil - Speed Variant', spokeId:'race', parent:'qb2', mutexWith:'qb3b,qb3c', costSP:2, costCash:0, req:{kido:110}, noLevel:true, passive:true, desc:'Heilig Pfeil now fires a faster, weaker arrow.', upgradeNote:null, accentColor:'255,85,178', bx:711, by:1280 },
+  { id:'qb3b', name:'Heilig Pfeil - Power Variant', spokeId:'race', parent:'qb2', mutexWith:'qb3a,qb3c', costSP:2, costCash:0, req:{kido:110}, noLevel:true, passive:true, desc:'Heilig Pfeil\'s arrow is much bigger and deals more damage, however is slower.', upgradeNote:null, accentColor:'255,85,178', bx:663, by:1135 },
+  { id:'qb3c', name:'Heilig Pfeil - Multi-shot Variant', spokeId:'race', parent:'qb2', mutexWith:'qb3a,qb3b', costSP:2, costCash:0, req:{kido:110}, noLevel:true, passive:true, desc:'Heilig Pfeil now fires three weaker arrows at a slower rate.', upgradeNote:null, accentColor:'255,85,178', bx:630, by:1274 },
+  { id:'qb6', name:'Kido Node', spokeId:'race', parent:'qb2', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:612, by:1205 },
+  { id:'qb7', name:'Beurteilung', spokeId:'race', parent:'qb6', costSP:8, costCash:0, req:{kido:140}, noLevel:true, desc:'Summon a massive spirit greatsword above your opponents head and then cast judgement on them.', upgradeNote:'Lvl 6: Inflict bleed on enemies', accentColor:'255,85,178', bx:530, by:1205 },
+  { id:'qb8', name:'Reishigriff', spokeId:'race', parent:'qb7', costSP:8, costCash:0, req:{kido:195}, noLevel:true, desc:'Thieve your opponents reiryoku with a deadly chokehold.', upgradeNote:'Lvl 3: Your chokehold steals a bit of reiatsu', accentColor:'255,85,178', bx:466, by:1143 },
+  { id:'qb9', name:'Feurige Säulen', spokeId:'race', parent:'qb8', costSP:11, costCash:0, req:{kido:330}, noLevel:true, desc:'Summon forward pillars of holy fire.', upgradeNote:'Lvl 3: Feurige Säulen can hit ragdolled opponents', accentColor:'255,85,178', bx:382, by:1121 },
+  { id:'qb10', name:'Kido Node', spokeId:'race', parent:'qb7', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:473, by:1270 },
+  { id:'qb11', name:'Schlagen', spokeId:'race', parent:'qb10', costSP:11, costCash:0, req:{kido:220}, noLevel:true, desc:'Summon a raging thunderstorm, and then strike lightning on the blast zone.', upgradeNote:'Lvl 5: Standing in the strikes blast zone heals you for 3% max HP', accentColor:'255,85,178', bx:431, by:1335 },
+  { id:'qb12', name:'Klingensturm', spokeId:'race', parent:'qb11', costSP:13, costCash:0, req:{kido:400}, noLevel:true, desc:'Summon various spirit weapons once used by your deceased comrades to rain down warfare on your target. Ultimate Skill.', upgradeNote:null, accentColor:'255,85,178', bx:324, by:1275 },
+  { id:'qa1', name:'Advanced Archery', spokeId:'race', parent:'qrc3', costSP:1, costCash:0, req:{kido:60}, noLevel:true, passive:true, desc:'You are more in tune with your bow.', upgradeNote:null, accentColor:'255,85,178', bx:917, by:1105 },
+  { id:'qa2', name:'Luftpfeile', spokeId:'race', parent:'qa1', costSP:7, costCash:0, req:{kido:96}, desc:'Rush at your opponent then leap into the air and unleash a volley of arrows.', upgradeNote:null, accentColor:'255,85,178', bx:916, by:1028 },
+  { id:'qa3', name:'Kido Node', spokeId:'race', parent:'qa2', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:846, by:981 },
+  { id:'qa4', name:'Archer\'s Stratagem', spokeId:'race', parent:'qa3', costSP:3, costCash:0, req:{kido:120}, desc:'You can now feint your bow fire.', upgradeNote:'Lvl 2: Restore full cost of the arrow on feint·Lvl 3: Gain 3x swap speed to your spirit weapon after a feint', accentColor:'255,85,178', bx:908, by:935 },
+  { id:'qa5', name:'Stille Silber', spokeId:'race', parent:'qa3', costSP:8, costCash:0, req:{kido:124}, desc:'Fire a single homing arrow.', upgradeNote:'Lvl 3: Disables reiatsu regeneration·Lvl 5: Disables transformations', accentColor:'255,85,178', bx:796, by:929 },
+  { id:'qa5a_node', name:'Kido Node', spokeId:'race', parent:'qa5', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:715, by:918 },
+  { id:'qa6', name:'Bow Conjuration Upgrade', spokeId:'race', parent:'qa5a_node', costSP:4, costCash:0, req:{kido:156}, noLevel:true, passive:true, desc:'Your Spirit Bow is more powerful.', upgradeNote:null, accentColor:'255,85,178', bx:629, by:920 },
+  { id:'qa7a', name:'Impaling Arrows', spokeId:'race', parent:'qa6', mutexWith:'qa7b', costSP:4, costCash:0, req:{kido:160}, noLevel:true, passive:true, desc:'Your spirit bow\'s arrow now impale targets when charged.', upgradeNote:null, accentColor:'255,85,178', bx:588, by:879 },
+  { id:'qa7b', name:'Holy Arrows', spokeId:'race', parent:'qa6', mutexWith:'qa7a', costSP:4, costCash:0, req:{kido:160}, noLevel:true, passive:true, desc:'Your spirit bow\'s arrow now smite opponents with holy light once they are pierced.', upgradeNote:null, accentColor:'255,85,178', bx:585, by:972 },
+  { id:'qa8a', name:'Zangenpfeil', spokeId:'race', parent:'qa7a', costSP:8, costCash:0, req:{kido:190}, desc:'Fire an arrow capable of pinning opponents to it.', upgradeNote:null, accentColor:'255,85,178', bx:523, by:883 },
+  { id:'qa8b', name:'Blitz Feuer', spokeId:'race', parent:'qa7b', costSP:8, costCash:0, req:{kido:190}, desc:'Fire an arrow that calls upon the holy king\'s magic. Ricochets off walls.', upgradeNote:'Lvl 3: Your arrow no longer despawns on hit', accentColor:'255,85,178', bx:510, by:957 },
+  { id:'qa5b_node', name:'Kido Node', spokeId:'race', parent:'qa5', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:769, by:857 },
+  { id:'qa9', name:'Leichter Sturm', spokeId:'race', parent:'qa5b_node', costSP:9, costCash:0, req:{kido:190}, desc:'Release a storm of arrows from your bow.', upgradeNote:'Lvl 5: Turnable for twice as long', accentColor:'255,85,178', bx:750, by:797 },
+  { id:'qa9_node', name:'Kido Node', spokeId:'race', parent:'qa9', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:665, by:773 },
+  { id:'qa10a', name:'Fallzwang', spokeId:'race', parent:'qa9_node', costSP:9, costCash:0, req:{kido:300}, desc:'Summon a bow that will fire an arrow to send airborne opponents back to the ground.', upgradeNote:'Lvl 6: Your arrow judges true, it must be parried to be avoided', accentColor:'255,85,178', bx:637, by:702 },
+  { id:'qa10b', name:'Heilig Verbegun', spokeId:'race', parent:'qa9_node', costSP:12, costCash:0, req:{kido:350}, desc:'Call upon the power of the stars and charge your bow, then fire a massive blast.', upgradeNote:'Lvl 3: Your blast executes low health opponents', accentColor:'255,85,178', bx:582, by:788 }
+];
+
+const HOLLOW_BRANCHES = [
+  { id:'hb_speed', name:'Cero: Speed Variant', spokeId:'race', parent:'rc2', mutexWith:'hb_power,hb_ultra,hb_rapid', costSP:4, costCash:0, req:{kido:95}, noLevel:true, passive:true, desc:'Reduces startup speed of Cero massively.', upgradeNote:null, accentColor:'255,85,178', bx:986, by:1125 },
+  { id:'hb_power', name:'Cero: Power Variant', spokeId:'race', parent:'rc3', mutexWith:'hb_speed,hb_rapid', costSP:4, costCash:0, req:{kido:95}, noLevel:true, passive:true, desc:'Increases Cero damage and startup time.', upgradeNote:null, accentColor:'255,85,178', bx:829, by:1259 },
+  { id:'hb_ultra', name:'Cero: Ultra Power Variant', spokeId:'race', parent:'hb_power', mutexWith:'hb_speed,hb_rapid', costSP:5, costCash:0, req:{kido:225}, noLevel:true, passive:true, desc:'Increases Cero damage and size MASSIVELY.', upgradeNote:null, accentColor:'255,85,178', bx:755, by:1294 },
+  { id:'hb_rapid', name:'Cero: Rapid Fire', spokeId:'race', parent:'hb_unpred', mutexWith:'hb_power,hb_speed', costSP:5, costCash:0, req:{kido:220}, noLevel:true, passive:true, desc:'Your Cero can now be fired in bursts of 3.', upgradeNote:null, accentColor:'255,85,178', bx:574, by:1327 },
+  { id:'hb_hierro', name:'Hierro', spokeId:'race', parent:'rc3', costSP:5, costCash:0, req:{kido:82}, desc:'An automatic defensive technique that makes the user\'s skin harder than steel.', upgradeNote:null, accentColor:'255,85,178', bx:793, by:1200 },
+  { id:'hb_bblastr', name:'Bala Blaster', spokeId:'race', parent:'hb_hierro', costSP:8, costCash:0, req:{kido:110}, desc:'Charge a Bala-like attack to create an explosion in front of you.', upgradeNote:null, accentColor:'255,85,178', bx:739, by:1118 },
+  { id:'hb_bripcrd', name:'Bala Ripcord', spokeId:'race', parent:'hb_bblastr', costSP:7, costCash:0, req:{kido:182}, desc:'Fire a Bala infused with reiatsu tethers.', upgradeNote:'Lvl 6: Bala Ripcord goes through block', accentColor:'255,85,178', bx:808, by:1054 },
+  { id:'hb_dsnode', name:'Kido Node', spokeId:'race', parent:'hb_bblastr', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:682, by:1064 },
+  { id:'hb_dsaucer', name:'Death Saucers', spokeId:'race', parent:'hb_dsnode', costSP:10, costCash:0, req:{kido:240}, desc:'Condense your Bala into 2 sharp, tracking saucers and send them flying.', upgradeNote:'Lvl 7: Landing the move on an enemy with low health will slice them in half', accentColor:'255,85,178', bx:630, by:1011 },
+  { id:'hb_dsnode2', name:'Kido Node', spokeId:'race', parent:'hb_dsaucer', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:608, by:935 },
+  { id:'hb_fngcero', name:'Finger Cero', spokeId:'race', parent:'hb_hierro', costSP:7, costCash:0, req:{kido:128}, desc:'A faster laser-like version of Cero that comes from your finger.', upgradeNote:'Lvl 3: You can rushdown off Finger Cero', accentColor:'255,85,178', bx:701, by:1201 },
+  { id:'hb_unpred', name:'Unpredictable Cero', spokeId:'race', parent:'hb_fngcero', costSP:4, costCash:0, req:{kido:160}, noLevel:true, passive:true, desc:'Press Counter while charging Cero to delay it by 0.75 seconds.', upgradeNote:null, accentColor:'255,85,178', bx:638, by:1263 },
+  { id:'hb_fcnode', name:'Kido Node', spokeId:'race', parent:'hb_fngcero', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:598, by:1189 },
+  { id:'hb_hcutr', name:'Hollow Cutter', spokeId:'race', parent:'hb_fcnode', costSP:9, costCash:0, req:{kido:152}, desc:'Concentrated reishi projectile slash.', upgradeNote:'Lvl 3: Gain Cero-Enhancement on your blade when landing Hollow Cutter.', accentColor:'255,85,178', bx:511, by:1167 },
+  { id:'hb_crmor', name:'Cero Armor', spokeId:'race', parent:'hb_hcutr', costSP:3, costCash:0, req:{kido:164}, noLevel:true, passive:true, desc:'Using Cero while Hierro is active allows you to absorb an extra hit.', upgradeNote:null, accentColor:'255,85,178', bx:405, by:1153 },
+  { id:'hb_ca_nd1', name:'Kido Node', spokeId:'race', parent:'hb_crmor', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:389, by:1241 },
+  { id:'hb_cdestr', name:'Cero: Destripador', spokeId:'race', parent:'hb_ca_nd1', costSP:9, costCash:0, req:{kido:310}, desc:'Fire sky-splitting lasers from your eyes.', upgradeNote:'Lvl 5: Landing your laser will cause you to leap into the air and land an extra hit', accentColor:'255,85,178', bx:305, by:1305 },
+  { id:'hb_hsregen', name:'High Speed Regeneration', spokeId:'race', parent:'hb_cdestr', costSP:7, costCash:0, req:{kido:380}, passive:true, desc:'If you take a burst of damage in quick succession, discard an injured limb for a new one.', upgradeNote:null, accentColor:'255,85,178', bx:215, by:1331 },
+  { id:'hb_bswarm', name:'Bala Swarm', spokeId:'race', parent:'hb_crmor', costSP:8, costCash:0, req:{kido:220}, desc:'Fire a rapid volley of Bala shots.', upgradeNote:null, accentColor:'255,85,178', bx:310, by:1146 },
+  { id:'hb_bsw_nd', name:'Kido Node', spokeId:'race', parent:'hb_bswarm', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:247, by:1073 },
+  { id:'hb_chbarr', name:'Chaotic Barrier', spokeId:'race', parent:'hb_bswarm', costSP:5, costCash:0, req:{kido:290}, noLevel:true, passive:true, desc:'If you take 30+ damage in quick succession, raise a kido barrier for 2 seconds.', upgradeNote:null, accentColor:'255,85,178', bx:225, by:1183 },
+  { id:'hb_cabsrp', name:'Cero Absorption', spokeId:'race', parent:'hb_crmor', costSP:4, costCash:0, req:{kido:172}, noLevel:true, passive:true, desc:'Right-clicking before your Cero fires will cancel it and absorb its energy into your weapon.', upgradeNote:null, accentColor:'255,85,178', bx:410, by:1058 },
+  { id:'hb_zclutch', name:'Zero Clutch', spokeId:'race', parent:'hb_cabsrp', costSP:8, costCash:0, req:{kido:260}, desc:'Grab your opponent by the neck, choke them, then finish with a finger cero.', upgradeNote:'Lvl 6: Zero Clutch auto-executes at low HP', accentColor:'255,85,178', bx:444, by:976 },
+  { id:'hb_pcrash', name:'Psycho Crash', spokeId:'race', parent:'hb_cabsrp', costSP:8, costCash:0, req:{kido:325}, desc:'Perform an overhead punch; if landed, infuse your sword with cero energy, then slam down on an energy burst.', upgradeNote:'Requires Weapon Equipped', accentColor:'255,85,178', bx:351, by:990 }
+];
+
+const SHINIGAMI_BRANCHES = [
+  { id:'sk_skm1', name:'Kido Node', spokeId:'race', parent:'sk_sai', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:840, by:1239 },
+  { id:'sk_tsuzuri', name:'Tsuzuri Raiden', spokeId:'race', parent:'sk_skm1', costSP:7, costCash:0, req:{kido:76}, desc:'Increase stun and damage.', upgradeNote:'Lvl 4: Having Tsuzuri Raiden buffs all forms of lightning damage·Lvl 6: Parrying attacks with Tsuzuri Raiden active will restore more 12.5% posture', accentColor:'255,85,178', bx:760, by:1274 },
+  { id:'sk_fushibi', name:'Fushibi', spokeId:'race', parent:'sk_tsuzuri', costSP:8, costCash:0, req:{kido:116}, desc:'Stun the enemy with a net of kido before it explodes.', upgradeNote:'Lvl 3: Fushibi disables the dash/flashstep of those caught in the web initially', accentColor:'255,85,178', bx:693, by:1312 },
+  { id:'sk_skm2', name:'Kido Node', spokeId:'race', parent:'sk_fushibi', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:687, by:1383 },
+  { id:'sk_sokatsui', name:'Sokatsui', spokeId:'race', parent:'sk_fushibi', costSP:8, costCash:0, req:{kido:156}, desc:'Conjure a blinding continuous energy beam in front of you.', upgradeNote:null, accentColor:'255,85,178', bx:598, by:1327 },
+  { id:'sk_reia_enhance', name:'Reiatsu Enhancement', spokeId:'race', parent:'sk_sokatsui', costSP:3, costCash:0, req:{kido:180}, noLevel:true, passive:true, desc:'Parrying a kido-type attack will absorb its energy into your blade empowering your next melee attack.', upgradeNote:null, accentColor:'255,85,178', bx:540, by:1367 },
+  { id:'sk_skm7', name:'Kido Node', spokeId:'race', parent:'sk_reia_enhance', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:472, by:1402 },
+  { id:'sk_haien', name:'Haien', spokeId:'race', parent:'sk_skm7', costSP:9, costCash:0, req:{kido:225}, desc:'A blast of purple energy which incinerates a target upon contact. Requires Weapon Equipped.', upgradeNote:'Lvl 5: Purple flames linger after the attack hits·Lvl 6: Your purple flame no longer damages you', accentColor:'255,85,178', bx:400, by:1426 },
+  { id:'sk_skm10', name:'Kido Node', spokeId:'race', parent:'sk_haien', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:345, by:1400 },
+  { id:'sk_gaki_rekko', name:'Gaki Rekkō', spokeId:'race', parent:'sk_skm10', costSP:10, costCash:0, req:{kido:275}, desc:'Fast green lasers that deal solid damage and posture damage. Requires Weapon Equipped.', upgradeNote:'Lvl 2: Projectiles will autotrack to enemies slightly outside the move\'s range', accentColor:'255,85,178', bx:276, by:1430 },
+  { id:'sk_heaven_culling', name:'Heaven Culling-Sear', spokeId:'race', parent:'sk_gaki_rekko', costSP:12, costCash:0, req:{kido:360}, desc:'Summon heavenly beams to smite your opponents. Ultimate Skill.', upgradeNote:null, accentColor:'255,85,178', bx:188, by:1370 },
+  { id:'sk_shinten', name:'Shinten Raiho', spokeId:'race', parent:'sk_sokatsui', costSP:8, costCash:0, req:{kido:190}, desc:'Create a lightning field in front of you.', upgradeNote:null, accentColor:'255,85,178', bx:539, by:1287 },
+  { id:'sk_skm9', name:'Kido Node', spokeId:'race', parent:'sk_shinten', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:475, by:1261 },
+  { id:'sk_raikoho', name:'Raikoho', spokeId:'race', parent:'sk_skm9', costSP:8, costCash:0, req:{kido:225}, desc:'A chargeable lightning projectile which implodes upon impact. Requires Weapon Equipped.', upgradeNote:'Lvl 3: Rushdown potential off knockback·Lvl 5: After-shock that allows for follow up', accentColor:'255,85,178', bx:395, by:1226 },
+  { id:'sk_skm3', name:'Kido Node', spokeId:'race', parent:'sk_raikoho', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:330, by:1214 },
+  { id:'sk_elec_energy', name:'Electrical Energy', spokeId:'race', parent:'sk_skm3', costSP:6, costCash:0, req:{kido:245}, noLevel:true, passive:true, desc:'Moves that deal electric damage are now more potent.', upgradeNote:null, accentColor:'255,85,178', bx:280, by:1168 },
+  { id:'sk_zangerin', name:'Zangerin', spokeId:'race', parent:'sk_raikoho', costSP:9, costCash:0, req:{kido:290}, desc:'Counter with a lightning slash projectile.', upgradeNote:'Lvl 3: Zangerin can be used without countering by having Tsuzuri Raiden active', accentColor:'255,85,178', bx:344, by:1271 },
+  { id:'sk_skm4', name:'Kido Node', spokeId:'race', parent:'sk_sai', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:970, by:1116 },
+  { id:'sk_sho', name:'Sho', spokeId:'race', parent:'sk_skm4', costSP:6, costCash:0, req:{kido:84}, desc:'Knockback opponents, even when they are knocked.', upgradeNote:'Lvl 3: Sho prevents enemies from getting up from a knocked state while active·Lvl 4: Sho can wallbang enemies·Lvl 6: Seals reiatsu while active', accentColor:'255,85,178', bx:919, by:1059 },
+  { id:'sk_bind_resist', name:'Bind Resist', spokeId:'race', parent:'sk_sai', costSP:2, costCash:0, req:{kido:90}, noLevel:true, passive:true, desc:'Reduce the duration of kido-based binding techniques used on you.', upgradeNote:null, accentColor:'255,85,178', bx:856, by:1124 },
+  { id:'sk_skm6', name:'Kido Node', spokeId:'race', parent:'sk_bind_resist', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:805, by:1077 },
+  { id:'sk_sekienton', name:'Sekienton', spokeId:'race', parent:'sk_bind_resist', costSP:7, costCash:0, req:{kido:120}, desc:'Red smoke which stuns and deals minor damage.', upgradeNote:'Lvl 6: You can rushdown after sending an opponent into the air', accentColor:'255,85,178', bx:797, by:1169 },
+  { id:'sk_skm5', name:'Kido Node', spokeId:'race', parent:'sk_sekienton', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:728, by:1183 },
+  { id:'sk_horin', name:'Horin', spokeId:'race', parent:'sk_skm5', costSP:9, costCash:0, req:{kido:220}, desc:'A kido rope that pulls in a targetted enemy. Works on ragdolled opponents.', upgradeNote:'Lvl 8: Horin goes through block', accentColor:'255,85,178', bx:646, by:1169 },
+  { id:'sk_rikujo', name:'Rikujokoro', spokeId:'race', parent:'sk_skm6', costSP:9, costCash:0, req:{kido:140}, desc:'Summon 6 beams of light to pierce an opponent and temporarily restrict their movement.', upgradeNote:null, accentColor:'255,85,178', bx:754, by:1021 },
+  { id:'sk_geki', name:'Geki', spokeId:'race', parent:'sk_rikujo', costSP:6, costCash:0, req:{kido:185}, noLevel:true, passive:true, desc:'Upon guardbreak, bind the enemy in red energy. (60s CD)', upgradeNote:null, accentColor:'255,85,178', bx:679, by:1060 },
+  { id:'sk_skm8', name:'Kido Node', spokeId:'race', parent:'sk_rikujo', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:691, by:973 },
+  { id:'sk_react_barrier', name:'Reactive Barrier', spokeId:'race', parent:'sk_skm8', costSP:5, costCash:0, req:{kido:240}, noLevel:true, passive:true, desc:'If you take 40+ damage in quick succession raise a kido barrier for 2 seconds.', upgradeNote:null, accentColor:'255,85,178', bx:621, by:932 },
+  { id:'sk_hainawa', name:'Hainawa', spokeId:'race', parent:'sk_react_barrier', costSP:10, costCash:0, req:{kido:280}, desc:'Lightning tendrils which steal reiatsu from your opponent.', upgradeNote:null, accentColor:'255,85,178', bx:542, by:953 },
+  { id:'sk_goryu', name:'Goryū Tenmetsu', spokeId:'race', parent:'sk_hainawa', costSP:12, costCash:0, req:{kido:350}, desc:'Summon dragons behind you that you can send one-by-one to your mouse position.', upgradeNote:null, accentColor:'255,85,178', bx:448, by:993 },
+  { id:'sk_prism_seal', name:'Prism Seal', spokeId:'race', parent:'sk_hainawa', costSP:11, costCash:0, req:{kido:370}, desc:'Place 3 points to create a triangular-shaped barrier.', upgradeNote:null, accentColor:'255,85,178', bx:424, by:893 },
+  { id:'sk_trap_spell', name:'Trap Spell', spokeId:'race', parent:'sk_react_barrier', costSP:10, costCash:0, req:{kido:350}, desc:'Create a motion detecting trap.', upgradeNote:null, accentColor:'255,85,178', bx:604, by:853 }
+];
+
+/* ===================== TRUNK OVERRIDES ===================== */
+const TRUNK_OVERRIDES = {"hk1":{"x":1200,"y":1052},"hk2":{"x":1200,"y":957},"hk3":{"x":1200,"y":867},"sn1":{"x":1328.1717597600968,"y":1126},"sn2":{"x":1410.4441731196187,"y":1078.5},"sn3":{"x":1488.386459460218,"y":1033.5},"sn4":{"x":1561.9986187818954,"y":991},"st1":{"x":1388,"y":1201},"st2":{"x":1452,"y":1200},"sp_ace":{"x":1200,"y":1348},"sp_clone":{"x":1200,"y":1443},"mc1":{"x":1068,"y":1326},"mc2":{"x":985,"y":1377},"mc3":{"x":924,"y":1442},"sk_byakurai":{"x":1012,"y":1199},"sk_sai":{"x":942,"y":1198},"qrc1":{"x":1032,"y":1201},"qrc2":{"x":957,"y":1200},"qrc3":{"x":867,"y":1200},"rc1":{"x":1029,"y":1200},"rc2":{"x":957,"y":1200},"rc3":{"x":867,"y":1200}};
+
+/* ===================== SPOKE DEFINITIONS ===================== */
+const BASE_SPOKES = [
+  { id:'hakuda', label:'Hakuda', angle:-90, skills:[
+    { id:'hk1', name:'Hakuda Basics', costSP:2, costCash:0, req:{hakuda:12}, passive:true, noLevel:true, desc:'Gain the ability to fight with your fists.', upgradeNote:null },
+    { id:'hk2', name:'Round Kick',    costSP:5, costCash:0, req:{hakuda:32}, desc:'Powerful sweeping kick.', upgradeNote:null },
+    { id:'hk3', name:'Hakuda Node',   costSP:2, costCash:0, req:{}, passive:true, noLevel:true, desc:'Increase Hakuda Scaling.', upgradeNote:null },
+  ]},
+  { id:'sense', label:'Sense', angle:-30, skills:[
+    { id:'sn1', name:'Sensory 1', costSP:0, costCash:500,  req:{}, noLevel:true, desc:'Awaken your basic spiritual senses.', upgradeNote:null },
+    { id:'sn2', name:'Sensory 2', costSP:1, costCash:1200, req:{}, noLevel:true, desc:'Sharpen your perception of reiatsu flows.', upgradeNote:null },
+    { id:'sn3', name:'Sensory 3', costSP:0, costCash:2500, req:{}, noLevel:true, desc:'Expand your spiritual awareness further.', upgradeNote:null },
+    { id:'sn4', name:'Sensory 4', costSP:1, costCash:0,    req:{}, noLevel:true, desc:'Achieve peak spiritual sensory ability.', upgradeNote:null },
+  ]},
+  { id:'strength', label:'Strength', angle:0, skills:[
+    { id:'st1', name:'Heavy Kick', costSP:6, costCash:0, req:{strength:24}, desc:'Kick the target away, inflicting decent posture damage.', upgradeNote:'Lvl 3: Apply concussion prone to enemies' },
+    { id:'st2', name:'Thrust',     costSP:8, costCash:0, req:{strength:40}, desc:'Lunge forwards dealing light posture damage, the speed you travel increases with time.', upgradeNote:'Lvl 6: Thrust is rotatable during startup' },
+  ]},
+  { id:'speed', label:'Speed', angle:90, skills:[
+    { id:'sp_ace',   name:'Aerial Ace',   costSP:2, costCash:75, req:{speed:10}, desc:'Counter mid-air opponents with a fast shunpo attack.', upgradeNote:null },
+    { id:'sp_clone', name:'Clone Strike', costSP:7, costCash:0, req:{speed:44}, desc:'Knockback an opponent into an afterimage slash.', upgradeNote:'Lvl 3: Clone Strike can hit ragdolled enemies' },
+  ]},
+  { id:'misc', label:'Misc', angle:150, skills:[
+    { id:'mc1', name:'Aerial Fighter', costSP:0, costCash:1000, req:{}, noLevel:true, desc:'Hold run while using your critical attack to launch an opponent into the air.', upgradeNote:null },
+    { id:'mc2', name:'Rushdown',       costSP:0, costCash:2000, req:{}, noLevel:true, desc:'Flashstep after applying heavy knockback to someone.', upgradeNote:null },
+    { id:'mc3', name:'Drop Cancel',    costSP:0, costCash:3000, req:{}, noLevel:true, desc:'Flashstep right before landing to cancel the stun.', upgradeNote:null },
+  ]},
+  { id:'race', label:'Race', angle:180, skills:[] },
+];
+
+const TIER_RADII   = [148, 243, 333, 418, 503, 588, 673, 758];
+const LABEL_RADIUS = 95;
+const CENTER       = 1200;
+
+let currentRace = null;
+let SPOKES = [];
+let ALL_SKILLS = [];
+
+function buildSpokes(race) {
+  SPOKES = BASE_SPOKES.map(sp =>
+    sp.id === 'race' ? { ...sp, skills: RACE_TREES[race] || [] } : sp
+  );
+  const trunkSkills = SPOKES.flatMap(s =>
+    s.skills.map((sk, i) => ({ ...sk, spokeId: s.id, tier: i, angle: s.angle }))
+  );
+  const branchSkills = [
+    ...MISC_BRANCHES.map(br => ({ ...br, tier: -1, angle: 150 })),
+    ...STR_BRANCHES.map(br  => ({ ...br, tier: -1, angle: 0   })),
+    ...HAKUDA_BRANCHES.map(br => ({ ...br, tier: -1, angle: -90 })),
+    ...SPEED_BRANCHES.map(br => ({ ...br, tier: -1, angle: 90  })),
+    ...(race === 'Quincy'    ? QUINCY_BRANCHES.map(br    => ({ ...br, tier: -1, angle: 180 })) : []),
+    ...(race === 'Hollow'    ? HOLLOW_BRANCHES.map(br    => ({ ...br, tier: -1, angle: 180 })) : []),
+    ...(race === 'Shinigami' ? SHINIGAMI_BRANCHES.map(br => ({ ...br, tier: -1, angle: 180 })) : []),
+  ];
+  ALL_SKILLS = [...trunkSkills, ...branchSkills];
+}
+
+const polar = (angle, r) => {
+  const rad = angle * Math.PI / 180;
+  return { x: CENTER + Math.cos(rad) * r, y: CENTER + Math.sin(rad) * r };
+};
+
+/* ===================== STATE ===================== */
+const makeState = () => ({
+  buildStats:   { reserves:0, haste:0, potency:0, mettle:0, shunpo:0 },
+  attrStats:    { hakuda:0, strength:0, kido:0, speed:0 },
+  skills:       ALL_SKILLS.map(s => ({
+    ...s, unlocked:false, level:0, spSpent:0, stSpent:0, afSpent:0, freeUpgraded:false, upgradeLog: []
+  })),
+  skillPoints:  TOTAL_SKILL_POINTS,
+  fragments:    TOTAL_FRAGMENTS,
+  soulTokens:   TOTAL_SOUL_TOKENS,
+  selectedId:   null,
+  freeRefunds:  1,
+  freeUpgrades: 1,
+});
+let state = makeState();
+
+const getSkill = id => state.skills.find(s => s.id === id);
+
+const isAvailable = skill => {
+  if (!skill) return false;
+  if (skill.tier === -1) {
+    if (skill.parent !== null && skill.parent !== undefined) {
+      const parent = getSkill(skill.parent);
+      if (!parent?.unlocked) return false;
+    }
+    if (skill.mutexWith) {
+      const mutexIds = skill.mutexWith.split(',').map(s => s.trim());
+      if (mutexIds.some(mId => getSkill(mId)?.unlocked)) return false;
+    }
+    if (skill.req) {
+      for (const [attr, min] of Object.entries(skill.req)) {
+        if ((state.attrStats[attr] || 0) < min) return false;
+      }
+    }
+    return true;
+  }
+  if (skill.tier > 0) {
+    const spoke = SPOKES.find(s => s.id === skill.spokeId);
+    if (!spoke) return false;
+    const prev = getSkill(spoke.skills[skill.tier - 1].id);
+    if (!prev?.unlocked) return false;
+  }
+  if (skill.req) {
+    for (const [attr, min] of Object.entries(skill.req)) {
+      if ((state.attrStats[attr] || 0) < min) return false;
+    }
+  }
+  return true;
+};
+
+const canRefund = skill => {
+  if (!skill?.unlocked) return false;
+  if (skill.tier === -1) {
+    const children = ALL_SKILLS.filter(s => s.parent === skill.id);
+    for (const child of children) { if (getSkill(child.id)?.unlocked) return false; }
+    return true;
+  }
+  const spoke = SPOKES.find(s => s.id === skill.spokeId);
+  if (!spoke) return false;
+  for (let t = skill.tier + 1; t < spoke.skills.length; t++) {
+    const later = getSkill(spoke.skills[t].id);
+    if (later?.unlocked) return false;
+  }
+  const branchChildren = ALL_SKILLS.filter(s => s.parent === skill.id);
+  for (const child of branchChildren) { if (getSkill(child.id)?.unlocked) return false; }
+  return true;
+};
+
+const canFreeRefund = skill => !!(skill?.unlocked);
+
+const usedBP      = () => Object.values(state.buildStats).reduce((a,b)=>a+b,0);
+const remainingBP = () => TOTAL_BUILD_POINTS - usedBP();
+const usedAP      = () => Object.values(state.attrStats).reduce((a,b)=>a+b,0);
+const remainingAP = () => TOTAL_ATTRIBUTE_POINTS - usedAP();
+
+const LOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+
+/* ===================== DOM CACHES ===================== */
+const _nodeDOMCache  = {};
+const _lineDOMCache  = {};
+const _nodeStateCache = {};
+const _lineStateCache = {};
+const elSelContent = document.getElementById('sel-content');
+const elSelPanel   = document.getElementById('sel-panel');
+const RACE_COLORS  = { 'Shinigami':'#dce6ff', 'Hollow':'#f87171', 'Quincy':'#60a5fa' };
+
+function getNodePos(skillId) {
+  const sk = ALL_SKILLS.find(s => s.id === skillId);
+  if (!sk) return { x: CENTER, y: CENTER };
+  if (sk.tier === -1) return { x: sk.bx, y: sk.by };
+  return polar(sk.angle, TIER_RADII[sk.tier]);
+}
+
+/* ===================== LINE GEOMETRY HELPERS ===================== */
+const NODE_R = 14;   // regular node radius (28px diameter)
+const CORE_R = 58;   // center orb no-go radius
+
+function shortenLine(ln, x1, y1, x2, y2, r1, r2) {
+  const dx = x2-x1, dy = y2-y1;
+  const d = Math.sqrt(dx*dx+dy*dy);
+  if (d <= r1+r2) {
+    const mx = (x1+x2)*0.5, my = (y1+y2)*0.5;
+    ln.setAttribute('x1', mx.toFixed(1)); ln.setAttribute('y1', my.toFixed(1));
+    ln.setAttribute('x2', mx.toFixed(1)); ln.setAttribute('y2', my.toFixed(1));
+    return;
+  }
+  const inv = 1/d, ux = dx*inv, uy = dy*inv;
+  ln.setAttribute('x1', (x1+ux*r1).toFixed(1)); ln.setAttribute('y1', (y1+uy*r1).toFixed(1));
+  ln.setAttribute('x2', (x2-ux*r2).toFixed(1)); ln.setAttribute('y2', (y2-uy*r2).toFixed(1));
+}
+
+/* ===================== TREE BUILD ===================== */
+function buildTree() {
+  const linesG    = document.getElementById('lines');
+  const nodeLayer = document.getElementById('node-layer');
+  linesG.innerHTML = nodeLayer.innerHTML = "";
+  Object.keys(_nodeDOMCache).forEach(k => delete _nodeDOMCache[k]);
+  Object.keys(_lineDOMCache).forEach(k => delete _lineDOMCache[k]);
+
+  SPOKES.forEach(spoke => {
+    spoke.skills.forEach((sk, i) => {
+      const from = i === 0 ? { x: CENTER, y: CENTER } : polar(spoke.angle, TIER_RADII[i-1]);
+      const to   = polar(spoke.angle, TIER_RADII[i]);
+      const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      shortenLine(ln, from.x, from.y, to.x, to.y, i===0 ? CORE_R : NODE_R, NODE_R);
+      ln.setAttribute('id', 'line-' + sk.id);
+      ln.setAttribute('stroke-linecap', 'round');
+      linesG.appendChild(ln);
+      _lineDOMCache[sk.id] = ln;
+    });
+  });
+
+  const activeBranches = getAllBranches();
+  activeBranches.forEach(br => {
+    if (br.parent === null || br.parent === undefined) return;
+    const pPos = getLivePos(br.parent);
+    const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    shortenLine(ln, pPos.x, pPos.y, br.bx, br.by, NODE_R, NODE_R);
+    ln.setAttribute('id', 'line-' + br.id);
+    ln.setAttribute('stroke-linecap', 'round');
+    linesG.appendChild(ln);
+    _lineDOMCache[br.id] = ln;
+  });
+
+  SPOKES.forEach(spoke => {
+    const _lr = (spoke.id === 'race') ? 115 : (spoke.id === 'strength') ? 125 : LABEL_RADIUS;
+    const p = polar(spoke.angle, _lr);
+    const div = document.createElement('div');
+    div.className = 'spoke-label';
+    div.style.cssText = 'left:'+p.x+'px;top:'+p.y+'px;color:rgb('+SPOKE_COLORS[spoke.id]+')';
+    div.textContent = spoke.id === 'race' ? currentRace : spoke.label;
+    nodeLayer.appendChild(div);
+  });
+
+  SPOKES.forEach(spoke => {
+    spoke.skills.forEach((sk, tier) => {
+      const p = polar(spoke.angle, TIER_RADII[tier]);
+      const btn = document.createElement('button');
+      btn.className = 'skill-node locked';
+      btn.id = 'node-' + sk.id;
+      btn.dataset.spoke = spoke.id;
+      if (sk.accentColor) btn.style.setProperty('--sc', sk.accentColor);
+      btn.style.cssText += 'left:'+p.x+'px;top:'+p.y+'px;';
+      btn.addEventListener('click', (e) => {
+        if (e.shiftKey) { unlockSkill(sk.id); return; }
+        state.selectedId = sk.id; render();
+      }, { passive: true });
+      btn.addEventListener('mouseenter', e => showTooltip(sk.id, e));
+      btn.addEventListener('mouseleave', hideTooltip);
+      btn.addEventListener('mousemove', moveTooltip);
+      nodeLayer.appendChild(btn);
+      _nodeDOMCache[sk.id] = btn;
+    });
+  });
+
+  activeBranches.forEach(br => {
+    const btn = document.createElement('button');
+    btn.className = 'skill-node locked';
+    btn.id = 'node-' + br.id;
+    btn.dataset.spoke = br.spokeId;
+    if (br.accentColor) btn.style.setProperty('--sc', br.accentColor);
+    btn.style.cssText += 'left:'+br.bx+'px;top:'+br.by+'px;';
+    btn.addEventListener('click', (e) => {
+      if (e.shiftKey) { unlockSkill(br.id); return; }
+      state.selectedId = br.id; render();
+    }, { passive: true });
+    btn.addEventListener('mouseenter', e => showTooltip(br.id, e));
+    btn.addEventListener('mouseleave', hideTooltip);
+    btn.addEventListener('mousemove', moveTooltip);
+    nodeLayer.appendChild(btn);
+    _nodeDOMCache[br.id] = btn;
+  });
+
+  const ULTIMATE_IDS = new Set(['stA6','hkK9a','hkS9b','hkH12a','qb12','sk_heaven_culling']);
+  const SPECIAL_IDS  = new Set(['stD5a','stD6b','hkS7a','hkK9b','hkH12b','spS9b','spP7c','spK8','qb9','qa10b','sk_prism_seal','sk_goryu']);
+
+  [...activeBranches, ...SPOKES.flatMap(s=>s.skills)].forEach(sk => {
+    const node = _nodeDOMCache[sk.id];
+    if (!node) return;
+    if (ULTIMATE_IDS.has(sk.id)) node.classList.add('ultimate');
+    if (SPECIAL_IDS.has(sk.id))  node.classList.add('special');
+  });
+
+  activeBranches.forEach(br => {
+    if ((br.noLevel && br.passive) || (br.noLevel && br.name.includes('Node'))) {
+      const node = _nodeDOMCache[br.id];
+      if (node) node.classList.add('node-type');
+    }
+  });
+
+  /* Pre-fill trunkLivePositions */
+  SPOKES.forEach(spoke => {
+    spoke.skills.forEach((sk, tier) => {
+      const p = polar(spoke.angle, TIER_RADII[tier]);
+      trunkLivePositions[sk.id] = { x: p.x, y: p.y };
+    });
+  });
+}
+
+/* ===================== TOOLTIP ===================== */
+const tooltip = document.getElementById('skill-tooltip');
+let tooltipSkillId = null;
+// Fixed estimates — avoids forced synchronous layout on every hover
+const _ttW = 265, _ttH = 180;
+
+let _lastTooltipSkillKey = null;
+
+function showTooltip(skillId, e) {
+  tooltipSkillId = skillId;
+  updateTooltipContent(skillId);
+  tooltip.style.display = 'block';
+  positionTooltip(e.clientX, e.clientY);
+}
+function hideTooltip() { tooltip.style.display = 'none'; tooltipSkillId = null; _lastTooltipSkillKey = null; }
+
+let _ttRafPending = false, _ttPX = 0, _ttPY = 0;
+function moveTooltip(e) {
+  _ttPX = e.clientX; _ttPY = e.clientY;
+  if (!_ttRafPending) {
+    _ttRafPending = true;
+    requestAnimationFrame(() => {
+      positionTooltip(_ttPX, _ttPY);
+      _ttRafPending = false;
+    });
+  }
+}
+function positionTooltip(cx, cy) {
+  let tx = cx + 16, ty = cy + 16;
+  if (tx + _ttW > window.innerWidth  - 8) tx = cx - _ttW - 12;
+  if (ty + _ttH > window.innerHeight - 8) ty = cy - _ttH - 12;
+  tooltip.style.transform = 'translate3d('+tx+'px,'+ty+'px,0)';
+}
+
+function updateTooltipContent(skillId) {
+  const skill = getSkill(skillId);
+  if (!skill) return;
+  const isMaxed = skill.level >= MAX_SKILL_LEVEL;
+  const avail   = isAvailable(skill);
+  // Cache key — only rebuild innerHTML when skill state actually changes
+  const ttKey = skillId + '|' + skill.level + '|' + (skill.unlocked?1:0) + '|' + (avail?1:0);
+  if (_lastTooltipSkillKey === ttKey) return;
+  _lastTooltipSkillKey = ttKey;
+
+  const spoke   = SPOKES.find(s => s.id === skill.spokeId);
+  const color   = skill.accentColor || SPOKE_COLORS[spoke?.id] || '230,235,255';
+  const sc      = 'rgb(' + color + ')';
+
+  let statusText = '', statusClass = 'locked';
+  if (isMaxed)             { statusText = '★ Maxed';     statusClass = 'maxed'; }
+  else if (skill.unlocked) { statusText = '✓ Unlocked';  statusClass = 'unlocked'; }
+  else if (avail)          { statusText = '◆ Available'; statusClass = 'avail'; }
+  else                     { statusText = '🔒 Locked';   statusClass = 'locked'; }
+
+  let costsHTML = '';
+  if (skill.costSP > 0)   costsHTML += '<span class="tt-chip sp">'+skill.costSP+' SP</span>';
+  if (skill.costCash > 0) costsHTML += '<span class="tt-chip st">⬡ '+skill.costCash.toLocaleString()+' ST</span>';
+  if (!costsHTML) costsHTML = '<span class="tt-chip sp">Free</span>';
+
+  let reqsHTML = '';
+  if (skill.req && Object.keys(skill.req).length > 0) {
+    for (const [attr, min] of Object.entries(skill.req)) {
+      const ac = ATTR_COLORS[attr] || color;
+      reqsHTML += '<span class="tt-chip" style="color:rgb('+ac+');border-color:rgba('+ac+',0.5);background:rgba('+ac+',0.1)">'+attr.charAt(0).toUpperCase()+attr.slice(1)+' '+min+'</span>';
+    }
+  }
+
+  const levelLine = skill.unlocked
+    ? '<div class="tt-level" style="color:'+(isMaxed?'#fcd34d':'#67e8f9')+'">Level '+skill.level+' / '+MAX_SKILL_LEVEL+'</div>'
+    : '<div class="tt-level" style="color:#475569">Not Unlocked</div>';
+
+  const isUltimateTooltip = _nodeDOMCache[skillId]?.classList.contains('ultimate');
+
+  const upgradeNoteHTML = skill.upgradeNote
+    ? (() => {
+        const notes = skill.upgradeNote.split('·').map(s=>s.trim()).filter(Boolean);
+        return notes.length > 1
+          ? '<div class="tt-note">'+notes.map(n=>'✦ '+n).join('<br>')+'</div>'
+          : '<div class="tt-note">✦ '+skill.upgradeNote+'</div>';
+      })()
+    : '';
+
+  tooltip.innerHTML =
+    (isUltimateTooltip ? '<div class="tt-ultimate-tag">✦ Ultimate</div>' : '') +
+    '<div class="tt-name" style="color:'+sc+'">'+skill.name+'</div>' +
+    levelLine +
+    (skill.desc ? '<div style="font-family:\'Exo 2\',sans-serif;font-size:11px;font-weight:600;color:rgba(180,200,230,0.8);line-height:1.5;margin-bottom:5px;">'+skill.desc+'</div>' : '') +
+    '<div class="tt-divider"></div>' +
+    '<div class="tt-section">Cost</div><div class="tt-chips">'+costsHTML+'</div>' +
+    (reqsHTML ? '<div class="tt-section">Requires</div><div class="tt-chips">'+reqsHTML+'</div>' : '') +
+    upgradeNoteHTML +
+    '<div class="tt-status '+statusClass+'">'+statusText+'</div>';
+}
+
+/* ===================== CACHED ROW ELEMENTS ===================== */
+const elBpRemaining = document.getElementById('bp-remaining');
+const elBpFill      = document.getElementById('bp-fill');
+const elBpStats     = document.getElementById('bp-stats');
+const elApRemaining = document.getElementById('ap-remaining');
+const elAttrStats   = document.getElementById('attr-stats');
+const elFragNum     = document.getElementById('frag-num');
+const elSpNum       = document.getElementById('sp-num');
+const elRyoNum      = document.getElementById('ryo-num');
+const elFrCount     = document.getElementById('free-refund-count');
+const elFuCount     = document.getElementById('free-upgrade-count');
+const elFrBtn       = document.getElementById('free-refund-btn');
+const elFuBtn       = document.getElementById('free-upgrade-btn');
+const elRaceDot     = document.getElementById('race-dot');
+const elRaceBadge   = document.getElementById('race-badge-text');
+
+let _bpRowCache = null;
+function ensureBPRows() {
+  if (_bpRowCache) return;
+  _bpRowCache = {};
+  elBpStats.innerHTML = '';
+  BUILD_STATS.forEach(stat => {
+    const row = document.createElement('div');
+    row.className = 'stat-row';
+    row.innerHTML =
+      '<div class="swatch" id="bps-sw-'+stat.id+'"></div>' +
+      '<span class="name" id="bps-nm-'+stat.id+'"></span>' +
+      '<button class="btn-tiny" data-act="bp-" data-id="'+stat.id+'" title="−1 (Shift + Click: −10)">−</button>' +
+      '<span class="val" id="bps-vl-'+stat.id+'">0</span>' +
+      '<button class="btn-tiny" data-act="bp+" data-id="'+stat.id+'" title="+1 (Shift + Click: +10)">+</button>';
+    elBpStats.appendChild(row);
+    _bpRowCache[stat.id] = {
+      sw: row.querySelector('#bps-sw-'+stat.id),
+      nm: row.querySelector('#bps-nm-'+stat.id),
+      vl: row.querySelector('#bps-vl-'+stat.id),
+      dec: row.querySelectorAll('button')[0],
+      inc: row.querySelectorAll('button')[1],
+    };
+  });
+}
+
+let _apRowCache = null;
+function ensureAPRows() {
+  if (_apRowCache) return;
+  _apRowCache = {};
+  elAttrStats.innerHTML = '';
+  ATTRIBUTES.forEach(attr => {
+    const wrap = document.createElement('div');
+    wrap.className = 'attr-stat ' + attr.pos;
+    wrap.innerHTML =
+      '<div class="name" id="aps-nm-'+attr.id+'">'+attr.name+'</div>' +
+      '<div class="ctrl">' +
+        '<button class="btn-tiny violet" data-act="ap-" data-id="'+attr.id+'" title="−1 (Shift + Click: −10)">−</button>' +
+        '<span class="val" id="aps-vl-'+attr.id+'">0</span>' +
+        '<button class="btn-tiny violet" data-act="ap+" data-id="'+attr.id+'" title="+1 (Shift + Click: +10)">+</button>' +
+      '</div>';
+    elAttrStats.appendChild(wrap);
+    _apRowCache[attr.id] = {
+      nm: wrap.querySelector('#aps-nm-'+attr.id),
+      vl: wrap.querySelector('#aps-vl-'+attr.id),
+      dec: wrap.querySelectorAll('button')[0],
+      inc: wrap.querySelectorAll('button')[1],
+      color: attr.color,
+    };
+  });
+}
+
+/* ===================== RENDER ===================== */
+function render() {
+  ensureBPRows();
+  const usedB = usedBP(), remB = TOTAL_BUILD_POINTS - usedB;
+  elBpRemaining.textContent = remB;
+  elBpFill.style.width = (usedB / TOTAL_BUILD_POINTS * 100) + '%';
+  BUILD_STATS.forEach(stat => {
+    const v = state.buildStats[stat.id];
+    const c = _bpRowCache[stat.id];
+    c.sw.style.background = v > 0 ? stat.accent : '#1a3050';
+    c.nm.className = 'name' + (v > 0 ? '' : ' dim');
+    if (v > 0) { c.nm.innerHTML = stat.name + '<span class="plus" style="color:'+stat.accent+'">(+)</span>'; }
+    else c.nm.textContent = stat.name;
+    c.vl.className = 'val' + (v > 0 ? ' has' : '');
+    c.vl.textContent = v;
+    c.dec.disabled = (v === 0);
+    c.inc.disabled = (remB === 0);
+  });
+
+  ensureAPRows();
+  const remA = remainingAP();
+  elApRemaining.textContent = remA;
+  ATTRIBUTES.forEach(attr => {
+    const v = state.attrStats[attr.id];
+    const c = _apRowCache[attr.id];
+    const col = c.color;
+    c.nm.className = 'name' + (v > 0 ? ' has' : '');
+    c.nm.style.cssText = v > 0 ? 'color:'+col+';text-shadow:0 0 8px '+col+'88' : '';
+    c.vl.className = 'val' + (v > 0 ? ' has' : '');
+    c.vl.style.color = v > 0 ? col : '';
+    c.vl.textContent = v;
+    c.dec.disabled = (v === 0);
+    c.inc.disabled = (remA === 0);
+  });
+
+  elFragNum.textContent = state.fragments;
+  elSpNum.textContent   = state.skillPoints;
+  elRyoNum.textContent  = state.soulTokens.toLocaleString();
+  elFrCount.textContent = state.freeRefunds;
+  elFuCount.textContent = state.freeUpgrades;
+  elFrBtn.disabled = state.freeRefunds <= 0;
+  elFuBtn.disabled = state.freeUpgrades <= 0;
+  elRaceDot.style.background = RACE_COLORS[currentRace] || '#c084fc';
+  elRaceBadge.textContent = currentRace || '—';
+
+  /* Nodes — diff-based */
+  state.skills.forEach(skill => {
+    const node = _nodeDOMCache[skill.id];
+    if (!node) return;
+    const isMaxed    = !skill.noLevel && skill.level >= MAX_SKILL_LEVEL;
+    const avail      = isAvailable(skill);
+    const isUltimate = node.classList.contains('ultimate');
+    const isSpecial  = node.classList.contains('special');
+    const isNodeType = node.classList.contains('node-type');
+    let cls = 'skill-node';
+    if (isUltimate) cls += ' ultimate';
+    if (isSpecial)  cls += ' special';
+    if (isNodeType) cls += ' node-type';
+    if (editModeActive) cls += ' misc-draggable';
+    if (skill.unlocked && !isMaxed) cls += ' unlocked';
+    else if (isMaxed)               cls += ' maxed';
+    else if (avail)                 cls += ' available';
+    else                            cls += ' locked';
+    if (state.selectedId === skill.id) cls += ' selected';
+
+    let inner = '';
+    if (skill.unlocked && !skill.noLevel && skill.level >= 2) inner = '<span class="node-level">'+skill.level+'</span>';
+    else if (!avail) inner = '<span class="lock-icon">'+LOCK_SVG+'</span>';
+
+    const cacheKey = cls + '|' + inner;
+    if (_nodeStateCache[skill.id] === cacheKey) return;
+    _nodeStateCache[skill.id] = cacheKey;
+    node.className = cls;
+    node.dataset.spoke = skill.spokeId;
+    node.innerHTML = inner;
+  });
+
+  /* Lines — diff-based */
+  state.skills.forEach(skill => {
+    const ln = _lineDOMCache[skill.id];
+    if (!ln) return;
+    const avail = isAvailable(skill);
+    const sc = skill.accentColor || SPOKE_COLORS[skill.spokeId] || '100,116,139';
+    let stroke, sw, op;
+    if (skill.unlocked)    { stroke='rgb('+sc+')';        sw=2.5; op=0.95; }
+    else if (avail)        { stroke='rgba('+sc+',0.55)';  sw=1.5; op=0.8; }
+    else                   { stroke='rgba('+sc+',0.28)';  sw=1.2; op=0.65; }
+    const lineCacheKey = stroke+sw+op;
+    if (_lineStateCache[skill.id] === lineCacheKey) return;
+    _lineStateCache[skill.id] = lineCacheKey;
+    ln.setAttribute('stroke', stroke); ln.setAttribute('stroke-width', sw); ln.setAttribute('opacity', op);
+  });
+
+  if (tooltipSkillId) updateTooltipContent(tooltipSkillId);
+  renderSelected();
+}
+
+/* Delegated click — attached once */
+(function initDelegation() {
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const act = b.dataset.act, id = b.dataset.id;
+    if      (act === 'bp+') adjustBP(id, +1, e.shiftKey ? 10 : 1);
+    else if (act === 'bp-') adjustBP(id, -1, e.shiftKey ? 10 : 1);
+    else if (act === 'ap+') adjustAP(id, +1, e.shiftKey ? 10 : 1);
+    else if (act === 'ap-') adjustAP(id, -1, e.shiftKey ? 10 : 1);
+  });
+})();
+
+function renderSelected() {
+  const host  = elSelContent;
+  const panel = elSelPanel;
+  panel.classList.remove('cyan','amber','slate','violet');
+
+  if (!state.selectedId) {
+    panel.classList.add('slate');
+    host.innerHTML = '<div class="sel-empty"><div class="head">No Skill Selected</div><div class="sub">Click a node in the skill tree</div></div>';
+    return;
+  }
+  const skill = getSkill(state.selectedId);
+  if (!skill) { panel.classList.add('slate'); host.innerHTML=''; return; }
+  const spoke   = SPOKES.find(s => s.id === skill.spokeId);
+  const isMaxed = skill.level >= MAX_SKILL_LEVEL;
+  const avail   = isAvailable(skill);
+  const sc      = skill.accentColor || SPOKE_COLORS[spoke?.id] || '230,235,255';
+  const accent  = (!skill.noLevel && isMaxed) ? 'amber' : (skill.unlocked ? 'cyan' : 'slate');
+  panel.classList.add(accent);
+
+  let levelText = '', levelClass = 'locked';
+  if (skill.noLevel) {
+    if (skill.unlocked) { levelText='Unlocked'; levelClass='unlocked'; }
+    else { levelText='Not Unlocked'; levelClass='locked'; }
+  } else if (isMaxed)             { levelText='Level '+skill.level+' / '+MAX_SKILL_LEVEL+' — Maxed'; levelClass='maxed'; }
+  else if (skill.unlocked) { levelText='Level '+skill.level+' / '+MAX_SKILL_LEVEL; levelClass='unlocked'; }
+  else                     { levelText='Not Unlocked'; levelClass='locked'; }
+
+  let html = '';
+  const passiveTag = skill.passive ? ' <span style="font-size:11px;opacity:.6;letter-spacing:.1em">(Passive)</span>' : '';
+  const isUltimateNode = _nodeDOMCache[skill.id]?.classList.contains('ultimate');
+  if (isUltimateNode) html += '<div class="sk-ultimate-tag">✦ Ultimate</div>';
+  html += '<div class="sk-name" style="color:'+(isMaxed?'#fde68a':skill.unlocked?'rgb('+sc+')':'#64748b')+'">'+skill.name+passiveTag+'</div>';
+  html += '<div class="sk-level '+levelClass+'">'+levelText+'</div>';
+  if (skill.desc) html += '<div class="sk-desc" style="font-family:\'Exo 2\',sans-serif;font-size:12px;font-weight:600;color:rgba(180,200,230,0.85);line-height:1.55;margin-bottom:6px;letter-spacing:.02em;">'+skill.desc+'</div>';
+  html += '<div class="sk-divider"></div>';
+
+  const hasCost = skill.costSP > 0 || skill.costCash > 0;
+  if (hasCost) {
+    html += '<div class="sk-section-label">Unlock Cost</div><div class="sk-chips">';
+    if (skill.costSP > 0)   html += '<span class="sk-chip sp">'+skill.costSP+' Skill Points</span>';
+    if (skill.costCash > 0) html += '<span class="sk-chip st">⬡ '+skill.costCash.toLocaleString()+' Soul Tokens</span>';
+    html += '</div>';
+  }
+  if (skill.req && Object.keys(skill.req).length > 0) {
+    html += '<div class="sk-section-label">Requires</div><div class="sk-chips">';
+    for (const [attr, min] of Object.entries(skill.req)) {
+      const ac = ATTR_COLORS[attr] || '100,180,255';
+      html += '<span class="sk-chip" style="color:rgb('+ac+');border-color:rgba('+ac+',0.5);background:rgba('+ac+',0.1)">'+attr.charAt(0).toUpperCase()+attr.slice(1)+' '+min+'</span>';
+    }
+    html += '</div>';
+  }
+  if (skill.upgradeNote) {
+    const notes = skill.upgradeNote.split('·').map(s=>s.trim()).filter(Boolean);
+    html += notes.length > 1
+      ? '<div class="sk-upgrade-note">'+notes.map(n=>'✦ '+n).join('<br>')+'</div>'
+      : '<div class="sk-upgrade-note">✦ '+skill.upgradeNote+'</div>';
+  }
+  if (skill.unlocked && !skill.noLevel) {
+    html += '<div class="sel-segments">';
+    for (let i=0; i<MAX_SKILL_LEVEL; i++) {
+      let sc2='sel-seg'; if(i<skill.level) sc2+=isMaxed?' maxed':' on';
+      html+='<div class="'+sc2+'"></div>';
+    }
+    html += '</div>';
+  }
+
+  if (!skill.unlocked) {
+    if (!avail) {
+      const unmet = [];
+      if (skill.tier === -1) {
+        const parent = getSkill(skill.parent);
+        if (!parent?.unlocked) { const pd=ALL_SKILLS.find(s=>s.id===skill.parent); unmet.push('Unlock '+(pd?.name||'previous skill')+' first'); }
+        if (skill.mutexWith) {
+          const mutexIds = skill.mutexWith.split(',').map(s=>s.trim());
+          const taken = mutexIds.find(mId=>getSkill(mId)?.unlocked);
+          if (taken) { const md=ALL_SKILLS.find(s=>s.id===taken); unmet.push((md?.name||'Conflicting skill')+' already taken'); }
+        }
+      } else if (skill.tier > 0) {
+        const prev = SPOKES.find(s=>s.id===skill.spokeId).skills[skill.tier-1];
+        if (!getSkill(prev.id)?.unlocked) unmet.push('Unlock previous skill first');
+      }
+      if (skill.req) for (const [a,m] of Object.entries(skill.req)) if ((state.attrStats[a]||0)<m) unmet.push(a.charAt(0).toUpperCase()+a.slice(1)+' '+m+' required');
+      html += '<div class="sel-locked-msg">🔒 '+unmet.join(' · ')+'</div>';
+    } else {
+      const canSP = skill.costSP===0 || state.skillPoints>=skill.costSP;
+      const canST = skill.costCash===0 || state.soulTokens>=skill.costCash;
+      const canAll = canSP && canST;
+      let lbl = 'Unlock';
+      if (skill.costSP>0)   lbl += ' · '+skill.costSP+' SP';
+      if (skill.costCash>0) lbl += ' · ⬡ '+skill.costCash.toLocaleString()+' ST';
+      if (!canSP) lbl = 'Need '+skill.costSP+' Skill Points';
+      if (!canST) lbl = 'Need ⬡ '+skill.costCash.toLocaleString()+' Soul Tokens';
+      html += '<button class="sel-action unlock" id="btn-unlock" '+(canAll?'':'disabled')+'>'+lbl+'</button>';
+    }
+  } else if (isMaxed) {
+    html += '<div class="sel-maxed">★ Maxed ★</div>';
+    if (skill.upgradeLog?.length) html += '<button class="sel-action" id="btn-minus" style="margin-top:6px;background:rgba(100,116,139,.12);color:#94a3b8;border-color:rgba(100,116,139,.4);font-size:12px">− Remove Last Upgrade</button>';
+    if (canRefund(skill)) html += '<button class="sel-action refund" id="btn-refund" style="margin-top:4px">↩ Remove Skill</button>';
+  } else if (skill.noLevel) {
+    html += '<div class="sel-maxed" style="background:rgba(80,210,255,.1);color:#67e8f9;border-color:rgba(80,210,255,.4)">✓ Unlocked</div>';
+    if (canRefund(skill)) html += '<button class="sel-action refund" id="btn-refund" style="margin-top:6px">↩ Remove Skill</button>';
+  } else {
+    const canSP = state.skillPoints >= SP_PER_UPGRADE;
+    const canAF = state.fragments  >= AF_PER_UPGRADE;
+    const canMinus = skill.upgradeLog?.length;
+    html += '<div class="sel-upgrade-grid">';
+    html += '<button class="sel-up-btn sp" id="btn-up-sp" '+(canSP?'':'disabled')+'><b>+1 Level</b><em>'+SP_PER_UPGRADE+' Skill Pts</em></button>';
+    html += '<button class="sel-up-btn af" id="btn-up-af" '+(canAF?'':'disabled')+'><b>+1 Level</b><em>'+AF_PER_UPGRADE+' Fragment</em></button>';
+    html += '</div>';
+    if (canMinus) {
+      const lastType = skill.upgradeLog[skill.upgradeLog.length-1];
+      const lastLabel = lastType==='sp'?'SP':lastType==='af'?'Frag':'Free';
+      html += '<button class="sel-action" id="btn-minus" style="margin-top:4px;background:rgba(100,116,139,.1);color:#94a3b8;border-color:rgba(100,116,139,.35);font-size:12px">− Undo Last (+'+lastLabel+')</button>';
+    }
+    if (canRefund(skill)) html += '<button class="sel-action refund" id="btn-refund" style="margin-top:4px">↩ Remove Skill</button>';
+  }
+
+  host.innerHTML = html;
+  const unlock  = document.getElementById('btn-unlock');  if(unlock)  unlock.addEventListener('click',()=>unlockSkill(skill.id));
+  const upSp    = document.getElementById('btn-up-sp');   if(upSp)    upSp.addEventListener('click',()=>upgradeSP(skill.id));
+  const upAf    = document.getElementById('btn-up-af');   if(upAf)    upAf.addEventListener('click',()=>upgradeAF(skill.id));
+  const minusBtn= document.getElementById('btn-minus');   if(minusBtn) minusBtn.addEventListener('click',()=>downgradeSkill(skill.id));
+  const refBtn  = document.getElementById('btn-refund');  if(refBtn)  refBtn.addEventListener('click',()=>refundSkill(skill.id));
+}
+
+/* ===================== ACTIONS ===================== */
+function adjustBP(id, delta, mult) {
+  const step=delta*mult, cur=state.buildStats[id];
+  state.buildStats[id]=Math.min(Math.max(0,cur+step),cur+remainingBP());
+  render();
+}
+function adjustAP(id, delta, mult) {
+  const step=delta*mult, cur=state.attrStats[id];
+  state.attrStats[id]=Math.min(Math.max(0,cur+step),cur+remainingAP());
+  render();
+}
+function unlockSkill(id) {
+  const skill=getSkill(id);
+  if(!skill||skill.unlocked||!isAvailable(skill)) return;
+  if(skill.costSP>0&&state.skillPoints<skill.costSP) return;
+  if(skill.costCash>0&&state.soulTokens<skill.costCash) return;
+  state.skillPoints-=(skill.costSP||0); state.soulTokens-=(skill.costCash||0);
+  skill.spSpent=(skill.costSP||0); skill.stSpent=(skill.costCash||0);
+  skill.unlocked=true; skill.level=1; skill.afSpent=0;
+  render();
+}
+function upgradeSP(id) {
+  const skill=getSkill(id);
+  if(!skill||!skill.unlocked||skill.level>=MAX_SKILL_LEVEL||state.skillPoints<SP_PER_UPGRADE) return;
+  state.skillPoints-=SP_PER_UPGRADE; skill.spSpent=(skill.spSpent||0)+SP_PER_UPGRADE; skill.level++; skill.upgradeLog.push('sp'); render();
+}
+function upgradeAF(id) {
+  const skill=getSkill(id);
+  if(!skill||!skill.unlocked||skill.level>=MAX_SKILL_LEVEL||state.fragments<AF_PER_UPGRADE) return;
+  state.fragments-=AF_PER_UPGRADE; skill.afSpent=(skill.afSpent||0)+AF_PER_UPGRADE; skill.level++; skill.upgradeLog.push('af'); render();
+}
+function upgradeFreeSkill(id) {
+  const skill=getSkill(id);
+  if(!skill||!skill.unlocked||skill.noLevel||skill.level>=MAX_SKILL_LEVEL||state.freeUpgrades<=0) return;
+  state.freeUpgrades--; skill.freeUpgraded=true; skill.level++; skill.upgradeLog.push('free');
+  closeModal(); render();
+}
+function downgradeSkill(id) {
+  const skill=getSkill(id);
+  if(!skill||!skill.unlocked||skill.level<2) return;
+  const last=skill.upgradeLog[skill.upgradeLog.length-1];
+  if(!last) return;
+  skill.upgradeLog.pop(); skill.level--;
+  if(last==='sp')   { state.skillPoints+=SP_PER_UPGRADE; skill.spSpent-=SP_PER_UPGRADE; }
+  else if(last==='af')   { state.fragments+=AF_PER_UPGRADE; skill.afSpent-=AF_PER_UPGRADE; }
+  else if(last==='free') { skill.freeUpgraded=false; state.freeUpgrades=Math.min(1,state.freeUpgrades+1); }
+  render();
+}
+function refundSkill(id) {
+  const skill=getSkill(id);
+  if(!skill||!skill.unlocked||!canRefund(skill)) return;
+  state.skillPoints+=(skill.spSpent||0); state.soulTokens+=(skill.stSpent||0); state.fragments+=(skill.afSpent||0);
+  if(skill.freeUpgraded) state.freeUpgrades=Math.min(1,state.freeUpgrades+1);
+  skill.unlocked=false; skill.level=0; skill.spSpent=0; skill.stSpent=0; skill.afSpent=0; skill.freeUpgraded=false; skill.upgradeLog=[];
+  render();
+}
+function freeRefundSkill(id) {
+  const skill=getSkill(id);
+  if(!skill||!skill.unlocked||!canFreeRefund(skill)||state.freeRefunds<=0) return;
+  state.freeRefunds--;
+  state.skillPoints+=(skill.spSpent||0); state.soulTokens+=(skill.stSpent||0); state.fragments+=(skill.afSpent||0);
+  if(skill.freeUpgraded) state.freeUpgrades=Math.min(1,state.freeUpgrades+1);
+  skill.unlocked=false; skill.level=0; skill.spSpent=0; skill.stSpent=0; skill.afSpent=0; skill.freeUpgraded=false; skill.upgradeLog=[];
+  closeModal(); render();
+}
+function reset() {
+  state=makeState();
+  Object.keys(_nodeStateCache).forEach(k=>delete _nodeStateCache[k]);
+  Object.keys(_lineStateCache).forEach(k=>delete _lineStateCache[k]);
+  render();
+}
+
+/* ===================== FREE MODAL ===================== */
+let modalMode = null;
+function openModal(mode) {
+  modalMode = mode;
+  const overlay = document.getElementById('free-modal-overlay');
+  const title   = document.getElementById('fm-title');
+  const sub     = document.getElementById('fm-sub');
+  const list    = document.getElementById('fm-list');
+
+  if (mode === 'refund') {
+    title.textContent = '✦ Free Refund';
+    sub.textContent   = 'Pick any unlocked skill to refund for free';
+    const eligible = state.skills.filter(s=>canFreeRefund(s));
+    if (!eligible.length) { list.innerHTML='<div class="fm-empty">No skills to refund</div>'; }
+    else {
+      list.innerHTML='';
+      eligible.forEach(sk => {
+        const spoke=SPOKES.find(s=>s.id===sk.spokeId);
+        const row=document.createElement('div'); row.className='fm-skill-row';
+        row.innerHTML='<div style="flex:1"><div class="fm-skill-name">'+sk.name+'</div><div class="fm-skill-spoke" style="color:rgb('+SPOKE_COLORS[sk.spokeId]+')">'+((spoke?spoke.label:''))+'</div></div><div class="fm-skill-level">Lvl '+sk.level+'</div>';
+        row.addEventListener('click',()=>freeRefundSkill(sk.id));
+        list.appendChild(row);
+      });
+    }
+  } else {
+    title.textContent = '✦ Free Level Up';
+    sub.textContent   = 'Pick any unlocked skill to gain +1 level free';
+    const eligible = state.skills.filter(s=>s.unlocked&&!s.noLevel&&s.level<MAX_SKILL_LEVEL);
+    if (!eligible.length) { list.innerHTML='<div class="fm-empty">No skills can be leveled up</div>'; }
+    else {
+      list.innerHTML='';
+      eligible.forEach(sk => {
+        const spoke=SPOKES.find(s=>s.id===sk.spokeId);
+        const row=document.createElement('div'); row.className='fm-skill-row';
+        row.innerHTML='<div style="flex:1"><div class="fm-skill-name">'+sk.name+'</div><div class="fm-skill-spoke" style="color:rgb('+SPOKE_COLORS[sk.spokeId]+')">'+((spoke?spoke.label:''))+'</div></div><div class="fm-skill-level">Lvl '+sk.level+' → '+(sk.level+1)+'</div>';
+        row.addEventListener('click',()=>upgradeFreeSkill(sk.id));
+        list.appendChild(row);
+      });
+    }
+  }
+  overlay.classList.add('open');
+}
+function closeModal() { document.getElementById('free-modal-overlay').classList.remove('open'); modalMode=null; }
+document.getElementById('fm-cancel').addEventListener('click', closeModal);
+document.getElementById('free-modal-overlay').addEventListener('click', e => {
+  if (e.target===document.getElementById('free-modal-overlay')) closeModal();
+});
+
+/* ===================== RACE SELECTION ===================== */
+function applyTrunkOverrides() {
+  Object.entries(TRUNK_OVERRIDES).forEach(([id, pos]) => {
+    trunkLivePositions[id] = { x: pos.x, y: pos.y };
+    const node = document.getElementById('node-'+id);
+    if (node) { node.style.left=pos.x+'px'; node.style.top=pos.y+'px'; }
+  });
+  Object.keys(TRUNK_OVERRIDES).forEach(id => updateNodeAndChildLines(id));
+}
+
+function selectRace(race) {
+  currentRace = race;
+  buildSpokes(race);
+  state = makeState();
+  Object.keys(_nodeStateCache).forEach(k=>delete _nodeStateCache[k]);
+  Object.keys(_lineStateCache).forEach(k=>delete _lineStateCache[k]);
+  document.getElementById('race-screen').classList.add('hidden');
+  buildTree();
+  applyTrunkOverrides();
+  render();
+  centerOnCore();
+}
+
+document.querySelectorAll('.rs-card').forEach(card => {
+  card.addEventListener('click', ()=>selectRace(card.dataset.race));
+});
+document.getElementById('change-race-btn').addEventListener('click', ()=>{
+  document.getElementById('race-screen').classList.remove('hidden');
+});
+document.getElementById('free-refund-btn').addEventListener('click', ()=>{ if(state.freeRefunds>0) openModal('refund'); });
+document.getElementById('free-upgrade-btn').addEventListener('click', ()=>{ if(state.freeUpgrades>0) openModal('upgrade'); });
+
+/* ===================== PAN + ZOOM — RAF LOOP ===================== */
+const viewport  = document.getElementById('tree-viewport');
+const treeInner = document.getElementById('tree-inner');
+const VW = window.innerWidth, VH = window.innerHeight, CW = 2400, CH = 2400;
+
+let pan   = { x: 0, y: 0 };
+let scale = 1;
+let isPanning = false;
+let panOrigin   = { x:0, y:0 };
+let mouseOrigin = { x:0, y:0 };
+
+function centerOnCore() {
+  pan = clampPan(VW/2 - CENTER*scale, VH/2 - CENTER*scale, scale);
+  applyTransform();
+}
+
+function clampPan(px, py, sc) {
+  return {
+    x: Math.min(2000, Math.max(VW - CW*sc - 2000, px)),
+    y: Math.min(2000, Math.max(VH - CH*sc - 2000, py)),
+  };
+}
+
+function applyTransform() {
+  treeInner.style.transform = 'translate3d('+(pan.x|0)+'px,'+(pan.y|0)+'px,0) scale('+scale+')';
+}
+
+/* PAN — math in mousemove (no DOM), DOM write gated by RAF dirty flag (60fps cap, always latest position) */
+let _panDirty = false;
+
+viewport.addEventListener('mousedown', e => {
+  if (e.target.closest('.hud, button, input, #free-modal')) return;
+  if (e.target.classList.contains('skill-node')) return;
+  if (editModeActive && e.target.closest('.misc-draggable')) return;
+  isPanning = true;
+  mouseOrigin.x = e.clientX; mouseOrigin.y = e.clientY;
+  panOrigin.x = pan.x;       panOrigin.y = pan.y;
+  viewport.classList.add('panning');
+  document.getElementById('node-layer').style.pointerEvents = 'none';
+  e.preventDefault();
+});
+
+window.addEventListener('mousemove', e => {
+  if (!isPanning) return;
+  const px = panOrigin.x + e.clientX - mouseOrigin.x;
+  const py = panOrigin.y + e.clientY - mouseOrigin.y;
+  const mnX = VW - CW*scale - 2000, mnY = VH - CH*scale - 2000;
+  pan.x = px < mnX ? mnX : px > 2000 ? 2000 : px;
+  pan.y = py < mnY ? mnY : py > 2000 ? 2000 : py;
+  if (!_panDirty) { _panDirty = true; requestAnimationFrame(() => { applyTransform(); _panDirty = false; }); }
+}, { passive: true });
+
+window.addEventListener('mouseup', () => {
+  isPanning = false;
+  viewport.classList.remove('panning');
+  document.getElementById('node-layer').style.pointerEvents = '';
+}, { passive: true });
+
+let _wheelRaf = false, _pendingWheel = null;
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY > 0 ? 0.92 : 1.08;
+  const rect = viewport.getBoundingClientRect();
+  _pendingWheel = { factor, mx: e.clientX - rect.left, my: e.clientY - rect.top };
+  if (!_wheelRaf) {
+    _wheelRaf = true;
+    requestAnimationFrame(() => {
+      if (_pendingWheel) {
+        const { factor: f, mx, my } = _pendingWheel; _pendingWheel = null;
+        const newScale = Math.min(2.0, Math.max(0.15, scale * f));
+        pan.x = mx - (mx - pan.x) * (newScale / scale);
+        pan.y = my - (my - pan.y) * (newScale / scale);
+        scale = newScale;
+        pan = clampPan(pan.x, pan.y, scale);
+        applyTransform();
+      }
+      _wheelRaf = false;
+    });
+  }
+}, { passive: false });
+
+/* Touch */
+let touchStart = null, _touchDirty = false;
+const _ts = { x:0, y:0 };
+viewport.addEventListener('touchstart', e => {
+  if (e.touches.length===1) {
+    _ts.x=e.touches[0].clientX; _ts.y=e.touches[0].clientY;
+    touchStart=true; panOrigin.x=pan.x; panOrigin.y=pan.y;
+  }
+}, { passive: true });
+viewport.addEventListener('touchmove', e => {
+  if (!touchStart||e.touches.length!==1) return;
+  const px = panOrigin.x+e.touches[0].clientX-_ts.x;
+  const py = panOrigin.y+e.touches[0].clientY-_ts.y;
+  const mnX = VW-CW*scale-2000, mnY = VH-CH*scale-2000;
+  pan.x = px < mnX ? mnX : px > 2000 ? 2000 : px;
+  pan.y = py < mnY ? mnY : py > 2000 ? 2000 : py;
+  if (!_touchDirty) { _touchDirty=true; requestAnimationFrame(()=>{ applyTransform(); _touchDirty=false; }); }
+  e.preventDefault();
+}, { passive: false });
+viewport.addEventListener('touchend', ()=>{ touchStart=null; }, { passive: true });
+
+/* ===================== SHIFT KEY VISUAL ===================== */
+(function() {
+  function setShiftMode(on) {
+    document.querySelectorAll('.skill-node').forEach(n => {
+      const id = n.id.replace('node-','');
+      const sk = getSkill(id);
+      if (on && sk && !sk.unlocked && isAvailable(sk)) n.classList.add('shift-ready');
+      else n.classList.remove('shift-ready');
+    });
+  }
+  window.addEventListener('keydown', e=>{ if(e.key==='Shift') setShiftMode(true); });
+  window.addEventListener('keyup',   e=>{ if(e.key==='Shift') setShiftMode(false); });
+  window.addEventListener('blur',    ()=>setShiftMode(false));
+})();
+
+document.getElementById('reset-btn').addEventListener('click', reset);
+document.getElementById('race-screen').classList.remove('hidden');
+
+/* ===================== LAYOUT EDITOR ===================== */
+let editModeActive = false;
+
+const livePositions      = {};
+const trunkLivePositions = {};
+
+getAllBranchesStatic().forEach(br => {
+  livePositions[br.id] = { x: br.bx, y: br.by };
+});
+
+function getAllBranchesStatic() {
+  return [...MISC_BRANCHES, ...STR_BRANCHES, ...HAKUDA_BRANCHES, ...SPEED_BRANCHES, ...QUINCY_BRANCHES, ...HOLLOW_BRANCHES, ...SHINIGAMI_BRANCHES];
+}
+function getAllBranches() {
+  return [
+    ...MISC_BRANCHES, ...STR_BRANCHES, ...HAKUDA_BRANCHES, ...SPEED_BRANCHES,
+    ...(currentRace==='Quincy'    ? QUINCY_BRANCHES    : []),
+    ...(currentRace==='Hollow'    ? HOLLOW_BRANCHES    : []),
+    ...(currentRace==='Shinigami' ? SHINIGAMI_BRANCHES : []),
+  ];
+}
+function findBranch(id) { return getAllBranchesStatic().find(b=>b.id===id)||null; }
+function getLivePos(nodeId) {
+  const br=findBranch(nodeId);
+  if (br) return livePositions[nodeId]||{x:br.bx,y:br.by};
+  return trunkLivePositions[nodeId]||getNodePos(nodeId);
+}
+
+function updateBranchLine(branchId) {
+  const ln=_lineDOMCache[branchId]; if(!ln) return;
+  const br=findBranch(branchId);
+  const childPos=getLivePos(branchId);
+  let parentPos;
+  if (br) {
+    if (br.parent===null||br.parent===undefined) return;
+    parentPos=getLivePos(br.parent);
+  } else {
+    let found=false;
+    for (const spoke of SPOKES) {
+      const idx=spoke.skills.findIndex(sk=>sk.id===branchId); if(idx===-1) continue;
+      found=true;
+      parentPos = idx===0 ? {x:CENTER,y:CENTER} : getLivePos(spoke.skills[idx-1].id);
+      break;
+    }
+    if(!found) parentPos=childPos;
+  }
+  const r1 = (!br && (() => { for(const sp of SPOKES){ const idx=sp.skills.findIndex(s=>s.id===branchId); if(idx===0) return true; } return false; })()) ? CORE_R : NODE_R;
+  shortenLine(ln, parentPos.x, parentPos.y, childPos.x, childPos.y, r1, NODE_R);
+}
+
+function updateNodeAndChildLines(nodeId) {
+  updateBranchLine(nodeId);
+  getAllBranchesStatic().forEach(child=>{ if(child.parent===nodeId) updateBranchLine(child.id); });
+  SPOKES.forEach(spoke => {
+    for (let i=0; i<spoke.skills.length; i++) {
+      if (spoke.skills[i].id===nodeId) {
+        const ln=_lineDOMCache[nodeId];
+        if(ln){ const pp=i===0?{x:CENTER,y:CENTER}:getLivePos(spoke.skills[i-1].id); const cp=getLivePos(nodeId); shortenLine(ln,pp.x,pp.y,cp.x,cp.y,i===0?CORE_R:NODE_R,NODE_R); }
+      }
+      if (i>0&&spoke.skills[i-1].id===nodeId) {
+        const childId=spoke.skills[i].id; const childLn=_lineDOMCache[childId];
+        if(childLn){ const pp=getLivePos(nodeId); const cp=getLivePos(childId); shortenLine(childLn,pp.x,pp.y,cp.x,cp.y,NODE_R,NODE_R); }
+      }
+    }
+  });
+}
+
+function setEditMode(active) {
+  editModeActive = active;
+  const editBtn = document.getElementById('edit-layout-btn');
+  const saveBtn = document.getElementById('save-layout-btn');
+  const banner  = document.getElementById('edit-mode-banner');
+  if (editBtn) editBtn.classList.toggle('active', active);
+  if (saveBtn) saveBtn.classList.toggle('visible', active);
+  /* Banner is hidden via CSS override so we don't show it regardless */
+  Object.keys(_nodeStateCache).forEach(k=>delete _nodeStateCache[k]);
+  render();
+}
+
+document.addEventListener('click', e => {
+  const eb=e.target.closest('#edit-layout-btn'); if(eb){ setEditMode(!editModeActive); return; }
+  const sb=e.target.closest('#save-layout-btn'); if(sb){ doSaveLayout(); return; }
+});
+
+/* ── Drag state — RAF-based for 240fps ── */
+let _dragNode=null, _dragBranchId=null, _dragStartMouse={x:0,y:0}, _dragStartPos={x:0,y:0};
+let _dragRaf=false, _dragPendingX=0, _dragPendingY=0;
+
+document.addEventListener('mousedown', e => {
+  if (!editModeActive) return;
+  const node=e.target.closest('.misc-draggable'); if(!node) return;
+  const nodeId=node.id.replace('node-','');
+  const startPos=getLivePos(nodeId);
+  const br=findBranch(nodeId);
+  if (!br&&!trunkLivePositions[nodeId]) trunkLivePositions[nodeId]={...startPos};
+  e.preventDefault(); e.stopPropagation();
+  isPanning=false; viewport.classList.remove('panning');
+  _dragNode=node; _dragBranchId=nodeId;
+  _dragStartMouse={x:e.clientX,y:e.clientY};
+  _dragStartPos={...startPos};
+  node.style.zIndex=20;
+});
+
+document.addEventListener('mousemove', e => {
+  if (!_dragNode||!editModeActive) return;
+  _dragPendingX = Math.round(_dragStartPos.x + (e.clientX-_dragStartMouse.x)/scale);
+  _dragPendingY = Math.round(_dragStartPos.y + (e.clientY-_dragStartMouse.y)/scale);
+  if (!_dragRaf) {
+    _dragRaf=true;
+    requestAnimationFrame(()=>{
+      const newX=_dragPendingX, newY=_dragPendingY;
+      const br=findBranch(_dragBranchId);
+      if (br) livePositions[_dragBranchId]={x:newX,y:newY};
+      else    trunkLivePositions[_dragBranchId]={x:newX,y:newY};
+      _dragNode.style.left=newX+'px';
+      _dragNode.style.top=newY+'px';
+      updateNodeAndChildLines(_dragBranchId);
+      _dragRaf=false;
+    });
+  }
+}, { passive: true });
+
+document.addEventListener('mouseup', ()=>{
+  if(!_dragNode) return;
+  _dragNode.style.zIndex='';
+  _dragNode=null; _dragBranchId=null;
+}, { passive: true });
+
+/* Save Layout */
+function doSaveLayout() {
+  function serializeBranches(arr, varName) {
+    let src='const '+varName+' = [\n';
+    arr.forEach((br,i)=>{
+      const pos=livePositions[br.id]||{x:br.bx,y:br.by};
+      let entry='  { id:\''+br.id+'\', name:\''+br.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\', spokeId:\''+br.spokeId+'\', parent:\''+br.parent+'\'';
+      if(br.mutexWith) entry+=', mutexWith:\''+br.mutexWith+'\'';
+      entry+=', costSP:'+br.costSP+', costCash:'+br.costCash+', req:{'+Object.entries(br.req||{}).map(([k,v])=>k+':'+v).join(',')+'}';
+      if(br.noLevel) entry+=', noLevel:true';
+      if(br.passive) entry+=', passive:true';
+      entry+=', desc:\''+br.desc.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\', upgradeNote:'+(br.upgradeNote?'\''+br.upgradeNote.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\'':'null');
+      if(br.accentColor) entry+=', accentColor:\''+br.accentColor+'\'';
+      entry+=', bx:'+pos.x+', by:'+pos.y+' }';
+      if(i<arr.length-1) entry+=',';
+      src+=entry+'\n';
+    });
+    return src+'];\n';
+  }
+  let src=document.documentElement.outerHTML;
+  src=src.replace(/const MISC_BRANCHES = \[[\s\S]*?\];/,serializeBranches(MISC_BRANCHES,'MISC_BRANCHES').trimEnd());
+  src=src.replace(/const STR_BRANCHES = \[[\s\S]*?\];/,serializeBranches(STR_BRANCHES,'STR_BRANCHES').trimEnd());
+  src=src.replace(/const HAKUDA_BRANCHES = \[[\s\S]*?\];/,serializeBranches(HAKUDA_BRANCHES,'HAKUDA_BRANCHES').trimEnd());
+  src=src.replace(/const SPEED_BRANCHES = \[[\s\S]*?\];/,serializeBranches(SPEED_BRANCHES,'SPEED_BRANCHES').trimEnd());
+  src=src.replace(/const QUINCY_BRANCHES = \[[\s\S]*?\];/,serializeBranches(QUINCY_BRANCHES,'QUINCY_BRANCHES').trimEnd());
+  src=src.replace(/const HOLLOW_BRANCHES = \[[\s\S]*?\];/,serializeBranches(HOLLOW_BRANCHES,'HOLLOW_BRANCHES').trimEnd());
+  src=src.replace(/const SHINIGAMI_BRANCHES = \[[\s\S]*?\];/,serializeBranches(SHINIGAMI_BRANCHES,'SHINIGAMI_BRANCHES').trimEnd());
+  const trunkSerial='const TRUNK_OVERRIDES = '+JSON.stringify(trunkLivePositions,null,0)+';';
+  src=src.replace(/const TRUNK_OVERRIDES = \{[\s\S]*?\};/,trunkSerial);
+  const blob=new Blob([src],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='build_maker_final.html'; a.click();
+  URL.revokeObjectURL(a.href);
+}
+/* END LAYOUT EDITOR */
+</script>
+</body></html>
