@@ -141,6 +141,13 @@
     cursor:grab; z-index:2; pointer-events:auto;
   }
   #tree-viewport.panning { cursor:grabbing; }
+  /* During pan: kill pointer-events AND transitions on nodes directly.
+     Node-layer already has pointer-events:none but nodes override it with auto.
+     Targeting .skill-node directly is the only way to disable :hover + transitions. */
+  #tree-viewport.panning .skill-node {
+    pointer-events: none !important;
+    transition: none !important;
+  }
   #tree-inner {
     position:absolute; width:3200px; height:3200px; pointer-events:none;
     will-change: transform;
@@ -156,7 +163,6 @@
     background:radial-gradient(circle,rgba(230,250,255,1) 0%,rgba(120,220,255,.95) 20%,rgba(60,160,230,.7) 45%,rgba(20,80,180,.3) 75%,transparent 100%);
     transform:translate3d(-50%,-50%,0);
     pointer-events:none;
-    will-change: transform;
   }
 
   .spoke-label {
@@ -436,10 +442,12 @@
   /* HINT STRIP */
   .hint-strip {
     margin-top: 6px;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    display: flex; flex-direction: column; gap: 4px;
   }
   .hint-item {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
+    display: grid;
+    grid-template-columns: 1fr 14px 1fr;
+    align-items: center;
     padding: 5px 12px;
     background: rgba(4,9,22,.82);
     border: 1px solid rgba(80,140,220,.18);
@@ -450,15 +458,18 @@
     font-family: 'Exo 2', sans-serif; font-size: 10px;
     font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
     color: rgba(80,210,255,.9);
+    text-align: right;
   }
   .hint-sep {
     font-family: 'Share Tech Mono', monospace; font-size: 9px;
     color: rgba(80,140,220,.35);
+    text-align: center;
   }
   .hint-text {
     font-family: 'Exo 2', sans-serif; font-size: 10px;
     font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
     color: rgba(140,165,200,.55);
+    text-align: left;
   }
 
   /* RESET / CHANGE RACE BTNS */
@@ -497,8 +508,6 @@
   .tt-status.avail    { color:#67e8f9; }
   .tt-status.unlocked { color:#a3e635; }
   .tt-status.maxed    { color:#fcd34d; }
-
-  .pan-hint { position:absolute; bottom:52px; left:50%; transform:translateX(-50%); font-family:'Exo 2',sans-serif; font-size:10px; font-weight:600; letter-spacing:.25em; text-transform:uppercase; color:#334155; pointer-events:none; z-index:3; }
 
   /* LAYOUT EDITOR — hidden from users. To restore: remove display:none from #edit-layout-btn and #edit-mode-banner styles */
   #edit-layout-btn { display: none !important; }
@@ -688,7 +697,7 @@
 <div id="free-modal-overlay">
   <div id="free-modal">
     <div>
-      <div class="fm-title" id="fm-title">✦ Free Refund</div>
+      <div class="fm-title" id="fm-title">✦ Shrine Refund</div>
       <div class="fm-sub" id="fm-sub">Pick any unlocked skill to refund for free</div>
     </div>
     <div class="fm-list" id="fm-list"></div>
@@ -761,7 +770,7 @@
     <button class="free-token-btn" id="free-refund-btn">
       <span class="ft-icon">↩</span>
       <span class="ft-text">
-        <div class="ft-label">Free Refund</div>
+        <div class="ft-label">Shrine Refund</div>
         <div class="ft-sub">Click to pick a skill</div>
       </span>
       <span class="ft-count" id="free-refund-count">1</span>
@@ -769,7 +778,7 @@
     <button class="free-token-btn" id="free-upgrade-btn">
       <span class="ft-icon">✦</span>
       <span class="ft-text">
-        <div class="ft-label">Free Level Up</div>
+        <div class="ft-label">Shrine Level Up</div>
         <div class="ft-sub">Click to pick a skill</div>
       </span>
       <span class="ft-count" id="free-upgrade-count">1</span>
@@ -829,8 +838,6 @@
   </div>
   <!-- Edit mode banner intentionally hidden via CSS. To restore: find "#edit-mode-banner { display: none !important; }" and remove it -->
   <div id="edit-mode-banner">✎ Edit Mode — Drag any node to reposition · Lines update live</div>
-
-  <div class="pan-hint">Drag to explore · Scroll to zoom</div>
 
   <div id="tree-viewport">
     <div id="tree-inner" style="transform-origin: 0px 0px; transform: translate3d(0px, 0px, 0px) scale(1);">
@@ -1467,6 +1474,7 @@ const _ttW = 265, _ttH = 180;
 let _lastTooltipSkillKey = null;
 
 function showTooltip(skillId, e) {
+  if (isPanning) return;
   tooltipSkillId = skillId;
   updateTooltipContent(skillId);
   tooltip.style.display = 'block';
@@ -1476,6 +1484,7 @@ function hideTooltip() { tooltip.style.display = 'none'; tooltipSkillId = null; 
 
 let _ttRafPending = false, _ttPX = 0, _ttPY = 0;
 function moveTooltip(e) {
+  if (isPanning) return;
   _ttPX = e.clientX; _ttPY = e.clientY;
   if (!_ttRafPending) {
     _ttRafPending = true;
@@ -1936,7 +1945,7 @@ function openModal(mode) {
   const list    = document.getElementById('fm-list');
 
   if (mode === 'refund') {
-    title.textContent = '✦ Free Refund';
+    title.textContent = '✦ Shrine Refund';
     sub.textContent   = 'Pick any unlocked skill to refund for free';
     const eligible = state.skills.filter(s=>canFreeRefund(s));
     if (!eligible.length) { list.innerHTML='<div class="fm-empty">No skills to refund</div>'; }
@@ -1951,7 +1960,7 @@ function openModal(mode) {
       });
     }
   } else {
-    title.textContent = '✦ Free Level Up';
+    title.textContent = '✦ Shrine Level Up';
     sub.textContent   = 'Pick any unlocked skill to gain +1 level free';
     const eligible = state.skills.filter(s=>s.unlocked&&!s.noLevel&&s.level<MAX_SKILL_LEVEL);
     if (!eligible.length) { list.innerHTML='<div class="fm-empty">No skills can be leveled up</div>'; }
@@ -2044,7 +2053,6 @@ viewport.addEventListener('mousedown', e => {
   mouseOrigin.x = e.clientX; mouseOrigin.y = e.clientY;
   panOrigin.x = pan.x;       panOrigin.y = pan.y;
   viewport.classList.add('panning');
-  document.getElementById('node-layer').style.pointerEvents = 'none';
   e.preventDefault();
 });
 
@@ -2061,7 +2069,6 @@ window.addEventListener('mousemove', e => {
 window.addEventListener('mouseup', () => {
   isPanning = false;
   viewport.classList.remove('panning');
-  document.getElementById('node-layer').style.pointerEvents = '';
 }, { passive: true });
 
 let _wheelRaf = false, _pendingWheel = null;
