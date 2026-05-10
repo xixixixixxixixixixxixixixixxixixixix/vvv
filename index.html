@@ -2339,7 +2339,8 @@ document.querySelectorAll('.rs-card').forEach(card => {
   card.addEventListener('click', ()=>selectRace(card.dataset.race));
 });
 document.getElementById('change-race-btn').addEventListener('click', ()=>{
-  });
+  document.getElementById('race-screen').classList.remove('hidden');
+});
 document.getElementById('free-refund-btn').addEventListener('click', ()=>{ if(state.freeRefunds>0) openModal('refund'); });
 document.getElementById('free-upgrade-btn').addEventListener('click', ()=>{ if(state.freeUpgrades>0) openModal('upgrade'); });
 
