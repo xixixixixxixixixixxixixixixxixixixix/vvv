@@ -139,7 +139,27 @@
     position:absolute; left:0; top:0;
     width:100vw; height:100vh; overflow:hidden;
     cursor:grab; z-index:2; pointer-events:auto;
+    touch-action: none;
   }
+
+  /* TREE LOADING OVERLAY */
+  #tree-loading {
+    position:fixed; inset:0; z-index:190;
+    display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px;
+    background: radial-gradient(ellipse at center, rgba(5,12,35,0.97) 0%, rgba(2,6,18,0.99) 100%);
+    pointer-events:none;
+  }
+  #tree-loading .tl-ring {
+    width:48px; height:48px; border-radius:50%;
+    border:3px solid rgba(80,210,255,0.15);
+    border-top-color:rgba(80,210,255,0.85);
+    animation: tlSpin 0.75s linear infinite;
+  }
+  #tree-loading .tl-text {
+    font-family:'Cinzel',serif; font-size:11px; letter-spacing:.3em;
+    text-transform:uppercase; color:rgba(100,180,255,0.55);
+  }
+  @keyframes tlSpin { to { transform:rotate(360deg); } }
   #tree-viewport.panning { cursor:grabbing; }
   /* During pan: kill pointer-events AND transitions on nodes directly.
      Node-layer already has pointer-events:none but nodes override it with auto.
@@ -262,7 +282,7 @@
   /* HUD */
   .hud { position:absolute; z-index:5; }
   .hud-tl { top:18px; left:18px; width:320px; }
-  .hud-tr { top:18px; right:18px; width:240px; text-align:right; }
+  .hud-tr { top:18px; right:18px; width:290px; text-align:right; }
   .hud-bl { bottom:18px; left:18px; width:300px; }
   .hud-br { bottom:18px; right:18px; width:320px; }
   .hud-bc { bottom:14px; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; }
@@ -319,65 +339,83 @@
   .panel-foot { margin-top:8px; padding-top:6px; border-top:1px solid rgba(80,210,255,.1); text-align:center; font-family:'Exo 2',sans-serif; font-size:10px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:#64748b; }
   .panel-foot b { color:rgba(80,210,255,.7); font-weight:700; }
 
-  .hud-tr .info-line {
-    background:rgba(4,10,24,.88);
-    border:1px solid rgba(255,255,255,.1);
-    border-radius:4px; padding:8px 14px; margin-bottom:6px;
-    position:relative; text-align:left;
-  }
-  .info-line.cyan  { border-color:rgba(80,180,255,.25); }
-  .info-line.red   { border-color:rgba(255,80,80,.25); }
-  .info-line.sp-line { border-color:rgba(255,160,40,.28); }
-  .info-line.frags { border-color:rgba(120,140,255,.28); background:rgba(4,10,24,.88); }
-  .info-line.green { border-color:rgba(52,200,140,.28); }
-  .info-line .label {
-    font-family:'Exo 2',sans-serif; font-size:9px; font-weight:800;
-    letter-spacing:.35em; text-transform:uppercase;
-    color:rgba(160,185,220,.55); display:block; margin-bottom:1px;
-  }
-  .info-line.cyan .label { color:rgba(130,200,255,.55); }
-  .info-line.red  .label { color:rgba(255,130,130,.55); }
-  .info-line.sp-line .label { color:rgba(255,180,80,.55); }
-  .info-line.frags .label { color:rgba(160,170,255,.55); }
-  .info-line.green .label { color:rgba(80,210,160,.55); }
-  .info-line .num {
-    font-family:'Cinzel',serif; font-weight:700; font-size:18px;
-    display:inline; line-height:1;
-    color:#e8f0ff;
-  }
-  .info-line.cyan .num { color:#7dd8ff; }
-  .info-line.red  .num { color:#ff8080; }
-  .info-line.sp-line .num { color:#ffb84a; }
+  /* Keep .info-line for any legacy references but TR no longer uses it */
   .info-line.frags .num { color:#a0a8ff; }
+  .info-line.sp-line .num { color:#ffb84a; }
   .info-line.green .num { color:#50d8a8; }
-  .info-line .total { font-family:'Share Tech Mono',monospace; color:rgba(150,165,185,.4); font-size:12px; margin-left:2px; }
 
   .race-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(6,14,31,.93); border:1px solid rgba(120,120,120,.4); border-radius:4px; padding:7px 12px; font-family:'Cinzel',serif; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#c0c8d8; margin-bottom:8px; }
   .race-badge .dot { width:6px; height:6px; border-radius:50%; }
 
-  /* FREE TOKENS */
-  .free-token-btn {
-    display:flex; align-items:center; gap:8px;
-    background:rgba(6,14,31,.93); border:1px solid rgba(252,211,77,.35);
-    border-radius:4px; padding:8px 12px; margin-bottom:8px;
-    cursor:pointer; width:100%; text-align:left;
-    transition:border-color .15s ease, background .15s ease;
+  /* ── TR RESOURCE PANEL — meter bars ── */
+  .tr-res-meters {
+    display:flex; flex-direction:column; gap:0; margin:12px 0 14px;
+  }
+  .tr-meter-row {
+    padding:10px 0;
+    border-bottom:1px solid rgba(80,120,180,.1);
+  }
+  .tr-meter-row:last-child { border-bottom:none; padding-bottom:4px; }
+  .tr-meter-head {
+    display:flex; align-items:baseline; justify-content:space-between; margin-bottom:8px;
+  }
+  .tr-meter-label {
+    font-family:'Exo 2',sans-serif; font-size:10px; font-weight:800;
+    letter-spacing:.28em; text-transform:uppercase; color:rgba(165,200,230,.45);
+  }
+  .tr-meter-val { display:flex; align-items:baseline; gap:4px; }
+  .tr-meter-num {
+    font-family:'Cinzel',serif; font-size:26px; font-weight:700; line-height:1;
+  }
+  .tr-meter-max {
+    font-family:'Share Tech Mono',monospace; font-size:10px; opacity:.3;
+  }
+  .tr-meter-bar {
+    height:6px; background:rgba(3,7,20,.9);
+    border:1px solid rgba(80,120,180,.18); border-radius:2px; overflow:hidden;
     position:relative;
   }
-  .free-token-btn:hover:not(:disabled) { border-color:rgba(252,211,77,.7); background:rgba(252,211,77,.06); }
-  .free-token-btn:disabled { opacity:.35; cursor:not-allowed; }
-  .free-token-btn .corner { position:absolute; width:8px; height:8px; border-color:rgba(252,211,77,.6); }
-  .free-token-btn .corner.tl { top:-1px; left:-1px; border-top:2px solid; border-left:2px solid; }
-  .free-token-btn .corner.tr { top:-1px; right:-1px; border-top:2px solid; border-right:2px solid; }
-  .free-token-btn .corner.bl { bottom:-1px; left:-1px; border-bottom:2px solid; border-left:2px solid; }
-  .free-token-btn .corner.br { bottom:-1px; right:-1px; border-bottom:2px solid; border-right:2px solid; }
-  .free-token-btn .ft-icon { font-size:15px; flex-shrink:0; }
-  .free-token-btn .ft-text { flex:1; }
-  .free-token-btn .ft-label { font-family:'Cinzel',serif; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:#fde68a; font-weight:700; }
-  .free-token-btn .ft-sub   { font-family:'Exo 2',sans-serif; font-size:10px; font-weight:600; color:#64748b; letter-spacing:.08em; margin-top:1px; }
-  .free-token-btn .ft-count { font-family:'Share Tech Mono',monospace; font-size:18px; font-weight:700; color:#fde68a; }
-  .free-token-btn:disabled .ft-label { color:#475569; }
-  .free-token-btn:disabled .ft-count { color:#475569; }
+  .tr-meter-fill {
+    position:absolute; inset:0 auto 0 0; border-radius:1px;
+    transition:width .3s ease;
+  }
+  .sp-bar  .tr-meter-fill { background:linear-gradient(90deg,rgba(130,70,0,.9),#ffb84a); }
+  .frag-bar .tr-meter-fill { background:linear-gradient(90deg,rgba(50,50,160,.9),#a0a8ff); }
+  .frags-col { color:#a0a8ff; }
+  .sp-col    { color:#ffb84a; }
+  .st-col    { color:#50d8a8; }
+
+  /* Shrine buttons — horizontal rows inside panel */
+  .tr-shrine-row { display:flex; flex-direction:column; gap:5px; }
+  .tr-shrine-btn {
+    width:100%; display:flex; align-items:center; gap:10px;
+    padding:9px 12px; background:rgba(252,211,77,.05);
+    border:1px solid rgba(252,211,77,.2); border-radius:3px;
+    cursor:pointer; position:relative; overflow:hidden;
+    transition:background .15s ease, border-color .15s ease; text-align:left;
+  }
+  .tr-shrine-btn::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(to right, rgba(252,211,77,.06), transparent);
+    pointer-events:none;
+  }
+  .tr-shrine-btn:hover:not(:disabled) { background:rgba(252,211,77,.1); border-color:rgba(252,211,77,.55); }
+  .tr-shrine-btn:disabled { opacity:.28; cursor:not-allowed; }
+  .tr-shrine-icon { font-size:14px; color:#fde68a; flex-shrink:0; line-height:1; }
+  .tr-shrine-label {
+    flex:1; font-family:'Exo 2',sans-serif; font-size:11px; font-weight:800;
+    letter-spacing:.14em; text-transform:uppercase; color:rgba(253,230,138,.8);
+  }
+  .tr-shrine-count {
+    font-family:'Share Tech Mono',monospace; font-size:17px; font-weight:700; color:#fcd34d; flex-shrink:0;
+  }
+  .tr-shrine-btn:disabled .tr-shrine-icon,
+  .tr-shrine-btn:disabled .tr-shrine-label,
+  .tr-shrine-btn:disabled .tr-shrine-count { color:#334155; }
+
+  /* FREE TOKENS — keep class for JS but visually off */
+  .free-token-btn { display:none; }
+  .free-token-btn .ft-label, .free-token-btn .ft-count { color:#475569; }
 
   /* diamond */
   .attr-panel-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px; }
@@ -391,9 +429,16 @@
   .attr-stat .name { font-family:'Cinzel',serif; font-size:10px; letter-spacing:.2em; text-transform:uppercase; font-weight:700; color:rgba(255,255,255,.6); }
   .attr-stat .name.has { color:#ffffff; text-shadow:0 0 8px rgba(255,255,255,.5); }
   .attr-stat .ctrl { display:flex; align-items:center; gap:3px; background:rgba(10,10,26,.92); border:1px solid rgba(180,180,200,.35); border-radius:3px; padding:3px 4px; }
-  .attr-stat .ctrl .val { font-family:'Share Tech Mono',monospace; font-size:11px; width:28px; text-align:center; color:#94a3b8; }
+  .attr-stat .ctrl .val { font-family:'Share Tech Mono',monospace; font-size:11px; width:28px; text-align:center; color:#94a3b8; cursor:text; }
   .attr-stat .ctrl .val.has { color:#ffffff; font-weight:700; }
   .attr-stat .ctrl .btn-tiny { width:18px; height:18px; font-size:11px; }
+  .attr-edit-input {
+    font-family:'Share Tech Mono',monospace; font-size:11px;
+    width:36px; text-align:center;
+    background:rgba(4,10,28,.98); border:1px solid rgba(120,200,255,.7);
+    border-radius:2px; color:#a5e7ff; outline:none; padding:1px 2px;
+    box-shadow:0 0 8px rgba(80,180,255,.3);
+  }
 
   /* SELECTED SKILL PANEL */
   .sel-empty { text-align:center; padding:16px 12px; }
@@ -619,6 +664,141 @@
     animation: shimmer 4s linear infinite, fadeUp 0.7s ease 0.8s both;
   }
   @keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: 300% center; } }
+
+  /* ===================== FONT FALLBACK — prevent blank flash if Google Fonts slow ===================== */
+  body { font-family: 'Exo 2', system-ui, sans-serif; }
+  .heading { font-family: 'Cinzel', Georgia, serif; }
+  .mono    { font-family: 'Share Tech Mono', 'Courier New', monospace; }
+
+  /* ===================== MOBILE RESPONSIVE ===================== */
+  @media (max-width: 768px) {
+    body { overflow: hidden; }
+
+    /* ── Race Screen ── */
+    .rs-title h1 { font-size: 18px; letter-spacing: 0.2em; }
+    .rs-title { margin-bottom: 20px; }
+    .rs-cards {
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      max-height: 70vh;
+      padding: 0 16px 16px;
+      width: 100%;
+      max-width: 400px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .rs-card {
+      width: 100%;
+      height: 130px;
+      flex-direction: row;
+      border-radius: 6px;
+    }
+    .rs-card:nth-child(1),
+    .rs-card:nth-child(2),
+    .rs-card:nth-child(3) { animation-delay: 0s; }
+    .rs-card:hover { transform: none; }
+    .rs-card:active { transform: scale(0.98); }
+    .rs-card-name { font-size: 16px; padding: 14px 14px 0; }
+    .rs-card-desc { font-size: 11px; padding: 0 14px 14px; }
+    .rs-credits { bottom: 14px; }
+    .rs-credits-badge { padding: 8px 18px 10px; }
+    .rs-credits-names { font-size: 12px; }
+
+    /* ── Tree title ── */
+    .tree-title h1 { font-size: 13px; letter-spacing: 0.2em; }
+    .tree-title p { font-size: 9px; }
+
+    /* ── HUD panels: collapse all by default, toggled open ── */
+    .hud-tl, .hud-tr, .hud-bl, .hud-br {
+      transition: transform 0.22s ease, opacity 0.22s ease;
+    }
+    .hud-tl { width: 200px; }
+    .hud-tr { width: 190px; }
+    .hud-bl { width: 200px; }
+    .hud-br { width: 200px; }
+    .hud-tl.mob-hidden { transform: translate(-110%, 0); opacity: 0; pointer-events: none; }
+    .hud-tr.mob-hidden { transform: translate(110%, 0);  opacity: 0; pointer-events: none; }
+    .hud-bl.mob-hidden { transform: translate(-110%, 0); opacity: 0; pointer-events: none; }
+    .hud-br.mob-hidden { transform: translate(110%, 0);  opacity: 0; pointer-events: none; }
+
+    /* ── Shrink font/spacing inside HUD panels ── */
+    .level-num { font-size: 26px; }
+    .panel-title { font-size: 10px; }
+    .panel-sub { font-size: 9px; }
+    .stat-row .name { font-size: 11px; }
+    .stat-row .val  { font-size: 11px; }
+    .race-badge { font-size: 9px; padding: 5px 10px; margin-bottom: 6px; }
+    .attr-stat .name { font-size: 8px; }
+    .hint-strip { display: none; }
+    .panel { padding: 8px 10px; }
+    .sk-name  { font-size: 13px; }
+    .sk-level { font-size: 11px; }
+    .sel-action { font-size: 12px; padding: 7px; }
+    /* TR resource panel mobile */
+    .tr-meter-num { font-size: 20px; }
+    .tr-meter-label { font-size: 9px; }
+    .tr-res-meters { margin: 8px 0 10px; }
+    .tr-meter-row { padding: 7px 0; }
+    .tr-shrine-btn { padding: 7px 10px; }
+    .tr-shrine-label { font-size: 10px; }
+    .tr-shrine-count { font-size: 14px; }
+
+    /* ── Bottom bar ── */
+    .hud-bc { bottom: 8px; gap: 6px; }
+    .reset-btn, .change-race-btn { font-size: 10px; padding: 6px 12px; }
+
+    /* ── Bottom HUD panels: sit above toggle buttons (which are at bottom:58px + 32px = 90px) ── */
+    .hud-bl { bottom: 96px !important; max-height: calc(100vh - 180px); overflow-y: auto; }
+    .hud-br { bottom: 96px !important; max-height: calc(100vh - 180px); overflow-y: auto; }
+
+    /* ── Mobile panel toggle buttons ── */
+    .mob-panel-toggle {
+      display: flex !important;
+    }
+
+    /* ── Free modal ── */
+    #free-modal { width: calc(100vw - 32px); max-height: 85vh; }
+
+    /* ── Hide floating tooltip on mobile (replaced by auto-open BR panel) ── */
+    #skill-tooltip { display: none !important; }
+
+    /* ── Mobile BR panel open animation ── */
+    .hud-br { transition: transform 0.18s ease, opacity 0.18s ease; }
+  }
+
+  /* Larger mobile / small tablet */
+  @media (min-width: 481px) and (max-width: 768px) {
+    .hud-tl { width: 240px; }
+    .hud-tr { width: 220px; }
+    .hud-bl { width: 240px; }
+    .hud-br { width: 240px; }
+  }
+
+  /* Mobile toggle buttons — hidden on desktop, shown on mobile via media query */
+  .mob-panel-toggle {
+    display: none;
+    position: fixed;
+    z-index: 10;
+    background: rgba(6,14,31,0.92);
+    border: 1px solid rgba(80,140,220,0.4);
+    border-radius: 4px;
+    color: #a5e7ff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    width: 32px; height: 32px;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .mob-panel-toggle:active { background: rgba(80,140,220,0.2); }
+  .mob-panel-toggle.tl { top: 18px;  left: 18px; }
+  .mob-panel-toggle.tr { top: 18px;  right: 18px; }
+  .mob-panel-toggle.bl { bottom: 58px; left: 18px; }
+  .mob-panel-toggle.br { bottom: 58px; right: 18px; }
+  .mob-panel-toggle.active { background: rgba(80,140,220,0.25); border-color: rgba(110,210,255,0.7); color: #67e8f9; }
+
 </style>
 </head>
 <body>
@@ -648,7 +828,7 @@
 </div>
 
 <!-- Faction Selection -->
-<div id="race-screen" class="hidden">
+<div id="race-screen">
   <div class="rs-title">
     <h1>Choose Your Faction</h1>
     <p>Your faction determines your unique skill branch</p>
@@ -707,6 +887,11 @@
 
 <!-- Main Stage -->
 <div class="stage" id="stage">
+  <!-- Tree loading overlay (shows while fonts resolve) -->
+  <div id="tree-loading">
+    <div class="tl-ring"></div>
+    <div class="tl-text">Loading</div>
+  </div>
   <div class="tree-title">
     <div class="row">
       <span class="line"></span>
@@ -734,15 +919,10 @@
       <div id="bp-stats"></div>
       <div class="panel-foot" style="display:none"></div>
     </div>
-    <!-- HINT STRIP: "Shift + Click" for both entries -->
+    <!-- HINT STRIP -->
     <div class="hint-strip">
       <div class="hint-item">
-        <span class="hint-key">Shift + Click</span>
-        <span class="hint-sep">·</span>
-        <span class="hint-text">+10</span>
-      </div>
-      <div class="hint-item">
-        <span class="hint-key">Shift + Click</span>
+        <span class="hint-key">Dbl-click / Shift+click</span>
         <span class="hint-sep">·</span>
         <span class="hint-text">Quick Unlock</span>
       </div>
@@ -755,34 +935,56 @@
       <div class="dot" id="race-dot" style="background: rgb(220, 230, 255);"></div>
       <span id="race-badge-text">Shinigami</span>
     </div>
-    <div class="info-line frags">
-      <span class="label">Ascension Fragments</span>
-      <span class="num" id="frag-num">6</span><span class="total"> / 6</span>
+    <div class="panel cyan">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;">
+        <h3 class="panel-title">Resources</h3>
+        <div class="panel-sub">Available</div>
+      </div>
+
+      <div class="tr-res-meters">
+        <div class="tr-meter-row">
+          <div class="tr-meter-head">
+            <span class="tr-meter-label">Skill Points</span>
+            <div class="tr-meter-val">
+              <span class="tr-meter-num sp-col" id="sp-num">100</span>
+              <span class="tr-meter-max sp-col">/ 100</span>
+            </div>
+          </div>
+          <div class="tr-meter-bar sp-bar"><div class="tr-meter-fill" id="sp-bar-fill" style="width:100%"></div></div>
+        </div>
+        <div class="tr-meter-row">
+          <div class="tr-meter-head">
+            <span class="tr-meter-label">Fragments</span>
+            <div class="tr-meter-val">
+              <span class="tr-meter-num frags-col" id="frag-num">6</span>
+              <span class="tr-meter-max frags-col">/ 6</span>
+            </div>
+          </div>
+          <div class="tr-meter-bar frag-bar"><div class="tr-meter-fill" id="frag-bar-fill" style="width:100%"></div></div>
+        </div>
+        <div class="tr-meter-row">
+          <div class="tr-meter-head">
+            <span class="tr-meter-label">Soul Tokens</span>
+            <span class="tr-meter-num st-col" id="ryo-num">50,000</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tr-shrine-row">
+        <button class="tr-shrine-btn" id="free-refund-btn">
+          <span class="tr-shrine-icon">↩</span>
+          <span class="tr-shrine-label">Shrine Refund</span>
+          <span class="tr-shrine-count" id="free-refund-count">1</span>
+        </button>
+        <button class="tr-shrine-btn" id="free-upgrade-btn">
+          <span class="tr-shrine-icon">✦</span>
+          <span class="tr-shrine-label">Shrine Level Up</span>
+          <span class="tr-shrine-count" id="free-upgrade-count">1</span>
+        </button>
+      </div>
     </div>
-    <div class="info-line sp-line">
-      <span class="label">Skill Points</span>
-      <span class="num" id="sp-num">100</span><span class="total"> / 100</span>
-    </div>
-    <div class="info-line green">
-      <span class="label">Soul Tokens</span>
-      <span class="num" id="ryo-num">50,000</span>
-    </div>
-    <button class="free-token-btn" id="free-refund-btn">
-      <span class="ft-icon">↩</span>
-      <span class="ft-text">
-        <div class="ft-label">Shrine Refund</div>
-        <div class="ft-sub">Click to pick a skill</div>
-      </span>
-      <span class="ft-count" id="free-refund-count">1</span>
-    </button>
-    <button class="free-token-btn" id="free-upgrade-btn">
-      <span class="ft-icon">✦</span>
-      <span class="ft-text">
-        <div class="ft-label">Shrine Level Up</div>
-        <div class="ft-sub">Click to pick a skill</div>
-      </span>
-      <span class="ft-count" id="free-upgrade-count">1</span>
-    </button>
   </div>
 
   <!-- BL: Attributes -->
@@ -837,6 +1039,12 @@
     <button id="save-layout-btn">⬇ Save Layout</button>
   </div>
   <!-- Edit mode banner intentionally hidden via CSS. To restore: find "#edit-mode-banner { display: none !important; }" and remove it -->
+
+  <!-- Mobile HUD toggle buttons -->
+  <button class="mob-panel-toggle tl" id="mob-tl" title="Build Points">≡</button>
+  <button class="mob-panel-toggle tr" id="mob-tr" title="Resources">◈</button>
+  <button class="mob-panel-toggle bl" id="mob-bl" title="Attributes">◆</button>
+  <button class="mob-panel-toggle br" id="mob-br" title="Selected Skill">✦</button>
   <div id="edit-mode-banner">✎ Edit Mode — Drag any node to reposition · Lines update live</div>
 
   <div id="tree-viewport">
@@ -989,7 +1197,7 @@ const HAKUDA_BRANCHES = [
   { id:'hkP1', name:'Iron Guard', spokeId:'hakuda', parent:'hk2', costSP:0, costCash:0, req:{hakuda:70}, noLevel:true, desc:'You no longer take chip damage from blocking.', upgradeNote:null, bx:1272, by:926 },
   { id:'hkP2', name:'Side Switcher', spokeId:'hakuda', parent:'hkP1', costSP:3, costCash:0, req:{hakuda:90}, desc:'Swapping between hakuda and your primary weapon is much faster.', upgradeNote:null, bx:1346, by:868 },
   { id:'hkK0', name:'Kido Node', spokeId:'hakuda', parent:'hk3', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido Scaling.', upgradeNote:null, accentColor:'255,110,190', bx:1118, by:830 },
-  { id:'hkK1', name:'Surge Fist', spokeId:'hakuda', parent:'hkK0', costSP:7, costCash:0, req:{hakuda:50,kido:20}, desc:'Concentrate your reiatsu into a small pressurized blast projectile and release it.', upgradeNote:'Lvl 4: Unlock an air variant of Surge Fist when holding jump while casting the ability.', accentColor:'255,110,190', bx:1042, by:787 },
+  { id:'hkK1', name:'Surge Fist', spokeId:'hakuda', parent:'hkK0', costSP:7, costCash:0, req:{hakuda:50,kido:20}, desc:'Concentrate your reiatsu into a small pressurized blast projectile and release it.', upgradeNote:'Lvl 4: Unlock an air variant of Surge Fist when holding jump while casting. 35% Faster, however only aimed in a set direction·Lvl 6: Air variant hits crumpled opponents', accentColor:'255,110,190', bx:1042, by:787 },
   { id:'hkK2', name:'Reiatsu Blasts', spokeId:'hakuda', parent:'hkK1', costSP:8, costCash:0, req:{hakuda:90,kido:50}, desc:'Summon homing blasts of reiatsu from the ground.', upgradeNote:null, accentColor:'255,110,190', bx:989, by:834 },
   { id:'hkK3', name:'Stagger Kicks', spokeId:'hakuda', parent:'hkK1', costSP:8, costCash:0, req:{hakuda:65,kido:45}, desc:'Perform three advancing kicks.', upgradeNote:'Lvl 3: Landing all 3 kicks will apply Concussion on the third kick', accentColor:'255,110,190', bx:985, by:751 },
   { id:'hkK4', name:'Hakudo Kai', spokeId:'hakuda', parent:'hkK3', costSP:4, costCash:0, req:{hakuda:73,kido:55}, passive:true, desc:'Every 3rd basic attack deals bonus Kido scaling damage.', upgradeNote:null, accentColor:'255,110,190', bx:916, by:754 },
@@ -1412,10 +1620,18 @@ function buildTree() {
       btn.addEventListener('click', (e) => {
         if (e.shiftKey) { unlockSkill(sk.id); return; }
         state.selectedId = sk.id; render();
+        // On mobile: auto-open the skill info (BR) panel
+        if (window.innerWidth <= 768 && window._mobilePanelOpen && window._applyMobileState) {
+          Object.keys(window._mobilePanelOpen).forEach(k => window._mobilePanelOpen[k] = false);
+          window._mobilePanelOpen['hud-br'] = true;
+          window._applyMobileState();
+        }
       }, { passive: true });
-      btn.addEventListener('mouseenter', e => showTooltip(sk.id, e));
-      btn.addEventListener('mouseleave', hideTooltip);
-      btn.addEventListener('mousemove', moveTooltip);
+      btn.addEventListener('dblclick', () => { unlockSkill(sk.id); }, { passive: true });
+      // Desktop-only hover tooltip
+      btn.addEventListener('mouseenter', e => { if (!('ontouchstart' in window)) showTooltip(sk.id, e); });
+      btn.addEventListener('mouseleave', () => { if (!('ontouchstart' in window)) hideTooltip(); });
+      btn.addEventListener('mousemove', e => { if (!('ontouchstart' in window)) moveTooltip(e); });
       nodeLayer.appendChild(btn);
       _nodeDOMCache[sk.id] = btn;
     });
@@ -1431,10 +1647,18 @@ function buildTree() {
     btn.addEventListener('click', (e) => {
       if (e.shiftKey) { unlockSkill(br.id); return; }
       state.selectedId = br.id; render();
+      // On mobile: auto-open the skill info (BR) panel
+      if (window.innerWidth <= 768 && window._mobilePanelOpen && window._applyMobileState) {
+        Object.keys(window._mobilePanelOpen).forEach(k => window._mobilePanelOpen[k] = false);
+        window._mobilePanelOpen['hud-br'] = true;
+        window._applyMobileState();
+      }
     }, { passive: true });
-    btn.addEventListener('mouseenter', e => showTooltip(br.id, e));
-    btn.addEventListener('mouseleave', hideTooltip);
-    btn.addEventListener('mousemove', moveTooltip);
+    btn.addEventListener('dblclick', () => { unlockSkill(br.id); }, { passive: true });
+    // Desktop-only hover tooltip
+    btn.addEventListener('mouseenter', e => { if (!('ontouchstart' in window)) showTooltip(br.id, e); });
+    btn.addEventListener('mouseleave', () => { if (!('ontouchstart' in window)) hideTooltip(); });
+    btn.addEventListener('mousemove', e => { if (!('ontouchstart' in window)) moveTooltip(e); });
     nodeLayer.appendChild(btn);
     _nodeDOMCache[br.id] = btn;
   });
@@ -1558,7 +1782,8 @@ function updateTooltipContent(skillId) {
     '<div class="tt-section">Cost</div><div class="tt-chips">'+costsHTML+'</div>' +
     (reqsHTML ? '<div class="tt-section">Requires</div><div class="tt-chips">'+reqsHTML+'</div>' : '') +
     upgradeNoteHTML +
-    '<div class="tt-status '+statusClass+'">'+statusText+'</div>';
+    '<div class="tt-status '+statusClass+'">'+statusText+'</div>' +
+    (!skill.unlocked && avail ? '<div style="font-family:\'Exo 2\',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(110,210,255,.55);margin-top:5px;">Double-click or Shift+click to quick unlock</div>' : '');
 }
 
 /* ===================== CACHED ROW ELEMENTS ===================== */
@@ -1588,9 +1813,9 @@ function ensureBPRows() {
     row.innerHTML =
       '<div class="swatch" id="bps-sw-'+stat.id+'"></div>' +
       '<span class="name" id="bps-nm-'+stat.id+'"></span>' +
-      '<button class="btn-tiny" data-act="bp-" data-id="'+stat.id+'" title="−1 (Shift + Click: −10)">−</button>' +
-      '<span class="val" id="bps-vl-'+stat.id+'">0</span>' +
-      '<button class="btn-tiny" data-act="bp+" data-id="'+stat.id+'" title="+1 (Shift + Click: +10)">+</button>';
+      '<button class="btn-tiny" data-act="bp-" data-id="'+stat.id+'">−</button>' +
+      '<span class="val" id="bps-vl-'+stat.id+'" style="cursor:text" title="Click to type a value">0</span>' +
+      '<button class="btn-tiny" data-act="bp+" data-id="'+stat.id+'">+</button>';
     elBpStats.appendChild(row);
     _bpRowCache[stat.id] = {
       sw: row.querySelector('#bps-sw-'+stat.id),
@@ -1599,6 +1824,7 @@ function ensureBPRows() {
       dec: row.querySelectorAll('button')[0],
       inc: row.querySelectorAll('button')[1],
     };
+    _bpRowCache[stat.id].vl.addEventListener('click', () => startBPEdit(stat.id));
   });
 }
 
@@ -1613,18 +1839,20 @@ function ensureAPRows() {
     wrap.innerHTML =
       '<div class="name" id="aps-nm-'+attr.id+'">'+attr.name+'</div>' +
       '<div class="ctrl">' +
-        '<button class="btn-tiny violet" data-act="ap-" data-id="'+attr.id+'" title="−1 (Shift + Click: −10)">−</button>' +
-        '<span class="val" id="aps-vl-'+attr.id+'">0</span>' +
-        '<button class="btn-tiny violet" data-act="ap+" data-id="'+attr.id+'" title="+1 (Shift + Click: +10)">+</button>' +
+        '<button class="btn-tiny violet" data-act="ap-" data-id="'+attr.id+'">−</button>' +
+        '<span class="val" id="aps-vl-'+attr.id+'" title="Click to type a value">0</span>' +
+        '<button class="btn-tiny violet" data-act="ap+" data-id="'+attr.id+'">+</button>' +
       '</div>';
     elAttrStats.appendChild(wrap);
-    _apRowCache[attr.id] = {
+    const cache = {
       nm: wrap.querySelector('#aps-nm-'+attr.id),
       vl: wrap.querySelector('#aps-vl-'+attr.id),
       dec: wrap.querySelectorAll('button')[0],
       inc: wrap.querySelectorAll('button')[1],
       color: attr.color,
     };
+    cache.vl.addEventListener('click', () => startAttrEdit(attr.id));
+    _apRowCache[attr.id] = cache;
   });
 }
 
@@ -1666,6 +1894,10 @@ function render() {
   elFragNum.textContent = state.fragments;
   elSpNum.textContent   = state.skillPoints;
   elRyoNum.textContent  = state.soulTokens.toLocaleString();
+  const _spFill = document.getElementById('sp-bar-fill');
+  const _fragFill = document.getElementById('frag-bar-fill');
+  if (_spFill)   _spFill.style.width   = Math.max(0, (state.skillPoints / TOTAL_SKILL_POINTS) * 100) + '%';
+  if (_fragFill) _fragFill.style.width = Math.max(0, (state.fragments   / TOTAL_FRAGMENTS)    * 100) + '%';
   elFrCount.textContent = state.freeRefunds;
   elFuCount.textContent = state.freeUpgrades;
   elFrBtn.disabled = state.freeRefunds <= 0;
@@ -1731,10 +1963,10 @@ function render() {
     const b = e.target.closest('[data-act]');
     if (!b) return;
     const act = b.dataset.act, id = b.dataset.id;
-    if      (act === 'bp+') adjustBP(id, +1, e.shiftKey ? 10 : 1);
-    else if (act === 'bp-') adjustBP(id, -1, e.shiftKey ? 10 : 1);
-    else if (act === 'ap+') adjustAP(id, +1, e.shiftKey ? 10 : 1);
-    else if (act === 'ap-') adjustAP(id, -1, e.shiftKey ? 10 : 1);
+    if      (act === 'bp+') adjustBP(id, +1, 1);
+    else if (act === 'bp-') adjustBP(id, -1, 1);
+    else if (act === 'ap+') adjustAP(id, +1, 1);
+    else if (act === 'ap-') adjustAP(id, -1, 1);
   });
 })();
 
@@ -1861,6 +2093,12 @@ function renderSelected() {
   const upAf    = document.getElementById('btn-up-af');   if(upAf)    upAf.addEventListener('click',()=>upgradeAF(skill.id));
   const minusBtn= document.getElementById('btn-minus');   if(minusBtn) minusBtn.addEventListener('click',()=>downgradeSkill(skill.id));
   const refBtn  = document.getElementById('btn-refund');  if(refBtn)  refBtn.addEventListener('click',()=>refundSkill(skill.id));
+
+  // On mobile: scroll the BR panel to top so unlock button is immediately visible
+  if (window.innerWidth <= 768) {
+    const brPanel = document.querySelector('.hud-br');
+    if (brPanel) brPanel.scrollTop = 0;
+  }
 }
 
 /* ===================== ACTIONS ===================== */
@@ -1873,6 +2111,84 @@ function adjustAP(id, delta, mult) {
   const step=delta*mult, cur=state.attrStats[id];
   state.attrStats[id]=Math.min(Math.max(0,cur+step),cur+remainingAP());
   render();
+}
+
+function startAttrEdit(attrId) {
+  const c = _apRowCache[attrId];
+  if (!c) return;
+  const vl = c.vl;
+  const cur = state.attrStats[attrId];
+  const maxVal = cur + remainingAP(); // max this attr can reach
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.inputMode = 'numeric';
+  input.className = 'attr-edit-input';
+  input.value = cur;
+  vl.replaceWith(input);
+  input.select();
+
+  let done = false;
+  function commit() {
+    if (done) return;
+    done = true;
+    const raw = parseInt(input.value, 10);
+    const newVal = isNaN(raw) ? cur : Math.min(Math.max(0, raw), maxVal);
+    state.attrStats[attrId] = newVal;
+    input.replaceWith(vl); // restore span before render
+    render();
+  }
+  function cancel() {
+    if (done) return;
+    done = true;
+    input.replaceWith(vl);
+    render();
+  }
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+    e.stopPropagation(); // don't let keydown bubble to skill-tree hotkeys
+  }, { passive: false });
+  input.addEventListener('blur', commit);
+}
+function startBPEdit(statId) {
+  const c = _bpRowCache[statId];
+  if (!c) return;
+  const vl = c.vl;
+  const cur = state.buildStats[statId];
+  const maxVal = cur + remainingBP();
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.inputMode = 'numeric';
+  input.className = 'attr-edit-input';
+  input.value = cur;
+  vl.replaceWith(input);
+  input.select();
+
+  let done = false;
+  function commit() {
+    if (done) return;
+    done = true;
+    const raw = parseInt(input.value, 10);
+    const newVal = isNaN(raw) ? cur : Math.min(Math.max(0, raw), maxVal);
+    state.buildStats[statId] = newVal;
+    input.replaceWith(vl);
+    render();
+  }
+  function cancel() {
+    if (done) return;
+    done = true;
+    input.replaceWith(vl);
+    render();
+  }
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+    e.stopPropagation();
+  }, { passive: false });
+  input.addEventListener('blur', commit);
 }
 function unlockSkill(id) {
   const skill=getSkill(id);
@@ -2000,18 +2316,30 @@ function selectRace(race) {
   Object.keys(_nodeStateCache).forEach(k=>delete _nodeStateCache[k]);
   Object.keys(_lineStateCache).forEach(k=>delete _lineStateCache[k]);
   document.getElementById('race-screen').classList.add('hidden');
-  buildTree();
-  applyTrunkOverrides();
-  render();
-  centerOnCore();
+
+  /* Show loading ring, then wait for all fonts to be ready before building
+     the tree — prevents blank node labels / spoke titles on slow connections */
+  const loadEl = document.getElementById('tree-loading');
+  loadEl.style.display = 'flex';
+
+  document.fonts.ready.then(() => {
+    buildTree();
+    applyTrunkOverrides();
+    render();
+    centerOnCore();
+    /* Two rAFs: first lets the browser paint the tree, second hides the overlay
+       so there's no single-frame flash of empty circles */
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      loadEl.style.display = 'none';
+    }));
+  });
 }
 
 document.querySelectorAll('.rs-card').forEach(card => {
   card.addEventListener('click', ()=>selectRace(card.dataset.race));
 });
 document.getElementById('change-race-btn').addEventListener('click', ()=>{
-  document.getElementById('race-screen').classList.remove('hidden');
-});
+  });
 document.getElementById('free-refund-btn').addEventListener('click', ()=>{ if(state.freeRefunds>0) openModal('refund'); });
 document.getElementById('free-upgrade-btn').addEventListener('click', ()=>{ if(state.freeUpgrades>0) openModal('upgrade'); });
 
@@ -2097,23 +2425,41 @@ viewport.addEventListener('wheel', e => {
 /* Touch */
 let touchStart = null, _touchDirty = false;
 const _ts = { x:0, y:0 };
+let _touchMoved = false;
+const TOUCH_PAN_THRESHOLD = 8; // px before we commit to panning
+
 viewport.addEventListener('touchstart', e => {
   if (e.touches.length===1) {
     _ts.x=e.touches[0].clientX; _ts.y=e.touches[0].clientY;
-    touchStart=true; panOrigin.x=pan.x; panOrigin.y=pan.y;
+    touchStart=true;
+    panOrigin.x=pan.x; panOrigin.y=pan.y;
+    _touchMoved = false;
+    // Don't immediately set isPanning — wait for actual movement threshold
   }
 }, { passive: true });
 viewport.addEventListener('touchmove', e => {
   if (!touchStart||e.touches.length!==1) return;
-  const px = panOrigin.x+e.touches[0].clientX-_ts.x;
-  const py = panOrigin.y+e.touches[0].clientY-_ts.y;
+  const dx = e.touches[0].clientX - _ts.x;
+  const dy = e.touches[0].clientY - _ts.y;
+  if (!_touchMoved) {
+    if (Math.abs(dx) < TOUCH_PAN_THRESHOLD && Math.abs(dy) < TOUCH_PAN_THRESHOLD) return;
+    _touchMoved = true;
+    isPanning = true;
+    viewport.classList.add('panning');
+  }
+  const px = panOrigin.x + e.touches[0].clientX - _ts.x;
+  const py = panOrigin.y + e.touches[0].clientY - _ts.y;
   const mnX = VW-CW*scale-2000, mnY = VH-CH*scale-2000;
   pan.x = px < mnX ? mnX : px > 2000 ? 2000 : px;
   pan.y = py < mnY ? mnY : py > 2000 ? 2000 : py;
   if (!_touchDirty) { _touchDirty=true; requestAnimationFrame(()=>{ applyTransform(); _touchDirty=false; }); }
-  e.preventDefault();
-}, { passive: false });
-viewport.addEventListener('touchend', ()=>{ touchStart=null; }, { passive: true });
+}, { passive: true });
+viewport.addEventListener('touchend', ()=>{
+  touchStart=null;
+  _touchMoved=false;
+  isPanning=false;
+  viewport.classList.remove('panning');
+}, { passive: true });
 
 /* ===================== SHIFT KEY VISUAL ===================== */
 (function() {
@@ -2296,5 +2642,127 @@ function doSaveLayout() {
   URL.revokeObjectURL(a.href);
 }
 /* END LAYOUT EDITOR */
+/* ===================== MOBILE PANEL TOGGLES ===================== */
+(function() {
+  var isMobile = () => window.innerWidth <= 768;
+  var panels = [
+    { btnId:'mob-tl', hudClass:'hud-tl' },
+    { btnId:'mob-tr', hudClass:'hud-tr' },
+    { btnId:'mob-bl', hudClass:'hud-bl' },
+    { btnId:'mob-br', hudClass:'hud-br' },
+  ];
+  var open = { 'hud-tl': false, 'hud-tr': false, 'hud-bl': false, 'hud-br': false };
+
+  function applyMobileState() {
+    if (!isMobile()) {
+      // On desktop: ensure all panels visible, no mob-hidden
+      panels.forEach(p => {
+        var hud = document.querySelector('.'+p.hudClass);
+        if (hud) hud.classList.remove('mob-hidden');
+      });
+      return;
+    }
+    // On mobile: apply hidden state
+    panels.forEach(p => {
+      var hud = document.querySelector('.'+p.hudClass);
+      var btn = document.getElementById(p.btnId);
+      if (!hud || !btn) return;
+      if (open[p.hudClass]) {
+        hud.classList.remove('mob-hidden');
+        btn.classList.add('active');
+      } else {
+        hud.classList.add('mob-hidden');
+        btn.classList.remove('active');
+      }
+    });
+  }
+
+  panels.forEach(p => {
+    var btn = document.getElementById(p.btnId);
+    if (!btn) return;
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      // Close others
+      Object.keys(open).forEach(k => { if (k !== p.hudClass) open[k] = false; });
+      open[p.hudClass] = !open[p.hudClass];
+      applyMobileState();
+    });
+  });
+
+  // Close open panel when tapping tree viewport (not on skill nodes)
+  document.getElementById('tree-viewport').addEventListener('touchstart', function(e) {
+    if (!isMobile()) return;
+    // If the touch target is a skill node, don't close — the node's click handler will open BR
+    if (e.target.classList && e.target.classList.contains('skill-node')) return;
+    var anyOpen = Object.values(open).some(Boolean);
+    if (anyOpen) {
+      Object.keys(open).forEach(k => open[k] = false);
+      applyMobileState();
+    }
+  }, { passive: true });
+
+  // Init on load
+  applyMobileState();
+  window.addEventListener('resize', applyMobileState);
+
+  // Expose globally so node taps can trigger the BR panel
+  window._mobilePanelOpen = open;
+  window._applyMobileState = applyMobileState;
+})();
+
+/* ===================== PINCH ZOOM (mobile) ===================== */
+(function() {
+  var viewport  = document.getElementById('tree-viewport');
+  var pinchStartDist = 0, pinchStartScale = 1;
+  var pinchMidX = 0, pinchMidY = 0, pinchPanX = 0, pinchPanY = 0;
+  var isPinching = false;
+
+  function getTouchDist(t) {
+    var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+  function getTouchMid(t) {
+    return { x: (t[0].clientX + t[1].clientX)/2, y: (t[0].clientY + t[1].clientY)/2 };
+  }
+
+  viewport.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 2) {
+      isPinching = true;
+      pinchStartDist  = getTouchDist(e.touches);
+      pinchStartScale = scale;
+      var mid = getTouchMid(e.touches);
+      pinchMidX = mid.x; pinchMidY = mid.y;
+      pinchPanX = pan.x; pinchPanY = pan.y;
+      // Disable single-touch pan while pinching
+      touchStart = null;
+      _touchMoved = false;
+      isPanning = true;
+      viewport.classList.add('panning');
+    }
+  }, { passive: true });
+
+  viewport.addEventListener('touchmove', function(e) {
+    if (!isPinching || e.touches.length !== 2) return;
+    e.preventDefault();
+    var dist = getTouchDist(e.touches);
+    var newScale = Math.min(2.0, Math.max(0.15, pinchStartScale * (dist / pinchStartDist)));
+    var mid = getTouchMid(e.touches);
+    // Zoom around pinch midpoint
+    pan.x = mid.x - (mid.x - pan.x) * (newScale / scale);
+    pan.y = mid.y - (mid.y - pan.y) * (newScale / scale);
+    scale = newScale;
+    pan = clampPan(pan.x, pan.y, scale);
+    applyTransform();
+  }, { passive: false });
+
+  viewport.addEventListener('touchend', function(e) {
+    if (e.touches.length < 2) {
+      isPinching = false;
+      isPanning = false;
+      viewport.classList.remove('panning');
+    }
+  }, { passive: true });
+})();
+
 </script>
 </body></html>
