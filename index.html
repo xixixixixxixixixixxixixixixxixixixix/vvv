@@ -983,7 +983,7 @@
         <button class="tr-shrine-btn" id="free-upgrade-btn">
           <span class="tr-shrine-icon">✦</span>
           <span class="tr-shrine-label">Shrine Level Up</span>
-          <span class="tr-shrine-count" id="free-upgrade-count">1</span>
+          <span class="tr-shrine-count" id="free-upgrade-count">2</span>
         </button>
       </div>
     </div>
@@ -1295,22 +1295,22 @@ const SPEED_BRANCHES = [
 ];
 
 const QUINCY_BRANCHES = [
-  { id:'qrc6', name:'Blut Arterie', spokeId:'race', parent:'qrc3', costSP:5, costCash:0, req:{kido:60}, noLevel:true, desc:'The offensive form of Blut which grants inhuman attack power.', upgradeNote:'Lvl 4: No longer passively saps Blut Bar·Lvl 8: +15% weapon dmg', accentColor:'255,85,178', bx:846, by:1134 },
+  { id:'qrc6', name:'Blut Arterie', spokeId:'race', parent:'qrc3', costSP:5, costCash:0, req:{kido:60}, desc:'The offensive form of Blut which grants inhuman attack power.', upgradeNote:'Lvl 4: No longer passively saps Blut Bar·Lvl 8: +15% weapon dmg', accentColor:'255,85,178', bx:846, by:1134 },
   { id:'qrc7', name:'Kido Node', spokeId:'race', parent:'qrc6', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:806, by:1094 },
   { id:'qrc8', name:'Mondlicht', spokeId:'race', parent:'qrc7', costSP:9, costCash:0, req:{kido:220}, noLevel:true, desc:'Deliver a lethal moonlight strike.', upgradeNote:null, accentColor:'255,85,178', bx:745, by:1077 },
-  { id:'qrc4', name:'Blut Vene', spokeId:'race', parent:'qrc3', costSP:5, costCash:0, req:{kido:90}, noLevel:true, desc:'The defensive form of Blut, which grants the user inhuman durability.', upgradeNote:'Lvl 3: No longer passively saps Blut Bar.', accentColor:'255,85,178', bx:848, by:1255 },
+  { id:'qrc4', name:'Blut Vene', spokeId:'race', parent:'qrc3', costSP:5, costCash:0, req:{kido:90}, desc:'The defensive form of Blut, which grants the user inhuman durability.', upgradeNote:'Lvl 3: No longer passively saps Blut Bar.', accentColor:'255,85,178', bx:848, by:1255 },
   { id:'qrc5', name:'Reishi Gather', spokeId:'race', parent:'qrc4', costSP:4, costCash:0, req:{kido:100}, noLevel:true, passive:true, desc:'Gather reiatsu from the atmosphere, increasing reiatsu regeneration rate by 7.5%.', upgradeNote:null, accentColor:'255,85,178', bx:802, by:1289 },
   { id:'qb1', name:'Medallion Specialist', spokeId:'race', parent:'qrc3', costSP:1, costCash:0, req:{kido:60}, noLevel:true, passive:true, desc:'You have begun specialization into your quincy medallion.', upgradeNote:null, accentColor:'255,85,178', bx:775, by:1205 },
-  { id:'qb2', name:'Reishi Flash', spokeId:'race', parent:'qb1', costSP:7, costCash:0, req:{kido:100}, noLevel:true, desc:'Throw up an energy ball that blinds surrounding opponents.', upgradeNote:'Lvl 4: The first flare now burns your opponents retinas', accentColor:'255,85,178', bx:692, by:1205 },
+  { id:'qb2', name:'Reishi Flash', spokeId:'race', parent:'qb1', costSP:7, costCash:0, req:{kido:100}, desc:'Throw up an energy ball that blinds surrounding opponents.', upgradeNote:'Lvl 4: The first flare now burns your opponents retinas', accentColor:'255,85,178', bx:692, by:1205 },
   { id:'qb3a', name:'Heilig Pfeil - Speed Variant', spokeId:'race', parent:'qb2', mutexWith:'qb3b,qb3c', costSP:2, costCash:0, req:{kido:110}, noLevel:true, passive:true, desc:'Heilig Pfeil now fires a faster, weaker arrow.', upgradeNote:null, accentColor:'255,85,178', bx:711, by:1280 },
   { id:'qb3b', name:'Heilig Pfeil - Power Variant', spokeId:'race', parent:'qb2', mutexWith:'qb3a,qb3c', costSP:2, costCash:0, req:{kido:110}, noLevel:true, passive:true, desc:'Heilig Pfeil\'s arrow is much bigger and deals more damage, however is slower.', upgradeNote:null, accentColor:'255,85,178', bx:663, by:1135 },
   { id:'qb3c', name:'Heilig Pfeil - Multi-shot Variant', spokeId:'race', parent:'qb2', mutexWith:'qb3a,qb3b', costSP:2, costCash:0, req:{kido:110}, noLevel:true, passive:true, desc:'Heilig Pfeil now fires three weaker arrows at a slower rate.', upgradeNote:null, accentColor:'255,85,178', bx:630, by:1274 },
   { id:'qb6', name:'Kido Node', spokeId:'race', parent:'qb2', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:612, by:1205 },
-  { id:'qb7', name:'Beurteilung', spokeId:'race', parent:'qb6', costSP:8, costCash:0, req:{kido:140}, noLevel:true, desc:'Summon a massive spirit greatsword above your opponents head and then cast judgement on them.', upgradeNote:'Lvl 6: Inflict bleed on enemies', accentColor:'255,85,178', bx:530, by:1205 },
-  { id:'qb8', name:'Reishigriff', spokeId:'race', parent:'qb7', costSP:8, costCash:0, req:{kido:195}, noLevel:true, desc:'Thieve your opponents reiryoku with a deadly chokehold.', upgradeNote:'Lvl 3: Your chokehold steals a bit of reiatsu', accentColor:'255,85,178', bx:466, by:1143 },
-  { id:'qb9', name:'Feurige Säulen', spokeId:'race', parent:'qb8', costSP:11, costCash:0, req:{kido:330}, noLevel:true, desc:'Summon forward pillars of holy fire.', upgradeNote:'Lvl 3: Feurige Säulen can hit ragdolled opponents', accentColor:'255,85,178', bx:382, by:1121 },
+  { id:'qb7', name:'Beurteilung', spokeId:'race', parent:'qb6', costSP:8, costCash:0, req:{kido:140}, desc:'Summon a massive spirit greatsword above your opponents head and then cast judgement on them.', upgradeNote:'Lvl 6: Inflict bleed on enemies', accentColor:'255,85,178', bx:530, by:1205 },
+  { id:'qb8', name:'Reishigriff', spokeId:'race', parent:'qb7', costSP:8, costCash:0, req:{kido:195}, desc:'Thieve your opponents reiryoku with a deadly chokehold.', upgradeNote:'Lvl 3: Your chokehold steals a bit of reiatsu', accentColor:'255,85,178', bx:466, by:1143 },
+  { id:'qb9', name:'Feurige Säulen', spokeId:'race', parent:'qb8', costSP:11, costCash:0, req:{kido:330}, desc:'Summon forward pillars of holy fire.', upgradeNote:'Lvl 3: Feurige Säulen can hit ragdolled opponents', accentColor:'255,85,178', bx:382, by:1121 },
   { id:'qb10', name:'Kido Node', spokeId:'race', parent:'qb7', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:473, by:1270 },
-  { id:'qb11', name:'Schlagen', spokeId:'race', parent:'qb10', costSP:11, costCash:0, req:{kido:220}, noLevel:true, desc:'Summon a raging thunderstorm, and then strike lightning on the blast zone.', upgradeNote:'Lvl 5: Standing in the strikes blast zone heals you for 3% max HP', accentColor:'255,85,178', bx:431, by:1335 },
+  { id:'qb11', name:'Schlagen', spokeId:'race', parent:'qb10', costSP:11, costCash:0, req:{kido:220}, desc:'Summon a raging thunderstorm, and then strike lightning on the blast zone.', upgradeNote:'Lvl 5: Standing in the strikes blast zone heals you for 3% max HP', accentColor:'255,85,178', bx:431, by:1335 },
   { id:'qb12', name:'Klingensturm', spokeId:'race', parent:'qb11', costSP:13, costCash:0, req:{kido:400}, noLevel:true, desc:'Summon various spirit weapons once used by your deceased comrades to rain down warfare on your target. Ultimate Skill.', upgradeNote:null, accentColor:'255,85,178', bx:324, by:1275 },
   { id:'qa1', name:'Advanced Archery', spokeId:'race', parent:'qrc3', costSP:1, costCash:0, req:{kido:60}, noLevel:true, passive:true, desc:'You are more in tune with your bow.', upgradeNote:null, accentColor:'255,85,178', bx:917, by:1105 },
   { id:'qa2', name:'Luftpfeile', spokeId:'race', parent:'qa1', costSP:7, costCash:0, req:{kido:96}, desc:'Rush at your opponent then leap into the air and unleash a volley of arrows.', upgradeNote:null, accentColor:'255,85,178', bx:916, by:1028 },
@@ -1468,7 +1468,7 @@ const makeState = () => ({
   soulTokens:   TOTAL_SOUL_TOKENS,
   selectedId:   null,
   freeRefunds:  1,
-  freeUpgrades: 1,
+  freeUpgrades: 2,
 });
 let state = makeState();
 
@@ -2226,14 +2226,14 @@ function downgradeSkill(id) {
   skill.upgradeLog.pop(); skill.level--;
   if(last==='sp')   { state.skillPoints+=SP_PER_UPGRADE; skill.spSpent-=SP_PER_UPGRADE; }
   else if(last==='af')   { state.fragments+=AF_PER_UPGRADE; skill.afSpent-=AF_PER_UPGRADE; }
-  else if(last==='free') { skill.freeUpgraded=false; state.freeUpgrades=Math.min(1,state.freeUpgrades+1); }
+  else if(last==='free') { skill.freeUpgraded=false; state.freeUpgrades=Math.min(2,state.freeUpgrades+1); }
   render();
 }
 function refundSkill(id) {
   const skill=getSkill(id);
   if(!skill||!skill.unlocked||!canRefund(skill)) return;
   state.skillPoints+=(skill.spSpent||0); state.soulTokens+=(skill.stSpent||0); state.fragments+=(skill.afSpent||0);
-  if(skill.freeUpgraded) state.freeUpgrades=Math.min(1,state.freeUpgrades+1);
+  if(skill.freeUpgraded) state.freeUpgrades=Math.min(2,state.freeUpgrades+1);
   skill.unlocked=false; skill.level=0; skill.spSpent=0; skill.stSpent=0; skill.afSpent=0; skill.freeUpgraded=false; skill.upgradeLog=[];
   render();
 }
@@ -2242,7 +2242,7 @@ function freeRefundSkill(id) {
   if(!skill||!skill.unlocked||!canFreeRefund(skill)||state.freeRefunds<=0) return;
   state.freeRefunds--;
   state.skillPoints+=(skill.spSpent||0); state.soulTokens+=(skill.stSpent||0); state.fragments+=(skill.afSpent||0);
-  if(skill.freeUpgraded) state.freeUpgrades=Math.min(1,state.freeUpgrades+1);
+  if(skill.freeUpgraded) state.freeUpgrades=Math.min(2,state.freeUpgrades+1);
   skill.unlocked=false; skill.level=0; skill.spSpent=0; skill.stSpent=0; skill.afSpent=0; skill.freeUpgraded=false; skill.upgradeLog=[];
   closeModal(); render();
 }
