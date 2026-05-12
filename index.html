@@ -532,6 +532,22 @@
   .tree-title .line.r { background:linear-gradient(to left,transparent,rgba(80,210,255,.6)); }
   .tree-title h1 { font-family:'Cinzel',serif; font-size:17px; letter-spacing:.4em; text-transform:uppercase; color:#cbd5e1; font-weight:700; }
   .tree-title p  { font-family:'Exo 2',sans-serif; font-size:10px; font-weight:600; letter-spacing:.35em; color:#475569; text-transform:uppercase; margin-top:4px; }
+  .ctr-stats-row { display:flex; gap:10px; justify-content:center; margin-top:8px; pointer-events:none; }
+  .ctr-stat-box {
+    background:rgba(6,14,31,.9); border:1px solid rgba(80,210,255,.22); border-radius:4px;
+    padding:6px 20px 5px; min-width:170px; text-align:left;
+    box-shadow:0 2px 12px rgba(0,0,0,.4);
+    position:relative; overflow:hidden;
+  }
+  .ctr-stat-box::before { content:''; position:absolute; top:-1px; left:-1px; right:-1px; height:1px; background:linear-gradient(to right, transparent, rgba(80,210,255,.35), transparent); }
+  .ctr-stat-inner { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+  .ctr-stat-lbl { font-family:'Exo 2',sans-serif; font-size:10px; font-weight:800; letter-spacing:.28em; color:rgba(165,231,255,.5); text-transform:uppercase; white-space:nowrap; }
+  .ctr-stat-val { font-family:'Share Tech Mono',monospace; font-size:17px; font-weight:700; color:#a5e7ff; line-height:1; text-shadow:0 0 10px rgba(80,210,255,.3); }
+  .ctr-frag-val { color:#c4b5fd; text-shadow:0 0 10px rgba(160,120,255,.3); }
+  .ctr-stat-bar { height:2px; background:rgba(80,210,255,.08); border-radius:1px; overflow:hidden; margin-top:4px; }
+  .ctr-stat-fill { height:2px; border-radius:1px; transition:width .3s ease; }
+  .ctr-sp-fill   { background:linear-gradient(90deg,rgba(40,130,255,.6),rgba(100,210,255,.9)); }
+  .ctr-frag-fill { background:linear-gradient(90deg,rgba(100,60,200,.6),#c4b5fd); }
 
   /* TOOLTIP */
   #skill-tooltip {
@@ -556,7 +572,160 @@
   .tt-status.unlocked { color:#a3e635; }
   .tt-status.maxed    { color:#fcd34d; }
 
-  /* LAYOUT EDITOR — hidden from users. To restore: remove display:none from #edit-layout-btn and #edit-mode-banner styles */
+  /* ── SKILL ESSENCE PANEL ── */
+  .essence-panel {
+    margin-bottom: 8px;
+    background: rgba(10,18,32,.93);
+    border: 1px solid rgba(100,116,139,.35);
+    border-radius: 4px;
+    padding: 9px 12px;
+    position: relative;
+    text-align: left;
+  }
+  .essence-panel .corner { position:absolute; width:8px; height:8px; border-color:rgba(148,163,184,.6); }
+  .essence-panel .corner.tl { top:-1px; left:-1px; border-top:2px solid; border-left:2px solid; }
+  .essence-panel .corner.tr { top:-1px; right:-1px; border-top:2px solid; border-right:2px solid; }
+  .essence-panel .corner.bl { bottom:-1px; left:-1px; border-bottom:2px solid; border-left:2px solid; }
+  .essence-panel .corner.br { bottom:-1px; right:-1px; border-bottom:2px solid; border-right:2px solid; }
+  .essence-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px;
+  }
+  .essence-title {
+    font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700;
+    letter-spacing: .22em; text-transform: uppercase; color: #a5e7ff;
+  }
+  .essence-counter {
+    font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 800;
+    color: #67e8f9; letter-spacing: .1em;
+    -webkit-font-smoothing: antialiased;
+  }
+  .essence-slots { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+  .essence-chip {
+    display: flex; flex-direction: column; gap: 4px; padding: 7px 10px;
+    background: rgba(34,150,220,.1); border: 1px solid rgba(80,140,220,.3);
+    border-radius: 3px; text-align: left;
+  }
+  .essence-chip-top {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .essence-chip-name {
+    font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 800;
+    color: #e2e8f0; letter-spacing: .03em; flex: 1; text-align: left;
+    -webkit-font-smoothing: antialiased;
+  }
+  .essence-chip-controls {
+    display: flex; align-items: center; gap: 5px; flex-shrink: 0; margin-left: auto;
+  }
+  .essence-chip-level {
+    font-family: 'Exo 2', sans-serif; font-size: 11px; font-weight: 800;
+    color: #ffffff; letter-spacing: .06em;
+    -webkit-font-smoothing: antialiased;
+  }
+  .essence-chip-bottom {
+    display: flex; align-items: center; gap: 5px; flex-wrap: wrap; text-align: left;
+  }
+  .essence-chip-sp {
+    font-family: 'Exo 2', sans-serif; font-size: 10px; font-weight: 800;
+    color: #67e8f9; background: rgba(80,210,255,.1); border: 1px solid rgba(80,210,255,.25);
+    border-radius: 2px; padding: 1px 5px; letter-spacing: .06em; text-transform: uppercase;
+    -webkit-font-smoothing: antialiased;
+  }
+  .essence-chip-req {
+    font-family: 'Exo 2', sans-serif; font-size: 10px; font-weight: 800;
+    padding: 1px 5px; border-radius: 2px; border: 1px solid;
+    letter-spacing: .06em; text-transform: uppercase;
+    -webkit-font-smoothing: antialiased;
+  }
+  .essence-chip-remove {
+    width: 16px; height: 16px; border-radius: 2px;
+    background: rgba(251,113,133,.1); border: 1px solid rgba(251,113,133,.3);
+    color: #fda4af; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; line-height: 1; transition: background .12s ease, border-color .12s ease;
+    flex-shrink: 0;
+  }
+  .essence-chip-remove:hover { background: rgba(251,113,133,.25); border-color: rgba(251,113,133,.7); }
+  .essence-add-btn {
+    width: 100%; padding: 6px 8px;
+    background: transparent; border: 1px solid rgba(100,116,139,.4);
+    border-radius: 3px; cursor: pointer;
+    font-family: 'Exo 2', sans-serif; font-size: 10px; font-weight: 700;
+    letter-spacing: .18em; text-transform: uppercase; color: rgba(148,163,184,.7);
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+    text-align: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  .essence-add-btn:hover:not(:disabled) { background: rgba(80,210,255,.07); border-color: rgba(80,210,255,.4); color: #a5e7ff; }
+  .essence-add-btn:disabled { opacity: .3; cursor: not-allowed; }
+  .essence-dropdown {
+    position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 50;
+    background: rgba(6,12,28,.98); border: 1px solid rgba(80,140,220,.35);
+    border-radius: 4px; overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,.7);
+    max-height: 300px; overflow-y: auto;
+    text-align: left;
+  }
+  .essence-dropdown::-webkit-scrollbar { width: 3px; }
+  .essence-dropdown::-webkit-scrollbar-thumb { background: rgba(80,140,220,.3); border-radius: 2px; }
+  .essence-dropdown.hidden { display: none; }
+  .essence-drop-header {
+    padding: 7px 11px 5px; border-bottom: 1px solid rgba(80,140,220,.12);
+    font-family: 'Exo 2', sans-serif; font-size: 9px; font-weight: 800; letter-spacing: .28em;
+    text-transform: uppercase; color: rgba(165,231,255,.4);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .essence-drop-close {
+    background: none; border: none; color: rgba(148,163,184,.4); cursor: pointer;
+    font-size: 13px; line-height: 1; padding: 0 2px;
+  }
+  .essence-drop-close:hover { color: #94a3b8; }
+  .essence-item {
+    padding: 10px 12px; display: flex; align-items: flex-start; gap: 10px;
+    border-bottom: 1px solid rgba(80,140,220,.1);
+    cursor: pointer; transition: background .1s ease;
+  }
+  .essence-item:last-child { border-bottom: none; }
+  .essence-item:hover:not(.essence-item-owned):not(.essence-item-disabled) { background: rgba(80,210,255,.06); }
+  .essence-item-owned { opacity: .45; cursor: not-allowed; }
+  .essence-item-disabled { opacity: .28; cursor: not-allowed; }
+  .essence-item-main { flex: 1; min-width: 0; }
+  .essence-item-name {
+    font-family: 'Exo 2', sans-serif; font-size: 13px; font-weight: 800;
+    color: #e2e8f0; letter-spacing: .03em; margin-bottom: 5px;
+  }
+  .essence-item-reqs {
+    display: flex; flex-wrap: wrap; gap: 3px;
+  }
+  .essence-req-tag {
+    font-family: 'Exo 2', sans-serif; font-size: 9px; font-weight: 700;
+    padding: 1px 5px; border-radius: 2px; border: 1px solid;
+    letter-spacing: .05em; text-transform: uppercase;
+  }
+  .essence-race-tag {
+    font-family: 'Exo 2', sans-serif; font-size: 9px; font-weight: 800;
+    padding: 1px 5px; border-radius: 2px; letter-spacing: .08em; text-transform: uppercase;
+    background: rgba(255,85,178,.08); border: 1px solid rgba(255,85,178,.28); color: #f9a8d4;
+  }
+  .essence-unmet-tag {
+    font-family: 'Exo 2', sans-serif; font-size: 9px; font-weight: 700;
+    padding: 1px 5px; border-radius: 2px; letter-spacing: .06em; text-transform: uppercase;
+    background: rgba(251,113,133,.08); border: 1px solid rgba(251,113,133,.3); color: #fda4af;
+  }
+  .essence-item-sp {
+    font-family: 'Exo 2', sans-serif; font-size: 15px; font-weight: 900;
+    color: #ffffff; flex-shrink: 0; text-align: right; min-width: 36px; padding-top: 1px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .essence-item-sp .sp-label {
+    font-size: 9px; font-family: 'Exo 2', sans-serif; font-weight: 800;
+    letter-spacing: .1em; text-transform: uppercase; color: #67e8f9;
+    display: block; -webkit-font-smoothing: antialiased;
+  }
+  /* SHRINE ROW outside panel */
+  .shrine-row-bare {
+    display: flex; flex-direction: column; gap: 5px;
+  }
+
   #edit-layout-btn { display: none !important; }
   #edit-mode-banner { display: none !important; }
 
@@ -709,6 +878,8 @@
     /* ── Tree title ── */
     .tree-title h1 { font-size: 13px; letter-spacing: 0.2em; }
     .tree-title p { font-size: 9px; }
+    .ctr-stat-box { padding: 5px 12px; min-width: 80px; }
+    .ctr-stat-val { font-size: 15px; }
 
     /* ── HUD panels: collapse all by default, toggled open ── */
     .hud-tl, .hud-tr, .hud-bl, .hud-br {
@@ -869,8 +1040,8 @@
   </div>
   <div class="rs-credits">
     <div class="rs-credits-badge">
-      <div class="rs-credits-line">VV Builder crafted by</div>
-      <div class="rs-credits-names">Bryceexi &amp; Zentuba</div>
+      <div class="rs-credits-line">VV Builder built by</div>
+      <div class="rs-credits-names">Bryceexi &amp; Zentubaa</div>
     </div>
   </div>
 </div>
@@ -900,7 +1071,22 @@
       <h1 class="heading">Skill Tree</h1>
       <span class="line r"></span>
     </div>
-    <p>Click &amp; drag to pan · Scroll to zoom</p>
+    <div class="ctr-stats-row">
+      <div class="ctr-stat-box">
+        <div class="ctr-stat-inner">
+          <span class="ctr-stat-lbl">Skill Points</span>
+          <span class="ctr-stat-val" id="ctr-sp-num">100</span>
+        </div>
+        <div class="ctr-stat-bar"><div class="ctr-stat-fill ctr-sp-fill" id="ctr-sp-fill" style="width:100%"></div></div>
+      </div>
+      <div class="ctr-stat-box">
+        <div class="ctr-stat-inner">
+          <span class="ctr-stat-lbl">Fragments</span>
+          <span class="ctr-stat-val ctr-frag-val" id="ctr-frag-num">6</span>
+        </div>
+        <div class="ctr-stat-bar"><div class="ctr-stat-fill ctr-frag-fill" id="ctr-frag-fill" style="width:100%"></div></div>
+      </div>
+    </div>
   </div>
 
   <!-- TL: Level + Build Points -->
@@ -931,63 +1117,49 @@
     </div>
   </div>
 
-  <!-- TR: Resources + Free tokens -->
+  <!-- TR: Race + Essence + Shrine -->
   <div class="hud hud-tr">
     <div class="race-badge" id="race-badge">
       <div class="dot" id="race-dot" style="background: rgb(220, 230, 255);"></div>
       <span id="race-badge-text">Shinigami</span>
     </div>
-    <div class="panel cyan">
-      <span class="corner tl"></span><span class="corner tr"></span>
-      <span class="corner bl"></span><span class="corner br"></span>
-      <div style="display:flex;align-items:baseline;justify-content:space-between;">
-        <h3 class="panel-title">Resources</h3>
-        <div class="panel-sub">Available</div>
-      </div>
 
-      <div class="tr-res-meters">
-        <div class="tr-meter-row">
-          <div class="tr-meter-head">
-            <span class="tr-meter-label">Skill Points</span>
-            <div class="tr-meter-val">
-              <span class="tr-meter-num sp-col" id="sp-num">100</span>
-              <span class="tr-meter-max sp-col">/ 100</span>
-            </div>
-          </div>
-          <div class="tr-meter-bar sp-bar"><div class="tr-meter-fill" id="sp-bar-fill" style="width:100%"></div></div>
-        </div>
-        <div class="tr-meter-row">
-          <div class="tr-meter-head">
-            <span class="tr-meter-label">Fragments</span>
-            <div class="tr-meter-val">
-              <span class="tr-meter-num frags-col" id="frag-num">6</span>
-              <span class="tr-meter-max frags-col">/ 6</span>
-            </div>
-          </div>
-          <div class="tr-meter-bar frag-bar"><div class="tr-meter-fill" id="frag-bar-fill" style="width:100%"></div></div>
-        </div>
-        <div class="tr-meter-row">
-          <div class="tr-meter-head">
-            <span class="tr-meter-label">Soul Tokens</span>
-            <span class="tr-meter-num st-col" id="ryo-num">50,000</span>
-          </div>
-        </div>
+    <!-- Skill Essence -->
+    <div class="essence-panel" id="essence-panel">
+      <div class="essence-header">
+        <span class="essence-title">Skill Essence</span>
+        <span class="essence-counter" id="essence-counter">0 / 2</span>
       </div>
-
-      <div class="tr-shrine-row">
-        <button class="tr-shrine-btn" id="free-refund-btn">
-          <span class="tr-shrine-icon">↩</span>
-          <span class="tr-shrine-label">Shrine Refund</span>
-          <span class="tr-shrine-count" id="free-refund-count">1</span>
-        </button>
-        <button class="tr-shrine-btn" id="free-upgrade-btn">
-          <span class="tr-shrine-icon">✦</span>
-          <span class="tr-shrine-label">Shrine Level Up</span>
-          <span class="tr-shrine-count" id="free-upgrade-count">2</span>
-        </button>
+      <div class="essence-slots" id="essence-slots"></div>
+      <button class="essence-add-btn" id="essence-add-btn">+ Choose Essence</button>
+      <div class="essence-dropdown hidden" id="essence-dropdown">
+        <div class="essence-drop-header">
+          Choose an Essence
+          <button class="essence-drop-close" id="essence-drop-close">✕</button>
+        </div>
+        <div id="essence-list"></div>
       </div>
     </div>
+
+    <!-- Shrine buttons -->
+    <div class="shrine-row-bare">
+      <button class="tr-shrine-btn" id="free-refund-btn">
+        <span class="tr-shrine-icon">↩</span>
+        <span class="tr-shrine-label">Shrine Refund</span>
+        <span class="tr-shrine-count" id="free-refund-count">1</span>
+      </button>
+      <button class="tr-shrine-btn" id="free-upgrade-btn">
+        <span class="tr-shrine-icon">✦</span>
+        <span class="tr-shrine-label">Shrine Level Up</span>
+        <span class="tr-shrine-count" id="free-upgrade-count">2</span>
+      </button>
+    </div>
   </div>
+
+  <!-- Hidden elements kept for JS compatibility (sp/frag tracking) -->
+  <span id="sp-num" style="display:none">100</span>
+  <span id="frag-num" style="display:none">6</span>
+  <span id="ryo-num" style="display:none">50000</span>
 
   <!-- BL: Attributes -->
   <div class="hud hud-bl">
@@ -1077,7 +1249,61 @@
 </div>
 
 <script>
-/* ===================== CONSTANTS ===================== */
+/* ===================== SKILL ESSENCES ===================== */
+const SKILL_ESSENCES = [
+  {
+    id: 'kuro', name: 'Kurohitsugi',
+    sp: 9,
+    req: { kido: 360 },
+    race: 'Shinigami',
+    raceLabel: 'Shinigami Only',
+  },
+  {
+    id: 'gran_ray', name: 'Gran Ray Cero',
+    sp: 9,
+    req: { kido: 360 },
+    race: 'Hollow',
+    raceLabel: 'Hollow Only',
+  },
+  {
+    id: 'precision_slicer', name: 'Precision Slicer',
+    sp: 4,
+    req: { speed: 275 },
+    race: null,
+  },
+  {
+    id: 'radiant_edge', name: 'Radiant Edge',
+    sp: 4,
+    req: { kido: 125 },
+    race: null,
+  },
+  {
+    id: 'ensuing_heel', name: 'Ensuing Heel',
+    sp: 0,
+    req: { hakuda: 200 },
+    race: null,
+  },
+  {
+    id: 'raging_grasp', name: 'Raging Grasp',
+    sp: 0,
+    req: { strength: 250 },
+    race: null,
+  },
+  {
+    id: 'slicing_dropkick', name: 'Slicing Dropkick',
+    sp: 4,
+    req: { speed: 50, strength: 50 },
+    race: null,
+  },
+  {
+    id: 'splitting_standstill', name: 'Splitting Standstill',
+    sp: 4,
+    req: { speed: 300 },
+    race: null,
+  },
+];
+
+
 const TOTAL_BUILD_POINTS     = 400;
 const TOTAL_ATTRIBUTE_POINTS = 400;
 const TOTAL_SKILL_POINTS     = 100;
@@ -1149,12 +1375,12 @@ const RACE_TREES = {
 
 /* ===================== BRANCH NODE ARRAYS ===================== */
 const MISC_BRANCHES = [
-  { id:'mcA1', name:'Spiritual Potential', spokeId:'misc', parent:'mc3', costSP:0, costCash:3500, req:{}, noLevel:true, desc:'Gain the ability to fill up your aura bar when fighting players. Once filled, you can unleash your spiritual pressure and gain a short-term buff.', upgradeNote:null, bx:852, by:1431 },
-  { id:'mcA2', name:'Spiritual Pressure', spokeId:'misc', parent:'mcA1', costSP:0, costCash:4500, req:{}, noLevel:true, desc:'Flex your spiritual power (keybind in settings), affecting weaker opponents to varying degrees.', upgradeNote:null, bx:774, by:1474 },
-  { id:'mcB1', name:'Manual Rushdown', spokeId:'misc', parent:'mc3', costSP:0, costCash:3500, req:{}, noLevel:true, desc:'Hold shift and flashstep to manually use rushdown on a target with added startup.', upgradeNote:null, bx:932, by:1516 },
-  { id:'mcB2', name:'Overhead Counter', spokeId:'misc', parent:'mcB1', mutexWith:'mcB4', costSP:0, costCash:2500, req:{hakuda:40}, noLevel:true, desc:'Counter weapon-based overheaded swings on deflect, increasing the enemies posture significantly.', upgradeNote:null, accentColor:'255,130,20', bx:855, by:1514 },
-  { id:'mcB3', name:'Slippery Fighter', spokeId:'misc', parent:'mcB1', costSP:0, costCash:4000, req:{}, noLevel:true, desc:'Press Counter after winning a clash to launch your opponent into the air.', upgradeNote:null, bx:890, by:1557 },
-  { id:'mcB4', name:'Advanced Counter 1', spokeId:'misc', parent:'mcB1', mutexWith:'mcB2', costSP:0, costCash:2500, req:{strength:40}, noLevel:true, desc:'Counter specific melee attacks with your foot, increasing the enemies posture significantly.', upgradeNote:null, accentColor:'255,60,80', bx:960, by:1592 },
+  { id:'mcA1', name:'Spiritual Potential', spokeId:'misc', parent:'mc3', costSP:0, costCash:250, req:{}, noLevel:true, desc:'Gain the ability to fill up your aura bar when fighting players. Once filled, you can unleash your spiritual pressure and gain a short-term buff.', upgradeNote:null, bx:852, by:1431 },
+  { id:'mcA2', name:'Spiritual Pressure', spokeId:'misc', parent:'mcA1', costSP:0, costCash:450, req:{}, noLevel:true, desc:'Flex your spiritual power (keybind in settings), affecting weaker opponents to varying degrees.', upgradeNote:null, bx:774, by:1474 },
+  { id:'mcB1', name:'Manual Rushdown', spokeId:'misc', parent:'mc3', costSP:0, costCash:125, req:{}, noLevel:true, desc:'Hold shift and flashstep to manually use rushdown on a target with added startup.', upgradeNote:null, bx:932, by:1516 },
+  { id:'mcB2', name:'Overhead Counter', spokeId:'misc', parent:'mcB1', mutexWith:'mcB4', costSP:0, costCash:300, req:{hakuda:40}, noLevel:true, desc:'Counter weapon-based overheaded swings on deflect, increasing the enemies posture significantly.', upgradeNote:null, accentColor:'255,130,20', bx:855, by:1514 },
+  { id:'mcB3', name:'Slippery Fighter', spokeId:'misc', parent:'mcB1', costSP:0, costCash:250, req:{}, noLevel:true, desc:'Press Counter after winning a clash to launch your opponent into the air.', upgradeNote:null, bx:890, by:1557 },
+  { id:'mcB4', name:'Advanced Counter 1', spokeId:'misc', parent:'mcB1', mutexWith:'mcB2', costSP:0, costCash:300, req:{strength:40}, noLevel:true, desc:'Counter specific melee attacks with your foot, increasing the enemies posture significantly.', upgradeNote:null, accentColor:'255,60,80', bx:960, by:1592 },
   { id:'mcB2a', name:'One Way Ticket to Hell', spokeId:'misc', parent:'mcB2', costSP:4, costCash:0, req:{hakuda:125}, noLevel:true, desc:'Winning a clash when the opponent is low on health and high on posture will cause you to impale them with your fist.', upgradeNote:null, accentColor:'255,130,20', bx:796, by:1556 },
   { id:'mcB4a', name:'Clash Proficiency', spokeId:'misc', parent:'mcB4', costSP:4, costCash:0, req:{strength:80}, noLevel:true, desc:'Winning a clash when the opponent has low health and medium posture initiates an execution.', upgradeNote:null, accentColor:'255,60,80', bx:908, by:1636 }
 ];
@@ -1297,7 +1523,7 @@ const SPEED_BRANCHES = [
 const QUINCY_BRANCHES = [
   { id:'qrc6', name:'Blut Arterie', spokeId:'race', parent:'qrc3', costSP:5, costCash:0, req:{kido:60}, desc:'The offensive form of Blut which grants inhuman attack power.', upgradeNote:'Lvl 4: No longer passively saps Blut Bar·Lvl 8: +15% weapon dmg', accentColor:'255,85,178', bx:846, by:1134 },
   { id:'qrc7', name:'Kido Node', spokeId:'race', parent:'qrc6', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:806, by:1094 },
-  { id:'qrc8', name:'Mondlicht', spokeId:'race', parent:'qrc7', costSP:9, costCash:0, req:{kido:220}, noLevel:true, desc:'Deliver a lethal moonlight strike.', upgradeNote:null, accentColor:'255,85,178', bx:745, by:1077 },
+  { id:'qrc8', name:'Mondlicht', spokeId:'race', parent:'qrc7', costSP:9, costCash:0, req:{kido:220}, desc:'Deliver a lethal moonlight strike.', upgradeNote:null, accentColor:'255,85,178', bx:745, by:1077 },
   { id:'qrc4', name:'Blut Vene', spokeId:'race', parent:'qrc3', costSP:5, costCash:0, req:{kido:90}, desc:'The defensive form of Blut, which grants the user inhuman durability.', upgradeNote:'Lvl 3: No longer passively saps Blut Bar.', accentColor:'255,85,178', bx:848, by:1255 },
   { id:'qrc5', name:'Reishi Gather', spokeId:'race', parent:'qrc4', costSP:4, costCash:0, req:{kido:100}, noLevel:true, passive:true, desc:'Gather reiatsu from the atmosphere, increasing reiatsu regeneration rate by 7.5%.', upgradeNote:null, accentColor:'255,85,178', bx:802, by:1289 },
   { id:'qb1', name:'Medallion Specialist', spokeId:'race', parent:'qrc3', costSP:1, costCash:0, req:{kido:60}, noLevel:true, passive:true, desc:'You have begun specialization into your quincy medallion.', upgradeNote:null, accentColor:'255,85,178', bx:775, by:1205 },
@@ -1311,7 +1537,7 @@ const QUINCY_BRANCHES = [
   { id:'qb9', name:'Feurige Säulen', spokeId:'race', parent:'qb8', costSP:11, costCash:0, req:{kido:330}, desc:'Summon forward pillars of holy fire.', upgradeNote:'Lvl 3: Feurige Säulen can hit ragdolled opponents', accentColor:'255,85,178', bx:382, by:1121 },
   { id:'qb10', name:'Kido Node', spokeId:'race', parent:'qb7', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:473, by:1270 },
   { id:'qb11', name:'Schlagen', spokeId:'race', parent:'qb10', costSP:11, costCash:0, req:{kido:220}, desc:'Summon a raging thunderstorm, and then strike lightning on the blast zone.', upgradeNote:'Lvl 5: Standing in the strikes blast zone heals you for 3% max HP', accentColor:'255,85,178', bx:431, by:1335 },
-  { id:'qb12', name:'Klingensturm', spokeId:'race', parent:'qb11', costSP:13, costCash:0, req:{kido:400}, noLevel:true, desc:'Summon various spirit weapons once used by your deceased comrades to rain down warfare on your target. Ultimate Skill.', upgradeNote:null, accentColor:'255,85,178', bx:324, by:1275 },
+  { id:'qb12', name:'Klingensturm', spokeId:'race', parent:'qb11', costSP:13, costCash:0, req:{kido:400}, desc:'Summon various spirit weapons once used by your deceased comrades to rain down warfare on your target. Ultimate Skill.', upgradeNote:null, accentColor:'255,85,178', bx:324, by:1275 },
   { id:'qa1', name:'Advanced Archery', spokeId:'race', parent:'qrc3', costSP:1, costCash:0, req:{kido:60}, noLevel:true, passive:true, desc:'You are more in tune with your bow.', upgradeNote:null, accentColor:'255,85,178', bx:917, by:1105 },
   { id:'qa2', name:'Luftpfeile', spokeId:'race', parent:'qa1', costSP:7, costCash:0, req:{kido:96}, desc:'Rush at your opponent then leap into the air and unleash a volley of arrows.', upgradeNote:null, accentColor:'255,85,178', bx:916, by:1028 },
   { id:'qa3', name:'Kido Node', spokeId:'race', parent:'qa2', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:846, by:981 },
@@ -1403,9 +1629,9 @@ const BASE_SPOKES = [
     { id:'hk3', name:'Hakuda Node',   costSP:2, costCash:0, req:{}, passive:true, noLevel:true, desc:'Increase Hakuda Scaling.', upgradeNote:null },
   ]},
   { id:'sense', label:'Sense', angle:-30, skills:[
-    { id:'sn1', name:'Sensory 1', costSP:0, costCash:500,  req:{}, noLevel:true, desc:'Awaken your basic spiritual senses.', upgradeNote:null },
-    { id:'sn2', name:'Sensory 2', costSP:1, costCash:1200, req:{}, noLevel:true, desc:'Sharpen your perception of reiatsu flows.', upgradeNote:null },
-    { id:'sn3', name:'Sensory 3', costSP:0, costCash:2500, req:{}, noLevel:true, desc:'Expand your spiritual awareness further.', upgradeNote:null },
+    { id:'sn1', name:'Sensory 1', costSP:0, costCash:200,  req:{}, noLevel:true, desc:'Awaken your basic spiritual senses.', upgradeNote:null },
+    { id:'sn2', name:'Sensory 2', costSP:1, costCash:100, req:{}, noLevel:true, desc:'Sharpen your perception of reiatsu flows.', upgradeNote:null },
+    { id:'sn3', name:'Sensory 3', costSP:0, costCash:300, req:{}, noLevel:true, desc:'Expand your spiritual awareness further.', upgradeNote:null },
     { id:'sn4', name:'Sensory 4', costSP:1, costCash:0,    req:{}, noLevel:true, desc:'Achieve peak spiritual sensory ability.', upgradeNote:null },
   ]},
   { id:'strength', label:'Strength', angle:0, skills:[
@@ -1417,9 +1643,9 @@ const BASE_SPOKES = [
     { id:'sp_clone', name:'Clone Strike', costSP:7, costCash:0, req:{speed:44}, desc:'Knockback an opponent into an afterimage slash.', upgradeNote:'Lvl 3: Clone Strike can hit ragdolled enemies' },
   ]},
   { id:'misc', label:'Misc', angle:150, skills:[
-    { id:'mc1', name:'Aerial Fighter', costSP:0, costCash:1000, req:{}, noLevel:true, desc:'Hold run while using your critical attack to launch an opponent into the air.', upgradeNote:null },
-    { id:'mc2', name:'Rushdown',       costSP:0, costCash:2000, req:{}, noLevel:true, desc:'Flashstep after applying heavy knockback to someone.', upgradeNote:null },
-    { id:'mc3', name:'Drop Cancel',    costSP:0, costCash:3000, req:{}, noLevel:true, desc:'Flashstep right before landing to cancel the stun.', upgradeNote:null },
+    { id:'mc1', name:'Aerial Fighter', costSP:0, costCash:75, req:{}, noLevel:true, desc:'Hold run while using your critical attack to launch an opponent into the air.', upgradeNote:null },
+    { id:'mc2', name:'Rushdown',       costSP:0, costCash:75, req:{}, noLevel:true, desc:'Flashstep after applying heavy knockback to someone.', upgradeNote:null },
+    { id:'mc3', name:'Drop Cancel',    costSP:0, costCash:100, req:{}, noLevel:true, desc:'Flashstep right before landing to cancel the stun.', upgradeNote:null },
   ]},
   { id:'race', label:'Race', angle:180, skills:[] },
 ];
@@ -1469,6 +1695,8 @@ const makeState = () => ({
   selectedId:   null,
   freeRefunds:  1,
   freeUpgrades: 2,
+  essences:     [],   // array of essence ids (max 2)
+  essenceLevels: {},  // id → current level (starts at 1 on equip)
 });
 let state = makeState();
 
@@ -1742,9 +1970,9 @@ function updateTooltipContent(skillId) {
   const sc      = 'rgb(' + color + ')';
 
   let statusText = '', statusClass = 'locked';
-  if (isMaxed)             { statusText = '★ Maxed';     statusClass = 'maxed'; }
-  else if (skill.unlocked) { statusText = '✓ Unlocked';  statusClass = 'unlocked'; }
-  else if (avail)          { statusText = '◆ Available'; statusClass = 'avail'; }
+  if (isMaxed)             { statusText = 'Maxed';     statusClass = 'maxed'; }
+  else if (skill.unlocked) { statusText = 'Unlocked';  statusClass = 'unlocked'; }
+  else if (avail)          { statusText = 'Available'; statusClass = 'avail'; }
   else                     { statusText = '🔒 Locked';   statusClass = 'locked'; }
 
   let costsHTML = '';
@@ -1788,7 +2016,169 @@ function updateTooltipContent(skillId) {
     (!skill.unlocked && avail ? '<div style="font-family:\'Exo 2\',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(110,210,255,.55);margin-top:5px;">Double-click or Shift+click to quick unlock</div>' : '');
 }
 
-/* ===================== CACHED ROW ELEMENTS ===================== */
+/* ===================== SKILL ESSENCE SYSTEM ===================== */
+const ATTR_COLORS_FULL = { hakuda:'#ff8214', strength:'#ff3c50', kido:'#ff50b4', speed:'#32b4ff' };
+
+function essenceReqsMet(ess) {
+  for (const [attr, min] of Object.entries(ess.req)) {
+    if ((state.attrStats[attr] || 0) < min) return false;
+  }
+  return true;
+}
+
+function equipEssence(id) {
+  if (state.essences.length >= 2) return;
+  if (state.essences.includes(id)) return;
+  const ess = SKILL_ESSENCES.find(e => e.id === id);
+  if (!ess) return;
+  if (ess.race && ess.race !== currentRace) return;
+  if (state.skillPoints < ess.sp) return;
+  state.essences.push(id);
+  state.essenceLevels[id] = 1;
+  state.skillPoints -= ess.sp;
+  closeEssenceDropdown();
+  render();
+}
+
+function removeEssence(id) {
+  const idx = state.essences.indexOf(id);
+  if (idx === -1) return;
+  const ess = SKILL_ESSENCES.find(e => e.id === id);
+  if (!ess) return;
+  // Refund shrine uses from leveling this essence
+  const lvl = state.essenceLevels[id] || 1;
+  const shrineUsed = lvl - 1;
+  if (shrineUsed > 0) {
+    state.freeUpgrades = Math.min(2, state.freeUpgrades + shrineUsed);
+  }
+  state.essences.splice(idx, 1);
+  delete state.essenceLevels[id];
+  state.skillPoints = Math.min(TOTAL_SKILL_POINTS, state.skillPoints + ess.sp);
+  render();
+}
+
+function upgradeFreeEssence(id) {
+  if (!state.essences.includes(id)) return;
+  const lvl = state.essenceLevels[id] || 1;
+  if (lvl >= MAX_SKILL_LEVEL) return;
+  if (state.freeUpgrades <= 0) return;
+  state.freeUpgrades--;
+  state.essenceLevels[id] = lvl + 1;
+  closeModal();
+  render();
+}
+
+function closeEssenceDropdown() {
+  const dd = document.getElementById('essence-dropdown');
+  if (dd) dd.classList.add('hidden');
+}
+
+function renderEssencePanel() {
+  const counter   = document.getElementById('essence-counter');
+  const slots     = document.getElementById('essence-slots');
+  const addBtn    = document.getElementById('essence-add-btn');
+  const essList   = document.getElementById('essence-list');
+  if (!counter || !slots || !addBtn || !essList) return;
+
+  const count = state.essences.length;
+  counter.textContent = count + ' / 2';
+
+  // Render equipped chips
+  slots.innerHTML = '';
+  state.essences.forEach(id => {
+    const ess = SKILL_ESSENCES.find(e => e.id === id);
+    if (!ess) return;
+    const lvl = state.essenceLevels[id] || 1;
+    const chip = document.createElement('div');
+    chip.className = 'essence-chip';
+    // Build colored req tags for bottom row
+    let reqBottom = '';
+    for (const [attr, min] of Object.entries(ess.req)) {
+      const col = ATTR_COLORS_FULL[attr] || '#aaa';
+      reqBottom += '<span class="essence-chip-req" style="color:' + col + ';border-color:' + col + '55;background:' + col + '18">' + attr.charAt(0).toUpperCase() + attr.slice(1) + ' ' + min + '</span>';
+    }
+    chip.innerHTML =
+      '<div class="essence-chip-top">' +
+        '<span class="essence-chip-name">' + ess.name + '</span>' +
+        '<div class="essence-chip-controls">' +
+          '<span class="essence-chip-level">Lv ' + lvl + '</span>' +
+          '<button class="essence-chip-remove" data-remove-essence="' + id + '" title="Remove & refund">✕</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="essence-chip-bottom">' +
+        reqBottom +
+        (ess.sp > 0 ? '<span class="essence-chip-sp">' + ess.sp + ' SP</span>' : '') +
+      '</div>';
+    slots.appendChild(chip);
+  });
+
+  addBtn.disabled = count >= 2;
+  addBtn.textContent = count >= 2 ? 'Max Essences Equipped' : '+ Choose Essence';
+
+  // Render dropdown items
+  essList.innerHTML = '';
+  SKILL_ESSENCES.forEach(ess => {
+    const owned     = state.essences.includes(ess.id);
+    const noSP      = !owned && state.skillPoints < ess.sp;
+    const noAttrs   = !owned && !essenceReqsMet(ess);
+    const wrongRace = !owned && ess.race && ess.race !== currentRace;
+    const blocked   = noSP || noAttrs || wrongRace;
+    const item = document.createElement('div');
+    item.className = 'essence-item' + (owned ? ' essence-item-owned' : (blocked ? ' essence-item-disabled' : ''));
+    if (!owned && !blocked) item.dataset.equipEssence = ess.id;
+
+    // Build req tags with per-attribute colors
+    let reqTags = '';
+    for (const [attr, min] of Object.entries(ess.req)) {
+      const col = ATTR_COLORS_FULL[attr] || '#aaa';
+      const met = (state.attrStats[attr] || 0) >= min;
+      reqTags += '<span class="essence-req-tag" style="color:' + (met ? col : '#94a3b8') + ';border-color:' + (met ? col + '55' : 'rgba(148,163,184,.25)') + ';background:' + (met ? col + '18' : 'rgba(30,40,60,.4)') + '">' + attr.charAt(0).toUpperCase() + attr.slice(1) + ' ' + min + '</span>';
+    }
+    if (ess.race) {
+      const raceTagColor = wrongRace ? '#94a3b8' : '#f9a8d4';
+      const raceTagBg    = wrongRace ? 'rgba(30,40,60,.4)' : 'rgba(255,85,178,.08)';
+      const raceTagBdr   = wrongRace ? 'rgba(148,163,184,.25)' : 'rgba(255,85,178,.28)';
+      reqTags += '<span class="essence-race-tag" style="color:' + raceTagColor + ';background:' + raceTagBg + ';border-color:' + raceTagBdr + '">' + ess.raceLabel + '</span>';
+    }
+
+    item.innerHTML =
+      '<div class="essence-item-main">' +
+        '<div class="essence-item-name">' + ess.name + '</div>' +
+        '<div class="essence-item-reqs">' + reqTags + '</div>' +
+      '</div>' +
+      '<div class="essence-item-sp">' + (ess.sp > 0 ? ess.sp : 'Free') + '<span class="sp-label">' + (ess.sp > 0 ? 'SP' : '') + '</span></div>';
+    essList.appendChild(item);
+  });
+}
+
+// Essence dropdown open/close
+document.addEventListener('DOMContentLoaded', () => {});
+(function initEssenceListeners() {
+  const addBtn = document.getElementById('essence-add-btn');
+  const dd     = document.getElementById('essence-dropdown');
+  const closeBtn = document.getElementById('essence-drop-close');
+  if (addBtn) addBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (addBtn.disabled) return;
+    dd.classList.toggle('hidden');
+    renderEssencePanel();
+  });
+  if (closeBtn) closeBtn.addEventListener('click', e => { e.stopPropagation(); closeEssenceDropdown(); });
+
+  // Delegate equip / remove
+  document.addEventListener('click', e => {
+    const equipBtn = e.target.closest('[data-equip-essence]');
+    if (equipBtn) { equipEssence(equipBtn.dataset.equipEssence); return; }
+    const removeBtn = e.target.closest('[data-remove-essence]');
+    if (removeBtn) { removeEssence(removeBtn.dataset.removeEssence); return; }
+    // Close dropdown on outside click
+    if (dd && !dd.classList.contains('hidden')) {
+      if (!dd.contains(e.target) && e.target !== addBtn) closeEssenceDropdown();
+    }
+  });
+})();
+
+
 const elBpRemaining = document.getElementById('bp-remaining');
 const elBpFill      = document.getElementById('bp-fill');
 const elBpStats     = document.getElementById('bp-stats');
@@ -1894,6 +2284,14 @@ function render() {
   });
 
   elFragNum.textContent = state.fragments;
+  const _ctrSpNum = document.getElementById('ctr-sp-num');
+  const _ctrFragNum = document.getElementById('ctr-frag-num');
+  const _ctrSpFill = document.getElementById('ctr-sp-fill');
+  const _ctrFragFill = document.getElementById('ctr-frag-fill');
+  if (_ctrSpNum)   _ctrSpNum.textContent   = state.skillPoints;
+  if (_ctrFragNum) _ctrFragNum.textContent = state.fragments;
+  if (_ctrSpFill)   _ctrSpFill.style.width   = Math.max(0, (state.skillPoints / TOTAL_SKILL_POINTS) * 100) + '%';
+  if (_ctrFragFill) _ctrFragFill.style.width = Math.max(0, (state.fragments   / TOTAL_FRAGMENTS)    * 100) + '%';
   elSpNum.textContent   = state.skillPoints;
   elRyoNum.textContent  = state.soulTokens.toLocaleString();
   const _spFill = document.getElementById('sp-bar-fill');
@@ -1906,6 +2304,8 @@ function render() {
   elFuBtn.disabled = state.freeUpgrades <= 0;
   elRaceDot.style.background = RACE_COLORS[currentRace] || '#c084fc';
   elRaceBadge.textContent = currentRace || '—';
+
+  renderEssencePanel();
 
   /* Nodes — diff-based */
   state.skills.forEach(skill => {
@@ -2019,7 +2419,11 @@ function renderSelected() {
     html += '<div class="sk-section-label">Requires</div><div class="sk-chips">';
     for (const [attr, min] of Object.entries(skill.req)) {
       const ac = ATTR_COLORS[attr] || '100,180,255';
-      html += '<span class="sk-chip" style="color:rgb('+ac+');border-color:rgba('+ac+',0.5);background:rgba('+ac+',0.1)">'+attr.charAt(0).toUpperCase()+attr.slice(1)+' '+min+'</span>';
+      const met = (state.attrStats[attr] || 0) >= min;
+      const metStyle = met
+        ? 'color:rgb('+ac+');border-color:rgba('+ac+',0.5);background:rgba('+ac+',0.1)'
+        : 'color:#f87171;border-color:rgba(248,113,113,0.4);background:rgba(248,113,113,0.08)';
+      html += '<span class="sk-chip" style="'+metStyle+'">'+attr.charAt(0).toUpperCase()+attr.slice(1)+' '+min+'</span>';
     }
     html += '</div>';
   }
@@ -2067,11 +2471,11 @@ function renderSelected() {
       html += '<button class="sel-action unlock" id="btn-unlock" '+(canAll?'':'disabled')+'>'+lbl+'</button>';
     }
   } else if (isMaxed) {
-    html += '<div class="sel-maxed">★ Maxed ★</div>';
+    html += '<div class="sel-maxed">Maxed</div>';
     if (skill.upgradeLog?.length) html += '<button class="sel-action" id="btn-minus" style="margin-top:6px;background:rgba(100,116,139,.12);color:#94a3b8;border-color:rgba(100,116,139,.4);font-size:12px">− Remove Last Upgrade</button>';
     if (canRefund(skill)) html += '<button class="sel-action refund" id="btn-refund" style="margin-top:4px">↩ Remove Skill</button>';
   } else if (skill.noLevel) {
-    html += '<div class="sel-maxed" style="background:rgba(80,210,255,.1);color:#67e8f9;border-color:rgba(80,210,255,.4)">✓ Unlocked</div>';
+    html += '<div class="sel-maxed" style="background:rgba(80,210,255,.1);color:#67e8f9;border-color:rgba(80,210,255,.4)">Unlocked</div>';
     if (canRefund(skill)) html += '<button class="sel-action refund" id="btn-refund" style="margin-top:6px">↩ Remove Skill</button>';
   } else {
     const canSP = state.skillPoints >= SP_PER_UPGRADE;
@@ -2214,7 +2618,7 @@ function upgradeAF(id) {
 }
 function upgradeFreeSkill(id) {
   const skill=getSkill(id);
-  if(!skill||!skill.unlocked||skill.noLevel||skill.level>=MAX_SKILL_LEVEL||state.freeUpgrades<=0) return;
+  if(!skill||!skill.unlocked||skill.level>=MAX_SKILL_LEVEL||state.freeUpgrades<=0) return;
   state.freeUpgrades--; skill.freeUpgraded=true; skill.level++; skill.upgradeLog.push('free');
   closeModal(); render();
 }
@@ -2279,16 +2683,32 @@ function openModal(mode) {
     }
   } else {
     title.textContent = '✦ Shrine Level Up';
-    sub.textContent   = 'Pick any unlocked skill to gain +1 level free';
-    const eligible = state.skills.filter(s=>s.unlocked&&!s.noLevel&&s.level<MAX_SKILL_LEVEL);
-    if (!eligible.length) { list.innerHTML='<div class="fm-empty">No skills can be leveled up</div>'; }
-    else {
-      list.innerHTML='';
-      eligible.forEach(sk => {
-        const spoke=SPOKES.find(s=>s.id===sk.spokeId);
-        const row=document.createElement('div'); row.className='fm-skill-row';
-        row.innerHTML='<div style="flex:1"><div class="fm-skill-name">'+sk.name+'</div><div class="fm-skill-spoke" style="color:rgb('+SPOKE_COLORS[sk.spokeId]+')">'+((spoke?spoke.label:''))+'</div></div><div class="fm-skill-level">Lvl '+sk.level+' → '+(sk.level+1)+'</div>';
-        row.addEventListener('click',()=>upgradeFreeSkill(sk.id));
+    sub.textContent   = 'Pick any unlocked skill or essence to gain +1 level free';
+    list.innerHTML = '';
+    // Skills eligible
+    const eligibleSkills = state.skills.filter(s => s.unlocked && s.level < MAX_SKILL_LEVEL);
+    // Essences eligible
+    const eligibleEssences = state.essences.filter(id => (state.essenceLevels[id] || 1) < MAX_SKILL_LEVEL);
+
+    if (!eligibleSkills.length && !eligibleEssences.length) {
+      list.innerHTML = '<div class="fm-empty">No skills can be leveled up</div>';
+    } else {
+      // Essences first
+      eligibleEssences.forEach(id => {
+        const ess = SKILL_ESSENCES.find(e => e.id === id);
+        if (!ess) return;
+        const lvl = state.essenceLevels[id] || 1;
+        const row = document.createElement('div'); row.className = 'fm-skill-row';
+        row.innerHTML = '<div style="flex:1"><div class="fm-skill-name">' + ess.name + '</div><div class="fm-skill-spoke" style="color:#a5e7ff">Skill Essence</div></div><div class="fm-skill-level">Lv ' + lvl + ' → ' + (lvl + 1) + '</div>';
+        row.addEventListener('click', () => upgradeFreeEssence(id));
+        list.appendChild(row);
+      });
+      // Skills
+      eligibleSkills.forEach(sk => {
+        const spoke = SPOKES.find(s => s.id === sk.spokeId);
+        const row = document.createElement('div'); row.className = 'fm-skill-row';
+        row.innerHTML = '<div style="flex:1"><div class="fm-skill-name">' + sk.name + '</div><div class="fm-skill-spoke" style="color:rgb(' + SPOKE_COLORS[sk.spokeId] + ')">' + (spoke ? spoke.label : '') + '</div></div><div class="fm-skill-level">Lv ' + sk.level + ' → ' + (sk.level + 1) + '</div>';
+        row.addEventListener('click', () => upgradeFreeSkill(sk.id));
         list.appendChild(row);
       });
     }
