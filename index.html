@@ -2,7 +2,15 @@
 <html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Build Maker</title>
+<title>VV Stats Builder</title>
+<meta name="description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy builds. Plan your stats, save your build, and share it with anyone. Available for all devices! Made by Bryceexi &amp; Zentubaa.">
+<meta property="og:title" content="VV Stats Builder">
+<meta property="og:description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy. Plan your build and share it with anyone, on any device.">
+<meta property="og:url" content="https://vvbuilder.online/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="VV Stats Builder">
+<meta name="twitter:description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy. Plan your build and share it with anyone, on any device.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8462804459957316"
@@ -261,17 +269,19 @@
 
   /* Level number — centered inside the circle via parent flexbox */
   .skill-node .node-level {
-    font-family:'Share Tech Mono',monospace;
-    font-size:11px; font-weight:700; line-height:1;
+    font-family:'Exo 2',sans-serif;
+    font-size:12px; font-weight:900; line-height:1;
     color:#ffffff;
-    text-shadow: 0 0 6px rgba(0,0,0,1), 0 1px 2px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,.8);
+    text-shadow: 0 1px 0 rgba(0,0,0,.95), 1px 0 0 rgba(0,0,0,.7), -1px 0 0 rgba(0,0,0,.7), 0 -1px 0 rgba(0,0,0,.7);
     pointer-events:none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: geometricPrecision;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.02em;
+    user-select: none;
   }
-  .skill-node.ultimate .node-level { font-size:14px; }
-  .skill-node.maxed .node-level { color:#fcd34d; text-shadow: 0 0 6px rgba(0,0,0,1), 0 0 10px rgba(252,211,77,.5); }
+  .skill-node.ultimate .node-level { font-size:15px; }
+  .skill-node.maxed .node-level { color:#fcd34d; text-shadow: 0 1px 0 rgba(0,0,0,.95), 1px 0 0 rgba(0,0,0,.7), -1px 0 0 rgba(0,0,0,.7); }
   .skill-node .lock-icon {
     position:absolute; bottom:-4px; right:-4px;
     width:14px; height:14px; background:#030714;
@@ -524,6 +534,65 @@
   .reset-btn:hover { border-color:rgba(251,113,133,.55); background:rgba(251,113,133,.1); color:#fda4af; }
   .change-race-btn { background:rgba(0,0,0,.4); border:1px solid rgba(140,140,160,.4); color:#a0a8b8; border-radius:3px; padding:7px 14px; cursor:pointer; font-family:'Exo 2',sans-serif; font-size:11px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; transition:background .18s ease, border-color .18s ease, color .18s ease; }
   .change-race-btn:hover { border-color:rgba(180,185,200,.8); background:rgba(150,155,175,.1); color:#d0d5e8; }
+
+  /* SAVE BUILD BUTTON */
+  .save-build-btn {
+    background: rgba(40,160,80,.22);
+    border: 1px solid rgba(60,220,120,.55);
+    color: #6eeda0;
+    border-radius: 3px; padding: 7px 14px;
+    cursor: pointer; font-family: 'Exo 2', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+    transition: background .18s ease, border-color .18s ease, color .18s ease;
+    position: relative;
+    white-space: nowrap;
+  }
+  .save-build-btn:hover { border-color: rgba(80,240,140,.9); background: rgba(50,200,100,.28); color: #a0ffc0; }
+
+  /* RACE SCREEN — LOAD CODE SECTION */
+  .rs-load-section {
+    margin-top: 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    animation: fadeUp 0.6s ease both;
+    animation-delay: .45s;
+  }
+  .rs-load-label {
+    font-family: 'Exo 2', sans-serif; font-size: 10px; font-weight: 700;
+    letter-spacing: .45em; text-transform: uppercase;
+    color: rgba(100,180,255,.35);
+  }
+  .rs-load-row {
+    display: flex; align-items: center; gap: 0;
+    background: rgba(4,10,28,.9);
+    border: 1px solid rgba(60,140,220,.3);
+    border-radius: 4px; overflow: hidden;
+  }
+  .rs-load-input {
+    background: transparent; border: none; outline: none;
+    font-family: 'Share Tech Mono', monospace; font-size: 13px;
+    color: #a5e7ff; padding: 10px 14px;
+    width: 320px; letter-spacing: .04em;
+    caret-color: #67e8f9;
+  }
+  .rs-load-input::placeholder { color: rgba(80,140,200,.3); font-size: 11px; letter-spacing: .1em; }
+  .rs-load-btn {
+    background: rgba(34,100,200,.25); border: none; border-left: 1px solid rgba(60,140,220,.3);
+    color: #a5e7ff; padding: 10px 18px; cursor: pointer;
+    font-family: 'Exo 2', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: .2em; text-transform: uppercase;
+    transition: background .15s ease, color .15s ease;
+    white-space: nowrap;
+  }
+  .rs-load-btn:hover { background: rgba(34,100,200,.45); color: #67e8f9; }
+  .rs-load-error {
+    font-family: 'Exo 2', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: .1em; color: #f87171;
+    display: none;
+  }
+  .rs-load-error.visible { display: block; }
 
   /* TREE TITLE */
   .tree-title { position:absolute; top:18px; left:50%; transform:translateX(-50%); text-align:center; pointer-events:none; z-index:4; }
@@ -919,6 +988,11 @@
     /* ── Bottom bar ── */
     .hud-bc { bottom: 8px; gap: 6px; }
     .reset-btn, .change-race-btn { font-size: 10px; padding: 6px 12px; }
+    .save-build-btn { font-size: 10px; padding: 6px 10px; }
+
+    /* ── Race screen load section ── */
+    .rs-load-input { width: 200px; font-size: 12px; }
+    .rs-load-section { margin-top: 24px; }
 
     /* ── Bottom HUD panels: sit above toggle buttons (which are at bottom:58px + 32px = 90px) ── */
     .hud-bl { bottom: 96px !important; max-height: calc(100vh - 180px); overflow-y: auto; }
@@ -1038,6 +1112,16 @@
       <div class="rs-card-select"></div>
     </div>
   </div>
+  <!-- Load Build Code -->
+  <div class="rs-load-section">
+    <div class="rs-load-label">Load Existing Build</div>
+    <div class="rs-load-row">
+      <input class="rs-load-input" id="rs-code-input" type="text" placeholder="Paste share link or VV code" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off">
+      <button class="rs-load-btn" id="rs-load-btn">Load</button>
+    </div>
+    <div class="rs-load-error" id="rs-load-error">Invalid code — please check and try again</div>
+  </div>
+
   <div class="rs-credits">
     <div class="rs-credits-badge">
       <div class="rs-credits-line">VV Builder built by</div>
@@ -1208,6 +1292,7 @@
   <div class="hud hud-bc">
     <button class="reset-btn" id="reset-btn">↺ Reset Build</button>
     <button class="change-race-btn" id="change-race-btn">◈ Change Race</button>
+    <button class="save-build-btn" id="save-build-btn">Save Build</button>
     <!-- Edit Layout button intentionally hidden. To restore: find "#edit-layout-btn { display: none !important; }" in CSS and remove it -->
     <button id="edit-layout-btn">✎ Edit Layout</button>
     <button id="save-layout-btn">⬇ Save Layout</button>
@@ -3064,7 +3149,208 @@ function doSaveLayout() {
   a.href=URL.createObjectURL(blob); a.download='build_maker_final.html'; a.click();
   URL.revokeObjectURL(a.href);
 }
-/* END LAYOUT EDITOR */
+/* ===================== BUILD CODE SYSTEM ===================== */
+
+function encodeBuild() {
+  // Collect only unlocked skills with their full state
+  const unlocked = state.skills.filter(s => s.unlocked).map(s => ({
+    i: s.id, l: s.level,
+    sp: s.spSpent || 0, st: s.stSpent || 0,
+    af: s.afSpent || 0, f: s.freeUpgraded ? 1 : 0,
+    ul: (s.upgradeLog || []).join('').replace(/sp/g,'s').replace(/af/g,'a').replace(/free/g,'f')
+  }));
+
+  const data = {
+    v: 2, // version for future compatibility
+    r: currentRace,
+    b: state.buildStats,
+    a: state.attrStats,
+    s: unlocked,
+    es: state.essences,
+    el: state.essenceLevels,
+    fr: state.freeRefunds,
+    fu: state.freeUpgrades,
+    sp: state.skillPoints,
+    fg: state.fragments,
+    st: state.soulTokens,
+  };
+
+  const json = JSON.stringify(data);
+  let b64;
+  try { b64 = btoa(unescape(encodeURIComponent(json))); }
+  catch(e) { b64 = btoa(json); }
+
+  // 8-char random salt makes every save unique (even same build)
+  const salt = (Math.random().toString(36).slice(2,6) + Math.random().toString(36).slice(2,6)).toUpperCase().slice(0,8);
+  return 'VV' + salt + b64;
+}
+
+function decodeBuild(code) {
+  code = code.trim().replace(/\s/g,'');
+  if (!code.startsWith('VV') || code.length < 12) return null;
+  const b64 = code.slice(10); // 'VV' + 8 salt chars
+  let json;
+  try { json = decodeURIComponent(escape(atob(b64))); }
+  catch(e) {
+    try { json = atob(b64); }
+    catch(e2) { return null; }
+  }
+  try { return JSON.parse(json); }
+  catch(e) { return null; }
+}
+
+function applyBuildData(data) {
+  if (!data || data.v < 1) return false;
+
+  // Restore build stats
+  state.buildStats = Object.assign({ reserves:0,haste:0,potency:0,mettle:0,shunpo:0 }, data.b || {});
+  state.attrStats  = Object.assign({ hakuda:0,strength:0,kido:0,speed:0 }, data.a || {});
+
+  // Restore resources
+  state.skillPoints = typeof data.sp === 'number' ? data.sp : TOTAL_SKILL_POINTS;
+  state.fragments   = typeof data.fg === 'number' ? data.fg : TOTAL_FRAGMENTS;
+  state.soulTokens  = typeof data.st === 'number' ? data.st : TOTAL_SOUL_TOKENS;
+  state.freeRefunds = typeof data.fr === 'number' ? data.fr : 1;
+  state.freeUpgrades= typeof data.fu === 'number' ? data.fu : 2;
+
+  // Restore skills
+  if (Array.isArray(data.s)) {
+    data.s.forEach(entry => {
+      const sk = getSkill(entry.i);
+      if (!sk) return;
+      sk.unlocked = true;
+      sk.level    = typeof entry.l === 'number' ? entry.l : 1;
+      sk.spSpent  = entry.sp || 0;
+      sk.stSpent  = entry.st || 0;
+      sk.afSpent  = entry.af || 0;
+      sk.freeUpgraded = entry.f === 1;
+      // Reconstruct upgradeLog from encoded string
+      const ul = entry.ul || '';
+      sk.upgradeLog = [];
+      for (let i = 0; i < ul.length; i++) {
+        if (ul[i]==='s') sk.upgradeLog.push('sp');
+        else if (ul[i]==='a') sk.upgradeLog.push('af');
+        else if (ul[i]==='f') sk.upgradeLog.push('free');
+      }
+    });
+  }
+
+  // Restore essences
+  state.essences      = Array.isArray(data.es) ? data.es.slice() : [];
+  state.essenceLevels = typeof data.el === 'object' && data.el ? Object.assign({}, data.el) : {};
+
+  return true;
+}
+
+/* ===================== BUILD CODE SYSTEM — Shareable URL Links ===================== */
+
+/* Save Build button — generates a full shareable URL anyone can open on any device */
+let _saveBuildTimer = null;
+document.getElementById('save-build-btn').addEventListener('click', function() {
+  const btn = this;
+  if (btn.dataset.saving === '1') return;
+  btn.dataset.saving = '1';
+
+  const vvCode = encodeBuild();
+  // Build the shareable URL: https://vvbuilder.online/?build=VV...
+  const shareUrl = window.location.origin + window.location.pathname + '?build=' + encodeURIComponent(vvCode);
+
+  navigator.clipboard.writeText(shareUrl).catch(() => {
+    // Fallback for browsers that block clipboard without interaction
+    const ta = document.createElement('textarea');
+    ta.value = shareUrl;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+
+  btn.textContent = 'Link Copied!';
+
+  clearTimeout(_saveBuildTimer);
+  _saveBuildTimer = setTimeout(() => {
+    btn.textContent = 'Save Build';
+    delete btn.dataset.saving;
+  }, 2500);
+});
+
+/* Load Build Code (race screen) — accepts VV codes OR full share URLs */
+function attemptLoadCode() {
+  const input = document.getElementById('rs-code-input');
+  const errEl = document.getElementById('rs-load-error');
+  let raw = (input.value || '').trim();
+  if (!raw) return;
+
+  errEl.classList.remove('visible');
+
+  // If someone pastes a full URL, extract just the build param
+  let code = raw;
+  try {
+    const url = new URL(raw);
+    const param = url.searchParams.get('build');
+    if (param) code = decodeURIComponent(param);
+  } catch(e) {
+    // Not a URL, treat as a raw VV code — fine
+  }
+
+  const data = decodeBuild(code);
+
+  if (!data || !data.r || !['Shinigami','Hollow','Quincy'].includes(data.r)) {
+    errEl.textContent = 'Invalid code — please check and try again';
+    errEl.classList.add('visible');
+    input.style.borderColor = 'rgba(248,113,113,.6)';
+    setTimeout(() => { input.style.borderColor = ''; }, 1800);
+    return;
+  }
+
+  _applyLoadedBuild(data);
+  input.value = '';
+}
+
+function _applyLoadedBuild(data) {
+  const loadEl = document.getElementById('tree-loading');
+  currentRace = data.r;
+  buildSpokes(data.r);
+  state = makeState();
+  Object.keys(_nodeStateCache).forEach(k=>delete _nodeStateCache[k]);
+  Object.keys(_lineStateCache).forEach(k=>delete _lineStateCache[k]);
+  document.getElementById('race-screen').classList.add('hidden');
+
+  loadEl.style.display = 'flex';
+  document.fonts.ready.then(() => {
+    buildTree();
+    applyTrunkOverrides();
+    applyBuildData(data);
+    render();
+    centerOnCore();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      loadEl.style.display = 'none';
+    }));
+  });
+}
+
+document.getElementById('rs-load-btn').addEventListener('click', attemptLoadCode);
+document.getElementById('rs-code-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') attemptLoadCode();
+});
+
+/* Auto-load from URL on page open — handles ?build=VV... links */
+(function() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const buildParam = params.get('build');
+    if (!buildParam) return;
+    const code = decodeURIComponent(buildParam);
+    const data = decodeBuild(code);
+    if (!data || !data.r || !['Shinigami','Hollow','Quincy'].includes(data.r)) return;
+    // Wait for page to be ready then auto-load
+    document.fonts.ready.then(() => {
+      _applyLoadedBuild(data);
+    });
+  } catch(e) {}
+})();
+
+/* END BUILD CODE SYSTEM */
 /* ===================== MOBILE PANEL TOGGLES ===================== */
 (function() {
   var isMobile = () => window.innerWidth <= 768;
