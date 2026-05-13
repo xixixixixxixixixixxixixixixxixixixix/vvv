@@ -2,15 +2,14 @@
 <html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VV Stats Builder</title>
-<meta name="description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy builds. Plan your stats, save your build, and share it with anyone. Available for all devices! Made by Bryceexi &amp; Zentubaa.">
-<meta property="og:title" content="VV Stats Builder">
-<meta property="og:description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy. Plan your build and share it with anyone, on any device.">
-<meta property="og:url" content="https://vvbuilder.online/">
+<title>VV Builder</title>
+<meta name="description" content="VV Ultimatum skill tree builder. Plan your build and share it with anyone! Made by Bryceexi &amp; Zentubaa.">
+<meta property="og:title" content="VV Builder">
+<meta property="og:description" content="VV Ultimatum skill tree builder. Plan your build and share it with anyone! Made by Bryceexi &amp; Zentubaa.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="VV Stats Builder">
-<meta name="twitter:description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy. Plan your build and share it with anyone, on any device.">
+<meta name="twitter:title" content="VV Builder">
+<meta name="twitter:description" content="VV Ultimatum skill tree builder. Plan your build and share it with anyone! Made by Bryceexi &amp; Zentubaa.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8462804459957316"
@@ -150,6 +149,9 @@
     width:100vw; height:100vh; overflow:hidden;
     cursor:grab; z-index:2; pointer-events:auto;
     touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
 
   /* TREE LOADING OVERLAY */
@@ -183,9 +185,11 @@
     will-change: transform;
     contain: layout style;
     transform-origin: 0 0;
+    user-select: none;
+    -webkit-user-select: none;
   }
   #tree-inner svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-  #node-layer { position:absolute; inset:0; width:3200px; height:3200px; pointer-events:none; contain: layout style; }
+  #node-layer { position:absolute; inset:0; width:3200px; height:3200px; pointer-events:none; contain: layout style; user-select:none; -webkit-user-select:none; }
 
   .core {
     position:absolute; left:1200px; top:1200px;
@@ -211,6 +215,9 @@
     display:flex; align-items:center; justify-content:center;
     pointer-events:auto;
     transform: translate3d(-50%,-50%,0);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
   .skill-node:hover { transform:translate3d(-50%,-50%,0) scale(1.18); }
 
@@ -916,16 +923,21 @@
 
     /* ── Race Screen ── */
     .rs-title h1 { font-size: 18px; letter-spacing: 0.2em; }
-    .rs-title { margin-bottom: 20px; }
+    .rs-title { margin-bottom: 16px; }
+    #race-screen {
+      justify-content: flex-start;
+      overflow-y: auto;
+      padding: 28px 0 24px;
+      -webkit-overflow-scrolling: touch;
+    }
     .rs-cards {
       flex-direction: column;
       gap: 12px;
-      overflow-y: auto;
-      max-height: 70vh;
-      padding: 0 16px 16px;
+      overflow-y: visible;
+      max-height: none;
+      padding: 0 16px;
       width: 100%;
       max-width: 400px;
-      -webkit-overflow-scrolling: touch;
     }
     .rs-card {
       width: 100%;
@@ -940,15 +952,23 @@
     .rs-card:active { transform: scale(0.98); }
     .rs-card-name { font-size: 16px; padding: 14px 14px 0; }
     .rs-card-desc { font-size: 11px; padding: 0 14px 14px; }
-    .rs-credits { bottom: 14px; }
+    .rs-credits {
+      position: static;
+      margin-top: 20px;
+      pointer-events: auto;
+    }
     .rs-credits-badge { padding: 8px 18px 10px; }
     .rs-credits-names { font-size: 12px; }
+    .rs-load-section { margin-top: 20px; }
 
     /* ── Tree title ── */
+    .tree-title { top: 56px; }
     .tree-title h1 { font-size: 13px; letter-spacing: 0.2em; }
     .tree-title p { font-size: 9px; }
-    .ctr-stat-box { padding: 5px 12px; min-width: 80px; }
-    .ctr-stat-val { font-size: 15px; }
+    .ctr-stat-box { padding: 4px 10px; min-width: 72px; }
+    .ctr-stat-val { font-size: 14px; }
+    .ctr-stat-lbl { font-size: 8px; letter-spacing: .12em; }
+    .ctr-stats-row { gap: 6px; margin-top: 5px; }
 
     /* ── HUD panels: collapse all by default, toggled open ── */
     .hud-tl, .hud-tr, .hud-bl, .hud-br {
@@ -1116,7 +1136,7 @@
   <div class="rs-load-section">
     <div class="rs-load-label">Load Existing Build</div>
     <div class="rs-load-row">
-      <input class="rs-load-input" id="rs-code-input" type="text" placeholder="Paste share link or VV code" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off">
+      <input class="rs-load-input" id="rs-code-input" type="text" placeholder="Enter build code (e.g. 1000)" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off">
       <button class="rs-load-btn" id="rs-load-btn">Load</button>
     </div>
     <div class="rs-load-error" id="rs-load-error">Invalid code — please check and try again</div>
@@ -1943,6 +1963,11 @@ function buildTree() {
         }
       }, { passive: true });
       btn.addEventListener('dblclick', () => { unlockSkill(sk.id); }, { passive: true });
+      // Mobile double-tap to unlock
+      btn.addEventListener('touchend', (e) => {
+        if (_touchMoved) return; // was a drag, ignore
+        if (_handleDoubleTap(sk.id)) e.preventDefault();
+      }, { passive: false });
       // Desktop-only hover tooltip
       btn.addEventListener('mouseenter', e => { if (!('ontouchstart' in window)) showTooltip(sk.id, e); });
       btn.addEventListener('mouseleave', () => { if (!('ontouchstart' in window)) hideTooltip(); });
@@ -1970,6 +1995,11 @@ function buildTree() {
       }
     }, { passive: true });
     btn.addEventListener('dblclick', () => { unlockSkill(br.id); }, { passive: true });
+    // Mobile double-tap to unlock
+    btn.addEventListener('touchend', (e) => {
+      if (_touchMoved) return; // was a drag, ignore
+      if (_handleDoubleTap(br.id)) e.preventDefault();
+    }, { passive: false });
     // Desktop-only hover tooltip
     btn.addEventListener('mouseenter', e => { if (!('ontouchstart' in window)) showTooltip(br.id, e); });
     btn.addEventListener('mouseleave', () => { if (!('ontouchstart' in window)) hideTooltip(); });
@@ -2464,7 +2494,8 @@ function renderSelected() {
 
   if (!state.selectedId) {
     panel.classList.add('slate');
-    host.innerHTML = '<div class="sel-empty"><div class="head">No Skill Selected</div><div class="sub">Click a node in the skill tree</div></div>';
+    const isMob = window.innerWidth <= 768;
+    host.innerHTML = '<div class="sel-empty"><div class="head">No Skill Selected</div><div class="sub">'+(isMob?'Tap a node · Double-tap to unlock':'Click a node in the skill tree')+'</div></div>';
     return;
   }
   const skill = getSkill(state.selectedId);
@@ -2955,13 +2986,14 @@ viewport.addEventListener('touchmove', e => {
     isPanning = true;
     viewport.classList.add('panning');
   }
+  e.preventDefault(); // prevent text selection highlight during drag
   const px = panOrigin.x + e.touches[0].clientX - _ts.x;
   const py = panOrigin.y + e.touches[0].clientY - _ts.y;
   const mnX = VW-CW*scale-2000, mnY = VH-CH*scale-2000;
   pan.x = px < mnX ? mnX : px > 2000 ? 2000 : px;
   pan.y = py < mnY ? mnY : py > 2000 ? 2000 : py;
   if (!_touchDirty) { _touchDirty=true; requestAnimationFrame(()=>{ applyTransform(); _touchDirty=false; }); }
-}, { passive: true });
+}, { passive: false });
 viewport.addEventListener('touchend', ()=>{
   touchStart=null;
   _touchMoved=false;
@@ -3242,9 +3274,27 @@ function applyBuildData(data) {
   return true;
 }
 
-/* ===================== BUILD CODE SYSTEM — Shareable URL Links ===================== */
+/* ===================== BUILD CODE SYSTEM — Local Sequential IDs ===================== */
 
-/* Save Build button — generates a full shareable URL anyone can open on any device */
+const _BUILD_ID_KEY    = 'vv_build_next_id';
+const _BUILD_DATA_PFX  = 'vv_build_';
+
+function _getNextBuildId() {
+  const current = parseInt(localStorage.getItem(_BUILD_ID_KEY) || '999', 10);
+  const next = current + 1;
+  localStorage.setItem(_BUILD_ID_KEY, String(next));
+  return String(next);
+}
+
+function _saveBuildToStorage(id, vvCode) {
+  try { localStorage.setItem(_BUILD_DATA_PFX + id, vvCode); } catch(e) {}
+}
+
+function _loadBuildFromStorage(id) {
+  try { return localStorage.getItem(_BUILD_DATA_PFX + id); } catch(e) { return null; }
+}
+
+/* Save Build button */
 let _saveBuildTimer = null;
 document.getElementById('save-build-btn').addEventListener('click', function() {
   const btn = this;
@@ -3252,29 +3302,22 @@ document.getElementById('save-build-btn').addEventListener('click', function() {
   btn.dataset.saving = '1';
 
   const vvCode = encodeBuild();
-  // Build the shareable URL: https://vvbuilder.online/?build=VV...
-  const shareUrl = window.location.origin + window.location.pathname + '?build=' + encodeURIComponent(vvCode);
+  const id = _getNextBuildId();
+  _saveBuildToStorage(id, vvCode);
 
-  navigator.clipboard.writeText(shareUrl).catch(() => {
-    // Fallback for browsers that block clipboard without interaction
-    const ta = document.createElement('textarea');
-    ta.value = shareUrl;
-    ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-  });
+  // Copy the short ID to clipboard
+  navigator.clipboard.writeText(id).catch(() => {});
 
-  btn.textContent = 'Link Copied!';
+  btn.textContent = 'Copied';
 
   clearTimeout(_saveBuildTimer);
   _saveBuildTimer = setTimeout(() => {
     btn.textContent = 'Save Build';
     delete btn.dataset.saving;
-  }, 2500);
+  }, 2000);
 });
 
-/* Load Build Code (race screen) — accepts VV codes OR full share URLs */
+/* Load Build Code (race screen) */
 function attemptLoadCode() {
   const input = document.getElementById('rs-code-input');
   const errEl = document.getElementById('rs-load-error');
@@ -3283,14 +3326,18 @@ function attemptLoadCode() {
 
   errEl.classList.remove('visible');
 
-  // If someone pastes a full URL, extract just the build param
+  // Short numeric ID → look up from localStorage
   let code = raw;
-  try {
-    const url = new URL(raw);
-    const param = url.searchParams.get('build');
-    if (param) code = decodeURIComponent(param);
-  } catch(e) {
-    // Not a URL, treat as a raw VV code — fine
+  if (/^\d{4,}$/.test(raw)) {
+    const stored = _loadBuildFromStorage(raw);
+    if (!stored) {
+      errEl.textContent = 'Build #' + raw + ' not found on this device';
+      errEl.classList.add('visible');
+      input.style.borderColor = 'rgba(248,113,113,.6)';
+      setTimeout(() => { input.style.borderColor = ''; errEl.textContent = 'Invalid code — please check and try again'; }, 1800);
+      return;
+    }
+    code = stored;
   }
 
   const data = decodeBuild(code);
@@ -3303,11 +3350,7 @@ function attemptLoadCode() {
     return;
   }
 
-  _applyLoadedBuild(data);
-  input.value = '';
-}
-
-function _applyLoadedBuild(data) {
+  // Valid — select the race and restore state after tree is built
   const loadEl = document.getElementById('tree-loading');
   currentRace = data.r;
   buildSpokes(data.r);
@@ -3315,11 +3358,13 @@ function _applyLoadedBuild(data) {
   Object.keys(_nodeStateCache).forEach(k=>delete _nodeStateCache[k]);
   Object.keys(_lineStateCache).forEach(k=>delete _lineStateCache[k]);
   document.getElementById('race-screen').classList.add('hidden');
+  input.value = '';
 
   loadEl.style.display = 'flex';
   document.fonts.ready.then(() => {
     buildTree();
     applyTrunkOverrides();
+    // Apply loaded state AFTER tree built
     applyBuildData(data);
     render();
     centerOnCore();
@@ -3334,23 +3379,31 @@ document.getElementById('rs-code-input').addEventListener('keydown', function(e)
   if (e.key === 'Enter') attemptLoadCode();
 });
 
-/* Auto-load from URL on page open — handles ?build=VV... links */
-(function() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const buildParam = params.get('build');
-    if (!buildParam) return;
-    const code = decodeURIComponent(buildParam);
-    const data = decodeBuild(code);
-    if (!data || !data.r || !['Shinigami','Hollow','Quincy'].includes(data.r)) return;
-    // Wait for page to be ready then auto-load
-    document.fonts.ready.then(() => {
-      _applyLoadedBuild(data);
-    });
-  } catch(e) {}
-})();
-
 /* END BUILD CODE SYSTEM */
+/* Block text selection during pan (belt-and-suspenders alongside user-select:none in CSS) */
+document.addEventListener('selectstart', e => {
+  if (isPanning) e.preventDefault();
+});
+
+/* ===================== DOUBLE-TAP TO UNLOCK (mobile) ===================== */
+/* Shared state — one tracker for all nodes, reset on mismatched node */
+let _dtLastTime = 0, _dtLastId = null, _dtTimer = null;
+function _handleDoubleTap(nodeId) {
+  const now = Date.now();
+  if (_dtLastId === nodeId && now - _dtLastTime < 320) {
+    // Double tap confirmed — attempt unlock
+    clearTimeout(_dtTimer);
+    _dtLastTime = 0; _dtLastId = null;
+    unlockSkill(nodeId);
+    return true; // was a double tap
+  }
+  // First tap — record it
+  _dtLastTime = now; _dtLastId = nodeId;
+  clearTimeout(_dtTimer);
+  _dtTimer = setTimeout(() => { _dtLastTime = 0; _dtLastId = null; }, 380);
+  return false;
+}
+
 /* ===================== MOBILE PANEL TOGGLES ===================== */
 (function() {
   var isMobile = () => window.innerWidth <= 768;
