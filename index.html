@@ -968,7 +968,7 @@
 
   /* ===================== MOBILE RESPONSIVE ===================== */
   @media (max-width: 768px) {
-    body { overflow: hidden; }
+    #save-toast { bottom: 130px; min-width: calc(100vw - 40px); max-width: calc(100vw - 40px); }
 
     /* ── Race Screen ── */
     .rs-title h1 { font-size: 18px; letter-spacing: 0.2em; }
@@ -1055,7 +1055,7 @@
     .tr-shrine-count { font-size: 14px; }
 
     /* ── Bottom bar ── */
-    .hud-bc { bottom: 8px; gap: 6px; }
+    .hud-bc { bottom: 60px; gap: 6px; }
     .reset-btn, .change-race-btn { font-size: 10px; padding: 6px 12px; }
     .save-build-btn { font-size: 10px; padding: 6px 10px; }
 
@@ -1064,8 +1064,8 @@
     .rs-load-section { margin-top: 24px; }
 
     /* ── Bottom HUD panels: sit above toggle buttons (which are at bottom:58px + 32px = 90px) ── */
-    .hud-bl { bottom: 96px !important; max-height: calc(100vh - 180px); overflow-y: auto; }
-    .hud-br { bottom: 96px !important; max-height: calc(100vh - 180px); overflow-y: auto; }
+    .hud-bl { bottom: 56px !important; max-height: calc(100vh - 180px); overflow-y: auto; }
+    .hud-br { bottom: 56px !important; max-height: calc(100vh - 180px); overflow-y: auto; }
 
     /* ── Mobile panel toggle buttons ── */
     .mob-panel-toggle {
@@ -1111,8 +1111,8 @@
   .mob-panel-toggle:active { background: rgba(80,140,220,0.2); }
   .mob-panel-toggle.tl { top: 18px;  left: 18px; }
   .mob-panel-toggle.tr { top: 18px;  right: 18px; }
-  .mob-panel-toggle.bl { bottom: 58px; left: 18px; }
-  .mob-panel-toggle.br { bottom: 58px; right: 18px; }
+  .mob-panel-toggle.bl { bottom: 12px; left: 18px; }
+  .mob-panel-toggle.br { bottom: 12px; right: 18px; }
   .mob-panel-toggle.active { background: rgba(80,140,220,0.25); border-color: rgba(110,210,255,0.7); color: #67e8f9; }
 
 </style>
@@ -1203,7 +1203,7 @@
 <div id="free-modal-overlay">
   <div id="free-modal">
     <div>
-      <div class="fm-title" id="fm-title">✦ Shrine Refund</div>
+      <div class="fm-title" id="fm-title">Shrine Refund</div>
       <div class="fm-sub" id="fm-sub">Pick any unlocked skill to refund for free</div>
     </div>
     <div class="fm-list" id="fm-list"></div>
@@ -1297,7 +1297,7 @@
     <!-- Shrine buttons -->
     <div class="shrine-row-bare">
       <button class="tr-shrine-btn" id="free-refund-btn">
-        <span class="tr-shrine-icon">↩</span>
+        <span class="tr-shrine-icon">↩&#xFE0E;</span>
         <span class="tr-shrine-label">Shrine Refund</span>
         <span class="tr-shrine-count" id="free-refund-count">1</span>
       </button>
@@ -2137,11 +2137,11 @@ function updateTooltipContent(skillId) {
   if (isMaxed)             { statusText = 'Maxed';     statusClass = 'maxed'; }
   else if (skill.unlocked) { statusText = 'Unlocked';  statusClass = 'unlocked'; }
   else if (avail)          { statusText = 'Available'; statusClass = 'avail'; }
-  else                     { statusText = '🔒 Locked';   statusClass = 'locked'; }
+  else                     { statusText = 'Locked';   statusClass = 'locked'; }
 
   let costsHTML = '';
   if (skill.costSP > 0)   costsHTML += '<span class="tt-chip sp">'+skill.costSP+' SP</span>';
-  if (skill.costCash > 0) costsHTML += '<span class="tt-chip st">⬡ '+skill.costCash.toLocaleString()+' ST</span>';
+  if (skill.costCash > 0) costsHTML += '<span class="tt-chip st">'+skill.costCash.toLocaleString()+' ST</span>';
   if (!costsHTML) costsHTML = '<span class="tt-chip sp">Free</span>';
 
   let reqsHTML = '';
@@ -2162,8 +2162,8 @@ function updateTooltipContent(skillId) {
     ? (() => {
         const notes = skill.upgradeNote.split('·').map(s=>s.trim()).filter(Boolean);
         return notes.length > 1
-          ? '<div class="tt-note">'+notes.map(n=>'✦ '+n).join('<br>')+'</div>'
-          : '<div class="tt-note">✦ '+skill.upgradeNote+'</div>';
+          ? '<div class="tt-note">'+notes.map(n=>n).join('<br>')+'</div>'
+          : '<div class="tt-note">'+skill.upgradeNote+'</div>';
       })()
     : '';
 
@@ -2577,7 +2577,7 @@ function renderSelected() {
   if (hasCost) {
     html += '<div class="sk-section-label">Unlock Cost</div><div class="sk-chips">';
     if (skill.costSP > 0)   html += '<span class="sk-chip sp">'+skill.costSP+' Skill Points</span>';
-    if (skill.costCash > 0) html += '<span class="sk-chip st">⬡ '+skill.costCash.toLocaleString()+' Soul Tokens</span>';
+    if (skill.costCash > 0) html += '<span class="sk-chip st">'+skill.costCash.toLocaleString()+' Soul Tokens</span>';
     html += '</div>';
   }
   if (skill.req && Object.keys(skill.req).length > 0) {
@@ -2595,8 +2595,8 @@ function renderSelected() {
   if (skill.upgradeNote) {
     const notes = skill.upgradeNote.split('·').map(s=>s.trim()).filter(Boolean);
     html += notes.length > 1
-      ? '<div class="sk-upgrade-note">'+notes.map(n=>'✦ '+n).join('<br>')+'</div>'
-      : '<div class="sk-upgrade-note">✦ '+skill.upgradeNote+'</div>';
+      ? '<div class="sk-upgrade-note">'+notes.map(n=>n).join('<br>')+'</div>'
+      : '<div class="sk-upgrade-note">'+skill.upgradeNote+'</div>';
   }
   if (skill.unlocked && !skill.noLevel) {
     html += '<div class="sel-segments">';
@@ -2622,26 +2622,33 @@ function renderSelected() {
         const prev = SPOKES.find(s=>s.id===skill.spokeId).skills[skill.tier-1];
         if (!getSkill(prev.id)?.unlocked) unmet.push('Unlock previous skill first');
       }
-      if (skill.req) for (const [a,m] of Object.entries(skill.req)) if ((state.attrStats[a]||0)<m) unmet.push(a.charAt(0).toUpperCase()+a.slice(1)+' '+m+' required');
-      html += '<div class="sel-locked-msg">🔒 '+unmet.join(' · ')+'</div>';
+      if (skill.req) for (const [a,m] of Object.entries(skill.req)) if ((state.attrStats[a]||0)<m) { /* stat req hidden unless unmet is empty */ }
+      // If no parent-lock messages, fall back to showing which stats are missing
+      if (unmet.length === 0 && skill.req) {
+        for (const [a,m] of Object.entries(skill.req)) {
+          if ((state.attrStats[a]||0)<m) unmet.push(a.charAt(0).toUpperCase()+a.slice(1)+' required');
+        }
+      }
+      if (unmet.length === 0) unmet.push('Requirements not met');
+      html += '<div class="sel-locked-msg">'+unmet.join(' · ')+'</div>';
     } else {
       const canSP = skill.costSP===0 || state.skillPoints>=skill.costSP;
       const canST = skill.costCash===0 || state.soulTokens>=skill.costCash;
       const canAll = canSP && canST;
       let lbl = 'Unlock';
       if (skill.costSP>0)   lbl += ' · '+skill.costSP+' SP';
-      if (skill.costCash>0) lbl += ' · ⬡ '+skill.costCash.toLocaleString()+' ST';
+      if (skill.costCash>0) lbl += ' · '+skill.costCash.toLocaleString()+' ST';
       if (!canSP) lbl = 'Need '+skill.costSP+' Skill Points';
-      if (!canST) lbl = 'Need ⬡ '+skill.costCash.toLocaleString()+' Soul Tokens';
+      if (!canST) lbl = 'Need '+skill.costCash.toLocaleString()+' Soul Tokens';
       html += '<button class="sel-action unlock" id="btn-unlock" '+(canAll?'':'disabled')+'>'+lbl+'</button>';
     }
   } else if (isMaxed) {
     html += '<div class="sel-maxed">Maxed</div>';
     if (skill.upgradeLog?.length) html += '<button class="sel-action" id="btn-minus" style="margin-top:6px;background:rgba(100,116,139,.12);color:#94a3b8;border-color:rgba(100,116,139,.4);font-size:12px">− Remove Last Upgrade</button>';
-    if (canRefund(skill)) html += '<button class="sel-action refund" id="btn-refund" style="margin-top:4px">↩ Remove Skill</button>';
+    if (canRefund(skill)) html += '<button class="sel-action refund" id="btn-refund" style="margin-top:4px">Remove Skill</button>';
   } else if (skill.noLevel) {
     html += '<div class="sel-maxed" style="background:rgba(80,210,255,.1);color:#67e8f9;border-color:rgba(80,210,255,.4)">Unlocked</div>';
-    if (canRefund(skill)) html += '<button class="sel-action refund" id="btn-refund" style="margin-top:6px">↩ Remove Skill</button>';
+    if (canRefund(skill)) html += '<button class="sel-action refund" id="btn-refund" style="margin-top:6px">Remove Skill</button>';
   } else {
     const canSP = state.skillPoints >= SP_PER_UPGRADE;
     const canAF = state.fragments  >= AF_PER_UPGRADE;
@@ -2655,7 +2662,7 @@ function renderSelected() {
       const lastLabel = lastType==='sp'?'SP':lastType==='af'?'Frag':'Free';
       html += '<button class="sel-action" id="btn-minus" style="margin-top:4px;background:rgba(100,116,139,.1);color:#94a3b8;border-color:rgba(100,116,139,.35);font-size:12px">− Undo Last (+'+lastLabel+')</button>';
     }
-    if (canRefund(skill)) html += '<button class="sel-action refund" id="btn-refund" style="margin-top:4px">↩ Remove Skill</button>';
+    if (canRefund(skill)) html += '<button class="sel-action refund" id="btn-refund" style="margin-top:4px">Remove Skill</button>';
   }
 
   host.innerHTML = html;
@@ -2832,7 +2839,7 @@ function openModal(mode) {
   const list    = document.getElementById('fm-list');
 
   if (mode === 'refund') {
-    title.textContent = '✦ Shrine Refund';
+    title.textContent = 'Shrine Refund';
     sub.textContent   = 'Pick any unlocked skill to refund for free';
     const eligible = state.skills.filter(s=>canFreeRefund(s));
     if (!eligible.length) { list.innerHTML='<div class="fm-empty">No skills to refund</div>'; }
@@ -2847,7 +2854,7 @@ function openModal(mode) {
       });
     }
   } else {
-    title.textContent = '✦ Shrine Level Up';
+    title.textContent = 'Shrine Level Up';
     sub.textContent   = 'Pick any unlocked skill or essence to gain +1 level free';
     list.innerHTML = '';
     // Skills eligible
@@ -3724,7 +3731,7 @@ function _handleDoubleTap(nodeId) {
 
   <!-- Save Build Toast -->
   <div id="save-toast">
-    <div class="st-saving" id="st-saving"><span class="st-spin">⟳</span> Saving build...</div>
+    <div class="st-saving" id="st-saving"> Saving build...</div>
     <div id="st-content" style="display:none">
       <div class="st-label">Build Saved — Link copied to clipboard</div>
       <div class="st-row">
