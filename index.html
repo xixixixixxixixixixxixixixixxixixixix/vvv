@@ -5,12 +5,12 @@
 <title>VV Stats Builder</title>
 <meta name="description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy builds. Plan your stats, save your build, and share it with anyone. Available for all devices! Made by Bryceexi &amp; Zentubaa.">
 <meta property="og:title" content="VV Stats Builder">
-<meta property="og:description" content="VV Ultimatum skill tree builder. Plan your build and share it with anyone, on any device! Made by Bryceexi & Zentubaa.">
+<meta property="og:description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy. Plan your build and share it with anyone, on any device.">
 <meta property="og:url" content="https://vvbuilder.online/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="VV Stats Builder">
-<meta name="twitter:description" content="VV Ultimatum skill tree builder. Plan your build and share it with anyone, on any device! Made by Bryceexi & Zentubaa.">
+<meta name="twitter:description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy. Plan your build and share it with anyone, on any device.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8462804459957316"
@@ -1606,7 +1606,7 @@ const SPEED_BRANCHES = [
 ];
 
 const QUINCY_BRANCHES = [
-  { id:'qrc6', name:'Blut Arterie', spokeId:'race', parent:'qrc3', costSP:5, costCash:0, req:{kido:60}, desc:'The offensive form of Blut which grants inhuman attack power.', upgradeNote:'Lvl 4: No longer passively saps Blut Bar·Lvl 8: +15% weapon dmg', accentColor:'255,85,178', bx:846, by:1134 },
+  { id:'qrc6', name:'Blut Arterie', spokeId:'race', parent:'qrc3', costSP:5, costCash:0, req:{kido:60}, desc:'The offensive form of Blut which grants inhuman attack power.', upgradeNote:'Lvl 4: No longer passively saps Blut Bar, +4% weapon dmg·Lvl 5: +6% weapon dmg·Lvl 6: +8% weapon dmg·Lvl 7: +11% weapon dmg·Lvl 8: +15% weapon dmg', accentColor:'255,85,178', bx:846, by:1134 },
   { id:'qrc7', name:'Kido Node', spokeId:'race', parent:'qrc6', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Kido scaling.', upgradeNote:null, accentColor:'255,85,178', bx:806, by:1094 },
   { id:'qrc8', name:'Mondlicht', spokeId:'race', parent:'qrc7', costSP:9, costCash:0, req:{kido:220}, desc:'Deliver a lethal moonlight strike.', upgradeNote:null, accentColor:'255,85,178', bx:745, by:1077 },
   { id:'qrc4', name:'Blut Vene', spokeId:'race', parent:'qrc3', costSP:5, costCash:0, req:{kido:90}, desc:'The defensive form of Blut, which grants the user inhuman durability.', upgradeNote:'Lvl 3: No longer passively saps Blut Bar.', accentColor:'255,85,178', bx:848, by:1255 },
@@ -3151,17 +3151,33 @@ function doSaveLayout() {
 }
 /* ===================== BUILD CODE SYSTEM ===================== */
 
-function encodeBuild() {
-  // Collect only unlocked skills with their full state
-  const unlocked = state.skills.filter(s => s.unlocked).map(s => ({
-    i: s.id, l: s.level,
-    sp: s.spSpent || 0, st: s.stSpent || 0,
-    af: s.afSpent || 0, f: s.freeUpgraded ? 1 : 0,
-    ul: (s.upgradeLog || []).join('').replace(/sp/g,'s').replace(/af/g,'a').replace(/free/g,'f')
-  }));
+/* --- Compact build encoding v3 ---
+   Skill IDs replaced with numeric indexes to cut code length ~60-70%.
+   Old VV...v2 codes still load via legacy path. New codes: VV3+4salt+b64. */
+function _skillIdToIdx() {
+  const m = {};
+  ALL_SKILLS.forEach((s,i) => { m[s.id] = i; });
+  return m;
+}
+function _skillIdxToId() { return ALL_SKILLS.map(s => s.id); }
 
+function encodeBuild() {
+  const idxMap = _skillIdToIdx();
+  const unlocked = state.skills.filter(s => s.unlocked).map(s => {
+    const ul = (s.upgradeLog || []).join('').replace(/sp/g,'s').replace(/af/g,'a').replace(/free/g,'f');
+    const arr = [
+      idxMap[s.id] !== undefined ? idxMap[s.id] : s.id,
+      s.level || 0,
+      s.spSpent || 0,
+      s.afSpent || 0,
+      s.freeUpgraded ? 1 : 0,
+      ul || ''
+    ];
+    while (arr.length > 1 && !arr[arr.length-1]) arr.pop();
+    return arr;
+  });
   const data = {
-    v: 2, // version for future compatibility
+    v: 3,
     r: currentRace,
     b: state.buildStats,
     a: state.attrStats,
@@ -3174,29 +3190,38 @@ function encodeBuild() {
     fg: state.fragments,
     st: state.soulTokens,
   };
-
   const json = JSON.stringify(data);
   let b64;
   try { b64 = btoa(unescape(encodeURIComponent(json))); }
   catch(e) { b64 = btoa(json); }
-
-  // 8-char random salt makes every save unique (even same build)
-  const salt = (Math.random().toString(36).slice(2,6) + Math.random().toString(36).slice(2,6)).toUpperCase().slice(0,8);
-  return 'VV' + salt + b64;
+  const salt = Math.random().toString(36).slice(2,6).toUpperCase();
+  return 'VV3' + salt + b64;
 }
 
 function decodeBuild(code) {
   code = code.trim().replace(/\s/g,'');
   if (!code.startsWith('VV') || code.length < 12) return null;
-  const b64 = code.slice(10); // 'VV' + 8 salt chars
+  const isV3 = code.startsWith('VV3');
+  const b64  = isV3 ? code.slice(7) : code.slice(10);
   let json;
   try { json = decodeURIComponent(escape(atob(b64))); }
   catch(e) {
     try { json = atob(b64); }
     catch(e2) { return null; }
   }
-  try { return JSON.parse(json); }
+  let data;
+  try { data = JSON.parse(json); }
   catch(e) { return null; }
+  if (data && data.v === 3 && Array.isArray(data.s)) {
+    const idList = _skillIdxToId();
+    data.s = data.s.map(arr => {
+      const idx = arr[0];
+      const id  = (typeof idx === 'number' && idList[idx]) ? idList[idx] : idx;
+      return { i: id, l: arr[1]||0, sp: arr[2]||0, af: arr[3]||0, f: arr[4]||0, ul: arr[5]||'' };
+    });
+    data.v = 2;
+  }
+  return data;
 }
 
 function applyBuildData(data) {
