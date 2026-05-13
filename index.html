@@ -3254,23 +3254,25 @@ function decodeBuild(code) {
     try { json = atob(b64); }
     catch(e2) { return null; }
   }
-  let data;
-  try { data = JSON.parse(json); }
+  try { return JSON.parse(json); }
   catch(e) { return null; }
-  if (data && data.v === 3 && Array.isArray(data.s)) {
-    const idList = _skillIdxToId();
+  // NOTE: v3 skill index expansion happens in applyBuildData,
+  // after buildSpokes() has populated ALL_SKILLS for the correct race.
+}
+
+function applyBuildData(data) {
+  if (!data || data.v < 1) return false;
+
+  // Expand v3 compact skill arrays → objects now that ALL_SKILLS is ready
+  if (data.v === 3 && Array.isArray(data.s)) {
+    const idList = _skillIdxToId(); // ALL_SKILLS is correct here — buildSpokes already ran
     data.s = data.s.map(arr => {
       const idx = arr[0];
       const id  = (typeof idx === 'number' && idList[idx]) ? idList[idx] : idx;
       return { i: id, l: arr[1]||0, sp: arr[2]||0, af: arr[3]||0, f: arr[4]||0, ul: arr[5]||'' };
     });
-    data.v = 2;
+    data.v = 2; // mark expanded
   }
-  return data;
-}
-
-function applyBuildData(data) {
-  if (!data || data.v < 1) return false;
 
   // Restore build stats
   state.buildStats = Object.assign({ reserves:0,haste:0,potency:0,mettle:0,shunpo:0 }, data.b || {});
