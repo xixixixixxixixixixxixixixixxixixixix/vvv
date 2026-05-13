@@ -17,7 +17,7 @@
      crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Exo+2:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   html, body { width: 100%; height: 100%; }
   body {
     background: #030714;
@@ -576,6 +576,7 @@
     color: #a5e7ff; padding: 10px 14px;
     width: 320px; letter-spacing: .04em;
     caret-color: #67e8f9;
+    user-select: text; -webkit-user-select: text;
   }
   .rs-load-input::placeholder { color: rgba(80,140,200,.3); font-size: 11px; letter-spacing: .1em; }
   .rs-load-btn {
@@ -889,6 +890,13 @@
     text-align:center; pointer-events:none;
     animation: fadeUp 0.7s ease 0.6s both;
   }
+  /* On mobile the race screen becomes a scrollable column — credits are inline */
+  @media (max-width: 768px) {
+    .rs-credits {
+      position: relative; bottom: auto; left: auto; right: auto;
+      margin-top: 20px; padding-bottom: 16px;
+    }
+  }
   .rs-credits-badge {
     display: inline-flex; flex-direction: column; align-items: center; gap: 6px;
     background: rgba(6, 12, 32, 0.82); border: 1px solid rgba(80, 200, 255, 0.22);
@@ -915,21 +923,26 @@
     body { overflow: hidden; }
 
     /* ── Race Screen ── */
+    #race-screen {
+      justify-content: flex-start;
+      overflow-y: auto;
+      padding: 28px 16px 24px;
+      -webkit-overflow-scrolling: touch;
+    }
     .rs-title h1 { font-size: 18px; letter-spacing: 0.2em; }
     .rs-title { margin-bottom: 20px; }
     .rs-cards {
       flex-direction: column;
       gap: 12px;
-      overflow-y: auto;
-      max-height: 70vh;
-      padding: 0 16px 16px;
+      overflow-y: visible;
+      max-height: none;
+      padding: 0;
       width: 100%;
-      max-width: 400px;
-      -webkit-overflow-scrolling: touch;
+      max-width: 420px;
     }
     .rs-card {
       width: 100%;
-      height: 130px;
+      height: 110px;
       flex-direction: row;
       border-radius: 6px;
     }
@@ -940,11 +953,23 @@
     .rs-card:active { transform: scale(0.98); }
     .rs-card-name { font-size: 16px; padding: 14px 14px 0; }
     .rs-card-desc { font-size: 11px; padding: 0 14px 14px; }
-    .rs-credits { bottom: 14px; }
+    .rs-load-section {
+      margin-top: 20px;
+      padding: 14px 16px;
+      background: rgba(4,10,28,0.7);
+      border: 1px solid rgba(60,140,220,0.2);
+      border-radius: 6px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .rs-load-input { width: 100%; font-size: 13px; }
+    .rs-load-row { width: 100%; }
+    .rs-credits { margin-top: 16px; padding-bottom: 8px; }
     .rs-credits-badge { padding: 8px 18px 10px; }
     .rs-credits-names { font-size: 12px; }
 
     /* ── Tree title ── */
+    .tree-title { top: 56px !important; }
     .tree-title h1 { font-size: 13px; letter-spacing: 0.2em; }
     .tree-title p { font-size: 9px; }
     .ctr-stat-box { padding: 5px 12px; min-width: 80px; }
@@ -990,9 +1015,7 @@
     .reset-btn, .change-race-btn { font-size: 10px; padding: 6px 12px; }
     .save-build-btn { font-size: 10px; padding: 6px 10px; }
 
-    /* ── Race screen load section ── */
-    .rs-load-input { width: 200px; font-size: 12px; }
-    .rs-load-section { margin-top: 24px; }
+    /* ── Race screen load section — handled above ── */
 
     /* ── Bottom HUD panels: sit above toggle buttons (which are at bottom:58px + 32px = 90px) ── */
     .hud-bl { bottom: 96px !important; max-height: calc(100vh - 180px); overflow-y: auto; }
@@ -1881,6 +1904,19 @@ function shortenLine(ln, x1, y1, x2, y2, r1, r2) {
 }
 
 /* ===================== TREE BUILD ===================== */
+
+/* ── Mobile double-tap to unlock ── */
+var _lastTapNode = null, _lastTapTime = 0;
+function _handleNodeTap(id, isTouch) {
+  if (!isTouch) return false;
+  var now = Date.now();
+  var same = (_lastTapNode === id);
+  var fast = (now - _lastTapTime) < 350;
+  _lastTapNode = id;
+  _lastTapTime = now;
+  if (same && fast) { unlockSkill(id); return true; }
+  return false;
+}
 function buildTree() {
   const linesG    = document.getElementById('lines');
   const nodeLayer = document.getElementById('node-layer');
@@ -1934,9 +1970,13 @@ function buildTree() {
       btn.style.cssText += 'left:'+p.x+'px;top:'+p.y+'px;';
       btn.addEventListener('click', (e) => {
         if (e.shiftKey) { unlockSkill(sk.id); return; }
+        var isTouchClick = e.detail === 0 || (e.sourceCapabilities && !e.sourceCapabilities.firesTouchEvents === false);
+        var onMobile = window.innerWidth <= 768;
+        // Don't process as regular click if it was a double-tap unlock
+        if (onMobile && _handleNodeTap(sk.id, onMobile)) return;
         state.selectedId = sk.id; render();
         // On mobile: auto-open the skill info (BR) panel
-        if (window.innerWidth <= 768 && window._mobilePanelOpen && window._applyMobileState) {
+        if (onMobile && window._mobilePanelOpen && window._applyMobileState) {
           Object.keys(window._mobilePanelOpen).forEach(k => window._mobilePanelOpen[k] = false);
           window._mobilePanelOpen['hud-br'] = true;
           window._applyMobileState();
@@ -1961,9 +2001,11 @@ function buildTree() {
     btn.style.cssText += 'left:'+br.bx+'px;top:'+br.by+'px;';
     btn.addEventListener('click', (e) => {
       if (e.shiftKey) { unlockSkill(br.id); return; }
+      var onMobile = window.innerWidth <= 768;
+      if (onMobile && _handleNodeTap(br.id, onMobile)) return;
       state.selectedId = br.id; render();
       // On mobile: auto-open the skill info (BR) panel
-      if (window.innerWidth <= 768 && window._mobilePanelOpen && window._applyMobileState) {
+      if (onMobile && window._mobilePanelOpen && window._applyMobileState) {
         Object.keys(window._mobilePanelOpen).forEach(k => window._mobilePanelOpen[k] = false);
         window._mobilePanelOpen['hud-br'] = true;
         window._applyMobileState();
@@ -2854,6 +2896,9 @@ document.getElementById('free-upgrade-btn').addEventListener('click', ()=>{ if(s
 /* ===================== PAN + ZOOM — RAF LOOP ===================== */
 const viewport  = document.getElementById('tree-viewport');
 const treeInner = document.getElementById('tree-inner');
+// Prevent text/element selection during pan drag
+viewport.addEventListener('selectstart', e => e.preventDefault());
+document.addEventListener('selectstart', e => { if (isPanning) e.preventDefault(); });
 const VW = window.innerWidth, VH = window.innerHeight, CW = 2400, CH = 2400;
 
 let pan   = { x: 0, y: 0 };
@@ -3269,7 +3314,39 @@ function applyBuildData(data) {
 
 /* ===================== BUILD CODE SYSTEM — Shareable URL Links ===================== */
 
-/* Save Build button — generates a full shareable URL anyone can open on any device */
+/* === Short Link Store ===
+   Builds are saved in localStorage under a short random ID (8 hex chars).
+   The share URL becomes ?id=XXXXXXXX — much shorter than embedding the full code.
+   Old ?build=VV... links still work via the legacy loader below.         */
+const STORE_KEY_PREFIX = 'vvb_';
+const STORE_INDEX_KEY  = 'vvb_index';
+
+function _shortId() {
+  return Math.random().toString(16).slice(2,6) + Math.random().toString(16).slice(2,6);
+}
+function _saveToStore(vvCode) {
+  // Check if we already have this exact code stored, reuse its ID
+  try {
+    const idx = JSON.parse(localStorage.getItem(STORE_INDEX_KEY) || '[]');
+    for (const id of idx) {
+      if (localStorage.getItem(STORE_KEY_PREFIX + id) === vvCode) return id;
+    }
+    const id = _shortId();
+    localStorage.setItem(STORE_KEY_PREFIX + id, vvCode);
+    idx.unshift(id);
+    // Keep last 50 builds
+    const trimmed = idx.slice(0, 50);
+    trimmed.forEach((tid, i) => { if (i >= 50) localStorage.removeItem(STORE_KEY_PREFIX + tid); });
+    localStorage.setItem(STORE_INDEX_KEY, JSON.stringify(trimmed.slice(0,50)));
+    return id;
+  } catch(e) { return null; }
+}
+function _loadFromStore(id) {
+  try { return localStorage.getItem(STORE_KEY_PREFIX + id); }
+  catch(e) { return null; }
+}
+
+/* Save Build button */
 let _saveBuildTimer = null;
 document.getElementById('save-build-btn').addEventListener('click', function() {
   const btn = this;
@@ -3277,11 +3354,17 @@ document.getElementById('save-build-btn').addEventListener('click', function() {
   btn.dataset.saving = '1';
 
   const vvCode = encodeBuild();
-  // Build the shareable URL: https://vvbuilder.online/?build=VV...
-  const shareUrl = window.location.origin + window.location.pathname + '?build=' + encodeURIComponent(vvCode);
+  const shortId = _saveToStore(vvCode);
+
+  let shareUrl;
+  if (shortId) {
+    shareUrl = window.location.origin + window.location.pathname + '?id=' + shortId;
+  } else {
+    // Fallback: embed full code if localStorage unavailable
+    shareUrl = window.location.origin + window.location.pathname + '?build=' + encodeURIComponent(vvCode);
+  }
 
   navigator.clipboard.writeText(shareUrl).catch(() => {
-    // Fallback for browsers that block clipboard without interaction
     const ta = document.createElement('textarea');
     ta.value = shareUrl;
     ta.style.position = 'fixed'; ta.style.opacity = '0';
@@ -3299,7 +3382,7 @@ document.getElementById('save-build-btn').addEventListener('click', function() {
   }, 2500);
 });
 
-/* Load Build Code (race screen) — accepts VV codes OR full share URLs */
+/* Load Build Code (race screen) — accepts VV codes, ?build= URLs, or ?id= short URLs */
 function attemptLoadCode() {
   const input = document.getElementById('rs-code-input');
   const errEl = document.getElementById('rs-load-error');
@@ -3308,14 +3391,27 @@ function attemptLoadCode() {
 
   errEl.classList.remove('visible');
 
-  // If someone pastes a full URL, extract just the build param
+  // If someone pastes a full URL, extract build param or short id
   let code = raw;
   try {
     const url = new URL(raw);
-    const param = url.searchParams.get('build');
-    if (param) code = decodeURIComponent(param);
+    const shortId = url.searchParams.get('id');
+    if (shortId) {
+      const stored = _loadFromStore(shortId);
+      if (stored) { code = stored; }
+      else {
+        errEl.textContent = 'Build not found — it may only be loadable on the device that saved it';
+        errEl.classList.add('visible');
+        input.style.borderColor = 'rgba(248,113,113,.6)';
+        setTimeout(() => { input.style.borderColor = ''; }, 1800);
+        return;
+      }
+    } else {
+      const param = url.searchParams.get('build');
+      if (param) code = decodeURIComponent(param);
+    }
   } catch(e) {
-    // Not a URL, treat as a raw VV code — fine
+    // Not a URL — treat as raw VV code
   }
 
   const data = decodeBuild(code);
@@ -3359,19 +3455,25 @@ document.getElementById('rs-code-input').addEventListener('keydown', function(e)
   if (e.key === 'Enter') attemptLoadCode();
 });
 
-/* Auto-load from URL on page open — handles ?build=VV... links */
+/* Auto-load from URL on page open — handles ?id=short OR ?build=VV... links */
 (function() {
   try {
     const params = new URLSearchParams(window.location.search);
-    const buildParam = params.get('build');
-    if (!buildParam) return;
-    const code = decodeURIComponent(buildParam);
+    let code = null;
+
+    const shortId = params.get('id');
+    if (shortId) {
+      code = _loadFromStore(shortId);
+      if (!code) return; // saved on another device — can't auto-load
+    } else {
+      const buildParam = params.get('build');
+      if (!buildParam) return;
+      code = decodeURIComponent(buildParam);
+    }
+
     const data = decodeBuild(code);
     if (!data || !data.r || !['Shinigami','Hollow','Quincy'].includes(data.r)) return;
-    // Wait for page to be ready then auto-load
-    document.fonts.ready.then(() => {
-      _applyLoadedBuild(data);
-    });
+    document.fonts.ready.then(() => { _applyLoadedBuild(data); });
   } catch(e) {}
 })();
 
