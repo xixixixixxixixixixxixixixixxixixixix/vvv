@@ -2904,6 +2904,18 @@ function applyTrunkOverrides() {
 }
 
 function selectRace(race) {
+  // Reset any browser-level pinch zoom that happened on the race screen
+  // (mobile Safari / Chrome zoom causes stale viewport dims → broken tree layout)
+  try {
+    const metaVP = document.querySelector('meta[name=viewport]');
+    const origContent = metaVP.content;
+    metaVP.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0';
+    setTimeout(() => { metaVP.content = origContent; }, 300);
+  } catch(e) {}
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+
   currentRace = race;
   buildSpokes(race);
   state = makeState();
@@ -2941,7 +2953,10 @@ document.getElementById('free-upgrade-btn').addEventListener('click', ()=>{ if(s
 /* ===================== PAN + ZOOM — RAF LOOP ===================== */
 const viewport  = document.getElementById('tree-viewport');
 const treeInner = document.getElementById('tree-inner');
-const VW = window.innerWidth, VH = window.innerHeight, CW = 2400, CH = 2400;
+const CW = 2400, CH = 2400;
+// Always read live so pinch-zoom on race screen doesn't break the tree layout
+function getVW() { return window.visualViewport ? window.visualViewport.width  : window.innerWidth; }
+function getVH() { return window.visualViewport ? window.visualViewport.height : window.innerHeight; }
 
 let pan   = { x: 0, y: 0 };
 let scale = 1;
@@ -2950,11 +2965,13 @@ let panOrigin   = { x:0, y:0 };
 let mouseOrigin = { x:0, y:0 };
 
 function centerOnCore() {
+  const VW = getVW(), VH = getVH();
   pan = clampPan(VW/2 - CENTER*scale, VH/2 - CENTER*scale, scale);
   applyTransform();
 }
 
 function clampPan(px, py, sc) {
+  const VW = getVW(), VH = getVH();
   return {
     x: Math.min(2000, Math.max(VW - CW*sc - 2000, px)),
     y: Math.min(2000, Math.max(VH - CH*sc - 2000, py)),
@@ -2983,7 +3000,7 @@ window.addEventListener('mousemove', e => {
   if (!isPanning) return;
   const px = panOrigin.x + e.clientX - mouseOrigin.x;
   const py = panOrigin.y + e.clientY - mouseOrigin.y;
-  const mnX = VW - CW*scale - 2000, mnY = VH - CH*scale - 2000;
+  const mnX = getVW() - CW*scale - 2000, mnY = getVH() - CH*scale - 2000;
   pan.x = px < mnX ? mnX : px > 2000 ? 2000 : px;
   pan.y = py < mnY ? mnY : py > 2000 ? 2000 : py;
   if (!_panDirty) { _panDirty = true; requestAnimationFrame(() => { applyTransform(); _panDirty = false; }); }
@@ -3045,7 +3062,7 @@ viewport.addEventListener('touchmove', e => {
   e.preventDefault(); // prevent text selection highlight during drag
   const px = panOrigin.x + e.touches[0].clientX - _ts.x;
   const py = panOrigin.y + e.touches[0].clientY - _ts.y;
-  const mnX = VW-CW*scale-2000, mnY = VH-CH*scale-2000;
+  const mnX = getVW()-CW*scale-2000, mnY = getVH()-CH*scale-2000;
   pan.x = px < mnX ? mnX : px > 2000 ? 2000 : px;
   pan.y = py < mnY ? mnY : py > 2000 ? 2000 : py;
   if (!_touchDirty) { _touchDirty=true; requestAnimationFrame(()=>{ applyTransform(); _touchDirty=false; }); }
