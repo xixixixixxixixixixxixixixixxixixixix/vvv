@@ -3254,25 +3254,23 @@ function decodeBuild(code) {
     try { json = atob(b64); }
     catch(e2) { return null; }
   }
-  try { return JSON.parse(json); }
+  let data;
+  try { data = JSON.parse(json); }
   catch(e) { return null; }
-  // NOTE: v3 skill index expansion happens in applyBuildData,
-  // after buildSpokes() has populated ALL_SKILLS for the correct race.
-}
-
-function applyBuildData(data) {
-  if (!data || data.v < 1) return false;
-
-  // Expand v3 compact skill arrays → objects now that ALL_SKILLS is ready
-  if (data.v === 3 && Array.isArray(data.s)) {
-    const idList = _skillIdxToId(); // ALL_SKILLS is correct here — buildSpokes already ran
+  if (data && data.v === 3 && Array.isArray(data.s)) {
+    const idList = _skillIdxToId();
     data.s = data.s.map(arr => {
       const idx = arr[0];
       const id  = (typeof idx === 'number' && idList[idx]) ? idList[idx] : idx;
       return { i: id, l: arr[1]||0, sp: arr[2]||0, af: arr[3]||0, f: arr[4]||0, ul: arr[5]||'' };
     });
-    data.v = 2; // mark expanded
+    data.v = 2;
   }
+  return data;
+}
+
+function applyBuildData(data) {
+  if (!data || data.v < 1) return false;
 
   // Restore build stats
   state.buildStats = Object.assign({ reserves:0,haste:0,potency:0,mettle:0,shunpo:0 }, data.b || {});
@@ -3314,132 +3312,57 @@ function applyBuildData(data) {
   return true;
 }
 
-/* ===================== BUILD CODE SYSTEM ===================== */
+/* ===================== BUILD CODE SYSTEM — Shareable URL Links ===================== */
 
-/* LZ-String compression — lets us embed full build data in the URL,
-   ~60% shorter than plain base64, no server or localStorage needed.
-   Links work for anyone on any device.                              */
-var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length;n++)t[o][o.charAt(n)]=n}return t[o][r]}var r=String.fromCharCode,n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",e="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",t={},i={compressToBase64:function(o){if(null==o)return"";var r=i._compress(o,6,function(o){return n.charAt(o)});switch(r.length%4){default:case 0:return r;case 1:return r+"===";case 2:return r+"==";case 3:return r+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(n){return o(n,r)})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(o){return null==o?"":""==o?null:i._decompress(o.length,16384,function(r){return o.charCodeAt(r)-32})},compressToUint8Array:function(o){for(var r=i.compress(o),n=new Uint8Array(2*r.length),e=0,t=r.length;t>e;e++){var s=r.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null==o)return i.decompress(o);for(var r=new Array(o.length/2),n=0,e=r.length;e>n;n++)r[n]=256*o[2*n]+o[2*n+1];var t=[];return r.forEach(function(o){t.push(r(o))}),i.decompress(t.join(""))},compressToEncodedURIComponent:function(o){return null==o?"":i._compress(o,6,function(o){return e.charAt(o)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(n){return o(e,r)}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},decompress:function(o){return null==o?"":""==o?null:i._decompress(o.length,32768,function(r){return o.charCodeAt(r)})},_compress:function(o,r,n){if(null==o)return"";var e,t,i,s={},p={},u="",c="",a="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<o.length;i+=1){u=o.charAt(i);Object.prototype.hasOwnProperty.call(s,u)||(s[u]=f++,p[u]=!0);c=a+u;if(Object.prototype.hasOwnProperty.call(s,c))a=c;else{if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++);delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++);s[c]=f++,a=String(u)}}if(""!==a){if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++);delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==r-1){d.push(n(m));break}v++}return d.join("")},_decompress:function(o,e,t){var i,s,n,r,u,c,a,l,f=4,h=4,d=3,m="",v=[],p={val:t(0),position:e,index:1};for(i=0;3>i;i+=1)v[i]=i;for(n=0,u=Math.pow(2,2),c=1;c!=u;)r=p.val&p.position,p.position>>=1,0==p.position&&(p.position=e,p.val=t(p.index++)),n|=(r>0?1:0)*c,c<<=1;switch(n){case 0:for(n=0,u=Math.pow(2,8),c=1;c!=u;)r=p.val&p.position,p.position>>=1,0==p.position&&(p.position=e,p.val=t(p.index++)),n|=(r>0?1:0)*c,c<<=1;l=String.fromCharCode(n);break;case 1:for(n=0,u=Math.pow(2,16),c=1;c!=u;)r=p.val&p.position,p.position>>=1,0==p.position&&(p.position=e,p.val=t(p.index++)),n|=(r>0?1:0)*c,c<<=1;l=String.fromCharCode(n);break;case 2:return""}for(v[3]=l,a=l,m+=l;;){if(p.index>o)return"";for(n=0,u=Math.pow(2,d),c=1;c!=u;)r=p.val&p.position,p.position>>=1,0==p.position&&(p.position=e,p.val=t(p.index++)),n|=(r>0?1:0)*c,c<<=1;switch(l=n){case 0:for(n=0,u=Math.pow(2,8),c=1;c!=u;)r=p.val&p.position,p.position>>=1,0==p.position&&(p.position=e,p.val=t(p.index++)),n|=(r>0?1:0)*c,c<<=1;v[f++]=String.fromCharCode(n),l=f-1,h--;break;case 1:for(n=0,u=Math.pow(2,16),c=1;c!=u;)r=p.val&p.position,p.position>>=1,0==p.position&&(p.position=e,p.val=t(p.index++)),n|=(r>0?1:0)*c,c<<=1;v[f++]=String.fromCharCode(n),l=f-1,h--;break;case 2:return m}if(0==h&&(h=Math.pow(2,d),d++),v[l])s=v[l];else{if(l!==f)return null;s=a+a.charAt(0)}m+=s,v[f++]=a+s.charAt(0),h--,a=s,0==h&&(h=Math.pow(2,d),d++)}}};return i}();
+/* === Short Link Store ===
+   Builds are saved in localStorage under a short random ID (8 hex chars).
+   The share URL becomes ?id=XXXXXXXX — much shorter than embedding the full code.
+   Old ?build=VV... links still work via the legacy loader below.         */
+const STORE_KEY_PREFIX = 'vvb_';
+const STORE_INDEX_KEY  = 'vvb_index';
 
-function encodeBuild() {
-  const idxMap = _skillIdToIdx();
-  const unlocked = state.skills.filter(s => s.unlocked).map(s => {
-    const ul = (s.upgradeLog || []).join('').replace(/sp/g,'s').replace(/af/g,'a').replace(/free/g,'f');
-    const arr = [
-      idxMap[s.id] !== undefined ? idxMap[s.id] : s.id,
-      s.level || 0,
-      s.spSpent || 0,
-      s.afSpent || 0,
-      s.freeUpgraded ? 1 : 0,
-      ul || ''
-    ];
-    while (arr.length > 1 && !arr[arr.length-1]) arr.pop();
-    return arr;
-  });
-  const data = {
-    v: 3,
-    r: currentRace,
-    b: state.buildStats,
-    a: state.attrStats,
-    s: unlocked,
-    es: state.essences,
-    el: state.essenceLevels,
-    fr: state.freeRefunds,
-    fu: state.freeUpgrades,
-    sp: state.skillPoints,
-    fg: state.fragments,
-    st: state.soulTokens,
-  };
-  const json = JSON.stringify(data);
-  // VV4 = LZ-compressed (URL-safe, ~60% shorter than VV3 base64)
-  const compressed = LZString.compressToEncodedURIComponent(json);
-  return 'VV4' + compressed;
+function _shortId() {
+  return Math.random().toString(16).slice(2,6) + Math.random().toString(16).slice(2,6);
 }
-
-function decodeBuild(code) {
-  code = code.trim().replace(/\s/g,'');
-  if (!code.startsWith('VV') || code.length < 8) return null;
-  let json;
-  if (code.startsWith('VV4')) {
-    // New LZ-compressed format
-    try { json = LZString.decompressFromEncodedURIComponent(code.slice(3)); }
-    catch(e) { return null; }
-  } else {
-    // Legacy VV3 base64 format — still works for old links
-    const isV3 = code.startsWith('VV3');
-    const b64  = isV3 ? code.slice(7) : code.slice(10);
-    try { json = decodeURIComponent(escape(atob(b64))); }
-    catch(e) {
-      try { json = atob(b64); }
-      catch(e2) { return null; }
+function _saveToStore(vvCode) {
+  // Check if we already have this exact code stored, reuse its ID
+  try {
+    const idx = JSON.parse(localStorage.getItem(STORE_INDEX_KEY) || '[]');
+    for (const id of idx) {
+      if (localStorage.getItem(STORE_KEY_PREFIX + id) === vvCode) return id;
     }
-  }
-  if (!json) return null;
-  try { return JSON.parse(json); }
+    const id = _shortId();
+    localStorage.setItem(STORE_KEY_PREFIX + id, vvCode);
+    idx.unshift(id);
+    // Keep last 50 builds
+    const trimmed = idx.slice(0, 50);
+    trimmed.forEach((tid, i) => { if (i >= 50) localStorage.removeItem(STORE_KEY_PREFIX + tid); });
+    localStorage.setItem(STORE_INDEX_KEY, JSON.stringify(trimmed.slice(0,50)));
+    return id;
+  } catch(e) { return null; }
+}
+function _loadFromStore(id) {
+  try { return localStorage.getItem(STORE_KEY_PREFIX + id); }
   catch(e) { return null; }
 }
 
-function applyBuildData(data) {
-  if (!data || data.v < 1) return false;
-
-  // Expand v3 compact skill arrays -> objects now that ALL_SKILLS is ready
-  if (data.v === 3 && Array.isArray(data.s)) {
-    const idList = _skillIdxToId();
-    data.s = data.s.map(arr => {
-      if (!Array.isArray(arr)) return arr;
-      const idx = arr[0];
-      const resolvedId = (typeof idx === 'number' && idList[idx]) ? idList[idx] : idx;
-      return { i: resolvedId, l: arr[1], sp: arr[2], af: arr[3], f: arr[4], ul: arr[5] || '' };
-    });
-  }
-
-  // Restore resources
-  state.skillPoints = typeof data.sp === 'number' ? data.sp : TOTAL_SKILL_POINTS;
-  state.fragments   = typeof data.fg === 'number' ? data.fg : TOTAL_FRAGMENTS;
-  state.soulTokens  = typeof data.st === 'number' ? data.st : TOTAL_SOUL_TOKENS;
-  state.freeRefunds = typeof data.fr === 'number' ? data.fr : 1;
-  state.freeUpgrades= typeof data.fu === 'number' ? data.fu : 2;
-
-  // Restore skills
-  if (Array.isArray(data.s)) {
-    data.s.forEach(entry => {
-      const sk = getSkill(entry.i);
-      if (!sk) return;
-      sk.unlocked = true;
-      sk.level    = typeof entry.l === 'number' ? entry.l : 1;
-      sk.spSpent  = entry.sp || 0;
-      sk.stSpent  = entry.st || 0;
-      sk.afSpent  = entry.af || 0;
-      sk.freeUpgraded = entry.f === 1;
-      const ul = entry.ul || '';
-      sk.upgradeLog = [];
-      for (let i = 0; i < ul.length; i++) {
-        if (ul[i]==='s') sk.upgradeLog.push('sp');
-        else if (ul[i]==='a') sk.upgradeLog.push('af');
-        else if (ul[i]==='f') sk.upgradeLog.push('free');
-      }
-    });
-  }
-
-  // Restore essences
-  state.essences      = Array.isArray(data.es) ? data.es.slice() : [];
-  state.essenceLevels = typeof data.el === 'object' && data.el ? Object.assign({}, data.el) : {};
-
-  return true;
-}
-
-/* ===================== SHARE LINK SYSTEM ===================== */
-/* Build is LZ-compressed into the URL — works on any device, no server needed.
-   Legacy ?id= and ?build=VV3... links are still supported for old shares.   */
-
+/* Save Build button */
 let _saveBuildTimer = null;
 document.getElementById('save-build-btn').addEventListener('click', function() {
   const btn = this;
   if (btn.dataset.saving === '1') return;
   btn.dataset.saving = '1';
 
-  const vvCode = encodeBuild(); // VV4<lz-compressed>
-  const shareUrl = window.location.origin + window.location.pathname + '?build=' + vvCode;
+  const vvCode = encodeBuild();
+  const shortId = _saveToStore(vvCode);
+
+  let shareUrl;
+  if (shortId) {
+    shareUrl = window.location.origin + window.location.pathname + '?id=' + shortId;
+  } else {
+    // Fallback: embed full code if localStorage unavailable
+    shareUrl = window.location.origin + window.location.pathname + '?build=' + encodeURIComponent(vvCode);
+  }
 
   navigator.clipboard.writeText(shareUrl).catch(() => {
     const ta = document.createElement('textarea');
@@ -3451,6 +3374,7 @@ document.getElementById('save-build-btn').addEventListener('click', function() {
   });
 
   btn.textContent = 'Link Copied!';
+
   clearTimeout(_saveBuildTimer);
   _saveBuildTimer = setTimeout(() => {
     btn.textContent = 'Save Build';
@@ -3458,7 +3382,7 @@ document.getElementById('save-build-btn').addEventListener('click', function() {
   }, 2500);
 });
 
-/* Load Build — accepts raw VV codes or full URLs with ?build= or legacy ?id= */
+/* Load Build Code (race screen) — accepts VV codes, ?build= URLs, or ?id= short URLs */
 function attemptLoadCode() {
   const input = document.getElementById('rs-code-input');
   const errEl = document.getElementById('rs-load-error');
@@ -3467,23 +3391,31 @@ function attemptLoadCode() {
 
   errEl.classList.remove('visible');
 
+  // If someone pastes a full URL, extract build param or short id
   let code = raw;
   try {
     const url = new URL(raw);
-    const buildParam = url.searchParams.get('build');
-    if (buildParam) code = buildParam;
-    // Legacy ?id= links — nothing we can do without localStorage, show friendly message
     const shortId = url.searchParams.get('id');
-    if (shortId && !buildParam) {
-      errEl.textContent = 'Old-style link — ask them to re-save the build for a new shareable link';
-      errEl.classList.add('visible');
-      return;
+    if (shortId) {
+      const stored = _loadFromStore(shortId);
+      if (stored) { code = stored; }
+      else {
+        errEl.textContent = 'Build not found — it may only be loadable on the device that saved it';
+        errEl.classList.add('visible');
+        input.style.borderColor = 'rgba(248,113,113,.6)';
+        setTimeout(() => { input.style.borderColor = ''; }, 1800);
+        return;
+      }
+    } else {
+      const param = url.searchParams.get('build');
+      if (param) code = decodeURIComponent(param);
     }
   } catch(e) {
-    // Not a URL, treat as raw VV code
+    // Not a URL — treat as raw VV code
   }
 
   const data = decodeBuild(code);
+
   if (!data || !data.r || !['Shinigami','Hollow','Quincy'].includes(data.r)) {
     errEl.textContent = 'Invalid code — please check and try again';
     errEl.classList.add('visible');
@@ -3496,18 +3428,50 @@ function attemptLoadCode() {
   input.value = '';
 }
 
+function _applyLoadedBuild(data) {
+  const loadEl = document.getElementById('tree-loading');
+  currentRace = data.r;
+  buildSpokes(data.r);
+  state = makeState();
+  Object.keys(_nodeStateCache).forEach(k=>delete _nodeStateCache[k]);
+  Object.keys(_lineStateCache).forEach(k=>delete _lineStateCache[k]);
+  document.getElementById('race-screen').classList.add('hidden');
+
+  loadEl.style.display = 'flex';
+  document.fonts.ready.then(() => {
+    buildTree();
+    applyTrunkOverrides();
+    applyBuildData(data);
+    render();
+    centerOnCore();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      loadEl.style.display = 'none';
+    }));
+  });
+}
+
 document.getElementById('rs-load-btn').addEventListener('click', attemptLoadCode);
 document.getElementById('rs-code-input').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') attemptLoadCode();
 });
 
-/* Auto-load from URL on page open */
+/* Auto-load from URL on page open — handles ?id=short OR ?build=VV... links */
 (function() {
   try {
     const params = new URLSearchParams(window.location.search);
-    const buildParam = params.get('build');
-    if (!buildParam) return;
-    const data = decodeBuild(buildParam);
+    let code = null;
+
+    const shortId = params.get('id');
+    if (shortId) {
+      code = _loadFromStore(shortId);
+      if (!code) return; // saved on another device — can't auto-load
+    } else {
+      const buildParam = params.get('build');
+      if (!buildParam) return;
+      code = decodeURIComponent(buildParam);
+    }
+
+    const data = decodeBuild(code);
     if (!data || !data.r || !['Shinigami','Hollow','Quincy'].includes(data.r)) return;
     document.fonts.ready.then(() => { _applyLoadedBuild(data); });
   } catch(e) {}
