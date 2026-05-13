@@ -2,15 +2,15 @@
 <html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VV Builder</title>
+<title>VV Stats Builder</title>
 <meta name="description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy builds. Plan your stats, save your build, and share it with anyone. Available for all devices! Made by Bryceexi &amp; Zentubaa.">
-<meta property="og:title" content="VV Builder">
-<meta property="og:description" content="VV Ultimatum skill tree builder. Plan your build and share it with anyone, on any device! Made by Bryceexi & Zentubaa.">
+<meta property="og:title" content="VV Stats Builder">
+<meta property="og:description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy. Plan your build and share it with anyone, on any device.">
 <meta property="og:url" content="https://vvbuilder.online/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="VV Builder">
-<meta name="twitter:description" content="VV Ultimatum skill tree builder. Plan your build and share it with anyone, on any device! Made by Bryceexi & Zentubaa.">
+<meta name="twitter:title" content="VV Stats Builder">
+<meta name="twitter:description" content="Bleach skill tree planner for Shinigami, Hollow, and Quincy. Plan your build and share it with anyone, on any device.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8462804459957316"
@@ -3194,175 +3194,52 @@ function doSaveLayout() {
   a.href=URL.createObjectURL(blob); a.download='build_maker_final.html'; a.click();
   URL.revokeObjectURL(a.href);
 }
-/* ===================== BUILD CODE SYSTEM ===================== */
-
-/* --- Compact build encoding v3 ---
-   Skill IDs replaced with numeric indexes to cut code length ~60-70%.
-   Old VV...v2 codes still load via legacy path. New codes: VV3+4salt+b64. */
-function _skillIdToIdx() {
-  const m = {};
-  ALL_SKILLS.forEach((s,i) => { m[s.id] = i; });
-  return m;
-}
-function _skillIdxToId() { return ALL_SKILLS.map(s => s.id); }
-
-function encodeBuild() {
-  const idxMap = _skillIdToIdx();
-  const unlocked = state.skills.filter(s => s.unlocked).map(s => {
-    const ul = (s.upgradeLog || []).join('').replace(/sp/g,'s').replace(/af/g,'a').replace(/free/g,'f');
-    const arr = [
-      idxMap[s.id] !== undefined ? idxMap[s.id] : s.id,
-      s.level || 0,
-      s.spSpent || 0,
-      s.afSpent || 0,
-      s.freeUpgraded ? 1 : 0,
-      ul || ''
-    ];
-    while (arr.length > 1 && !arr[arr.length-1]) arr.pop();
-    return arr;
-  });
-  const data = {
-    v: 3,
-    r: currentRace,
-    b: state.buildStats,
-    a: state.attrStats,
-    s: unlocked,
-    es: state.essences,
-    el: state.essenceLevels,
-    fr: state.freeRefunds,
-    fu: state.freeUpgrades,
-    sp: state.skillPoints,
-    fg: state.fragments,
-    st: state.soulTokens,
-  };
-  const json = JSON.stringify(data);
-  let b64;
-  try { b64 = btoa(unescape(encodeURIComponent(json))); }
-  catch(e) { b64 = btoa(json); }
-  const salt = Math.random().toString(36).slice(2,6).toUpperCase();
-  return 'VV3' + salt + b64;
-}
-
-function decodeBuild(code) {
-  code = code.trim().replace(/\s/g,'');
-  if (!code.startsWith('VV') || code.length < 12) return null;
-  const isV3 = code.startsWith('VV3');
-  const b64  = isV3 ? code.slice(7) : code.slice(10);
-  let json;
-  try { json = decodeURIComponent(escape(atob(b64))); }
-  catch(e) {
-    try { json = atob(b64); }
-    catch(e2) { return null; }
-  }
-  try { return JSON.parse(json); }
-  catch(e) { return null; }
-  // NOTE: v3 skill index expansion happens in applyBuildData,
-  // after buildSpokes() has populated ALL_SKILLS for the correct race.
-}
-
-function applyBuildData(data) {
-  if (!data || data.v < 1) return false;
-
-  // Expand v3 compact skill arrays → objects now that ALL_SKILLS is ready
-  if (data.v === 3 && Array.isArray(data.s)) {
-    const idList = _skillIdxToId(); // ALL_SKILLS is correct here — buildSpokes already ran
-    data.s = data.s.map(arr => {
-      const idx = arr[0];
-      const id  = (typeof idx === 'number' && idList[idx]) ? idList[idx] : idx;
-      return { i: id, l: arr[1]||0, sp: arr[2]||0, af: arr[3]||0, f: arr[4]||0, ul: arr[5]||'' };
-    });
-    data.v = 2; // mark expanded
-  }
-
-  // Restore build stats
-  state.buildStats = Object.assign({ reserves:0,haste:0,potency:0,mettle:0,shunpo:0 }, data.b || {});
-  state.attrStats  = Object.assign({ hakuda:0,strength:0,kido:0,speed:0 }, data.a || {});
-
-  // Restore resources
-  state.skillPoints = typeof data.sp === 'number' ? data.sp : TOTAL_SKILL_POINTS;
-  state.fragments   = typeof data.fg === 'number' ? data.fg : TOTAL_FRAGMENTS;
-  state.soulTokens  = typeof data.st === 'number' ? data.st : TOTAL_SOUL_TOKENS;
-  state.freeRefunds = typeof data.fr === 'number' ? data.fr : 1;
-  state.freeUpgrades= typeof data.fu === 'number' ? data.fu : 2;
-
-  // Restore skills
-  if (Array.isArray(data.s)) {
-    data.s.forEach(entry => {
-      const sk = getSkill(entry.i);
-      if (!sk) return;
-      sk.unlocked = true;
-      sk.level    = typeof entry.l === 'number' ? entry.l : 1;
-      sk.spSpent  = entry.sp || 0;
-      sk.stSpent  = entry.st || 0;
-      sk.afSpent  = entry.af || 0;
-      sk.freeUpgraded = entry.f === 1;
-      // Reconstruct upgradeLog from encoded string
-      const ul = entry.ul || '';
-      sk.upgradeLog = [];
-      for (let i = 0; i < ul.length; i++) {
-        if (ul[i]==='s') sk.upgradeLog.push('sp');
-        else if (ul[i]==='a') sk.upgradeLog.push('af');
-        else if (ul[i]==='f') sk.upgradeLog.push('free');
-      }
-    });
-  }
-
-  // Restore essences
-  state.essences      = Array.isArray(data.es) ? data.es.slice() : [];
-  state.essenceLevels = typeof data.el === 'object' && data.el ? Object.assign({}, data.el) : {};
-
-  return true;
-}
-
 /* ===================== BUILD CODE SYSTEM — Shareable URL Links ===================== */
 
-/* === Short Link Store ===
-   Builds are saved in localStorage under a short random ID (8 hex chars).
-   The share URL becomes ?id=XXXXXXXX — much shorter than embedding the full code.
+/* === JSONbin.io Server-Side Store ===
+   Builds are saved to JSONbin so any device can load them via ?id=XXXX.
    Old ?build=VV... links still work via the legacy loader below.         */
-const STORE_KEY_PREFIX = 'vvb_';
-const STORE_INDEX_KEY  = 'vvb_index';
+const JSONBIN_KEY  = '$2a$10$hm4l64EMF2bIlf6Xc1ci/uI1wLnOIzCME6rlmraCfH9i/8TczXSHS';
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
 
-function _shortId() {
-  return Math.random().toString(16).slice(2,6) + Math.random().toString(16).slice(2,6);
+async function _saveToServer(vvCode) {
+  const resp = await fetch(JSONBIN_BASE, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': JSONBIN_KEY,
+      'X-Bin-Private': 'false'
+    },
+    body: JSON.stringify({ code: vvCode })
+  });
+  const data = await resp.json();
+  return data.metadata.id;
 }
-function _saveToStore(vvCode) {
-  // Check if we already have this exact code stored, reuse its ID
-  try {
-    const idx = JSON.parse(localStorage.getItem(STORE_INDEX_KEY) || '[]');
-    for (const id of idx) {
-      if (localStorage.getItem(STORE_KEY_PREFIX + id) === vvCode) return id;
-    }
-    const id = _shortId();
-    localStorage.setItem(STORE_KEY_PREFIX + id, vvCode);
-    idx.unshift(id);
-    // Keep last 50 builds
-    const trimmed = idx.slice(0, 50);
-    trimmed.forEach((tid, i) => { if (i >= 50) localStorage.removeItem(STORE_KEY_PREFIX + tid); });
-    localStorage.setItem(STORE_INDEX_KEY, JSON.stringify(trimmed.slice(0,50)));
-    return id;
-  } catch(e) { return null; }
-}
-function _loadFromStore(id) {
-  try { return localStorage.getItem(STORE_KEY_PREFIX + id); }
-  catch(e) { return null; }
+
+async function _loadFromServer(id) {
+  const resp = await fetch(JSONBIN_BASE + '/' + id + '/latest', {
+    headers: { 'X-Master-Key': JSONBIN_KEY }
+  });
+  const data = await resp.json();
+  return data.record.code;
 }
 
 /* Save Build button */
 let _saveBuildTimer = null;
-document.getElementById('save-build-btn').addEventListener('click', function() {
+document.getElementById('save-build-btn').addEventListener('click', async function() {
   const btn = this;
   if (btn.dataset.saving === '1') return;
   btn.dataset.saving = '1';
+  btn.textContent = 'Saving…';
 
   const vvCode = encodeBuild();
-  const shortId = _saveToStore(vvCode);
-
   let shareUrl;
-  if (shortId) {
-    shareUrl = window.location.origin + window.location.pathname + '?id=' + shortId;
-  } else {
-    // Fallback: embed full code if localStorage unavailable
+
+  try {
+    const id = await _saveToServer(vvCode);
+    shareUrl = window.location.origin + window.location.pathname + '?id=' + id;
+  } catch(e) {
+    // Fallback: embed full code in URL if server save fails
     shareUrl = window.location.origin + window.location.pathname + '?build=' + encodeURIComponent(vvCode);
   }
 
@@ -3376,7 +3253,6 @@ document.getElementById('save-build-btn').addEventListener('click', function() {
   });
 
   btn.textContent = 'Link Copied!';
-
   clearTimeout(_saveBuildTimer);
   _saveBuildTimer = setTimeout(() => {
     btn.textContent = 'Save Build';
@@ -3385,7 +3261,7 @@ document.getElementById('save-build-btn').addEventListener('click', function() {
 });
 
 /* Load Build Code (race screen) — accepts VV codes, ?build= URLs, or ?id= short URLs */
-function attemptLoadCode() {
+async function attemptLoadCode() {
   const input = document.getElementById('rs-code-input');
   const errEl = document.getElementById('rs-load-error');
   let raw = (input.value || '').trim();
@@ -3393,16 +3269,16 @@ function attemptLoadCode() {
 
   errEl.classList.remove('visible');
 
-  // If someone pastes a full URL, extract build param or short id
   let code = raw;
   try {
     const url = new URL(raw);
     const shortId = url.searchParams.get('id');
     if (shortId) {
-      const stored = _loadFromStore(shortId);
-      if (stored) { code = stored; }
-      else {
-        errEl.textContent = 'Build not found — it may only be loadable on the device that saved it';
+      try {
+        code = await _loadFromServer(shortId);
+        if (!code) throw new Error('empty');
+      } catch(e) {
+        errEl.textContent = 'Could not load build — link may be invalid or expired';
         errEl.classList.add('visible');
         input.style.borderColor = 'rgba(248,113,113,.6)';
         setTimeout(() => { input.style.borderColor = ''; }, 1800);
@@ -3430,43 +3306,23 @@ function attemptLoadCode() {
   input.value = '';
 }
 
-function _applyLoadedBuild(data) {
-  const loadEl = document.getElementById('tree-loading');
-  currentRace = data.r;
-  buildSpokes(data.r);
-  state = makeState();
-  Object.keys(_nodeStateCache).forEach(k=>delete _nodeStateCache[k]);
-  Object.keys(_lineStateCache).forEach(k=>delete _lineStateCache[k]);
-  document.getElementById('race-screen').classList.add('hidden');
-
-  loadEl.style.display = 'flex';
-  document.fonts.ready.then(() => {
-    buildTree();
-    applyTrunkOverrides();
-    applyBuildData(data);
-    render();
-    centerOnCore();
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      loadEl.style.display = 'none';
-    }));
-  });
-}
-
 document.getElementById('rs-load-btn').addEventListener('click', attemptLoadCode);
 document.getElementById('rs-code-input').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') attemptLoadCode();
 });
 
 /* Auto-load from URL on page open — handles ?id=short OR ?build=VV... links */
-(function() {
+(async function() {
   try {
     const params = new URLSearchParams(window.location.search);
     let code = null;
 
     const shortId = params.get('id');
     if (shortId) {
-      code = _loadFromStore(shortId);
-      if (!code) return; // saved on another device — can't auto-load
+      try {
+        code = await _loadFromServer(shortId);
+      } catch(e) { return; }
+      if (!code) return;
     } else {
       const buildParam = params.get('build');
       if (!buildParam) return;
