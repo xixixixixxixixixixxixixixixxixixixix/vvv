@@ -968,7 +968,7 @@
 
   /* ===================== MOBILE RESPONSIVE ===================== */
   @media (max-width: 768px) {
-    #save-toast { bottom: 130px; min-width: calc(100vw - 40px); max-width: calc(100vw - 40px); }
+    #save-toast { bottom: 70px; min-width: calc(100vw - 40px); max-width: calc(100vw - 40px); }
 
     /* ── Race Screen ── */
     .rs-title h1 { font-size: 18px; letter-spacing: 0.2em; }
@@ -1054,8 +1054,9 @@
     .tr-shrine-label { font-size: 10px; }
     .tr-shrine-count { font-size: 14px; }
 
-    /* ── Bottom bar ── */
-    .hud-bc { bottom: 60px; gap: 6px; }
+    /* ── Bottom bar — centered between the two bottom corner toggles ── */
+    .hud-bc { bottom: 14px; gap: 6px; }
+    .hud-bc.mob-hidden { display: none !important; }
     .reset-btn, .change-race-btn { font-size: 10px; padding: 6px 12px; }
     .save-build-btn { font-size: 10px; padding: 6px 10px; }
 
@@ -2904,18 +2905,6 @@ function applyTrunkOverrides() {
 }
 
 function selectRace(race) {
-  // Reset any browser-level pinch zoom that happened on the race screen
-  // (mobile Safari / Chrome zoom causes stale viewport dims → broken tree layout)
-  try {
-    const metaVP = document.querySelector('meta[name=viewport]');
-    const origContent = metaVP.content;
-    metaVP.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0';
-    setTimeout(() => { metaVP.content = origContent; }, 300);
-  } catch(e) {}
-  window.scrollTo(0, 0);
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
-
   currentRace = race;
   buildSpokes(race);
   state = makeState();
@@ -2923,22 +2912,31 @@ function selectRace(race) {
   Object.keys(_lineStateCache).forEach(k=>delete _lineStateCache[k]);
   document.getElementById('race-screen').classList.add('hidden');
 
-  /* Show loading ring, then wait for all fonts to be ready before building
-     the tree — prevents blank node labels / spoke titles on slow connections */
   const loadEl = document.getElementById('tree-loading');
   loadEl.style.display = 'flex';
 
-  document.fonts.ready.then(() => {
-    buildTree();
-    applyTrunkOverrides();
-    render();
-    centerOnCore();
-    /* Two rAFs: first lets the browser paint the tree, second hides the overlay
-       so there's no single-frame flash of empty circles */
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      loadEl.style.display = 'none';
-    }));
-  });
+  // Step 1: snap browser zoom back to 1× (in case user pinch-zoomed on race screen)
+  const metaVP = document.querySelector('meta[name=viewport]');
+  const origContent = metaVP ? metaVP.content : '';
+  try { if (metaVP) metaVP.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0'; } catch(e){}
+
+  // Step 2: wait 160ms for browser to process the zoom reset, then refresh dims and build
+  setTimeout(() => {
+    try { if (metaVP) metaVP.content = origContent; } catch(e){}
+    window.scrollTo(0, 0);
+    refreshViewportCache(); // get clean post-zoom-reset dimensions
+
+    document.fonts.ready.then(() => {
+      buildTree();
+      applyTrunkOverrides();
+      render();
+      centerOnCore();
+      /* Two rAFs: first lets the browser paint the tree, second hides the overlay */
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        loadEl.style.display = 'none';
+      }));
+    });
+  }, 160); // wait for zoom reset to take effect
 }
 
 document.querySelectorAll('.rs-card').forEach(card => {
@@ -2954,9 +2952,17 @@ document.getElementById('free-upgrade-btn').addEventListener('click', ()=>{ if(s
 const viewport  = document.getElementById('tree-viewport');
 const treeInner = document.getElementById('tree-inner');
 const CW = 2400, CH = 2400;
-// Always read live so pinch-zoom on race screen doesn't break the tree layout
-function getVW() { return window.visualViewport ? window.visualViewport.width  : window.innerWidth; }
-function getVH() { return window.visualViewport ? window.visualViewport.height : window.innerHeight; }
+// Cached viewport dims — updated on resize and before each tree build.
+// Never queried in pan/clamp hot path so pan stays smooth.
+let _cachedVW = document.documentElement.clientWidth  || window.innerWidth;
+let _cachedVH = document.documentElement.clientHeight || window.innerHeight;
+function refreshViewportCache() {
+  _cachedVW = document.documentElement.clientWidth  || window.innerWidth;
+  _cachedVH = document.documentElement.clientHeight || window.innerHeight;
+}
+function getVW() { return _cachedVW; }
+function getVH() { return _cachedVH; }
+window.addEventListener('resize', refreshViewportCache);
 
 let pan   = { x: 0, y: 0 };
 let scale = 1;
@@ -3634,15 +3640,22 @@ function _handleDoubleTap(nodeId) {
   var open = { 'hud-tl': false, 'hud-tr': false, 'hud-bl': false, 'hud-br': false };
 
   function applyMobileState() {
+    var bc = document.querySelector('.hud-bc');
     if (!isMobile()) {
-      // On desktop: ensure all panels visible, no mob-hidden
       panels.forEach(p => {
         var hud = document.querySelector('.'+p.hudClass);
         if (hud) hud.classList.remove('mob-hidden');
       });
+      if (bc) bc.classList.remove('mob-hidden');
       return;
     }
-    // On mobile: apply hidden state
+    // Hide/show the bottom action bar based on whether any panel is open
+    var anyOpen = Object.values(open).some(Boolean);
+    if (bc) {
+      if (anyOpen) bc.classList.add('mob-hidden');
+      else bc.classList.remove('mob-hidden');
+    }
+    // On mobile: apply hidden state to panels
     panels.forEach(p => {
       var hud = document.querySelector('.'+p.hudClass);
       var btn = document.getElementById(p.btnId);
