@@ -865,27 +865,56 @@
   #save-layout-btn:hover { background:rgba(52,211,153,.28); border-color:rgba(52,211,153,.9); }
   #save-layout-btn.visible { display:block; }
 
+  /* Named passive skills — small circle, inverted: light inside, dark rim */
   .skill-node.node-type {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border-width: 2.5px;
+    transform: translate3d(-50%, -50%, 0);
+    background: rgba(var(--sc),.35);
+  }
+  .skill-node.node-type::before {
+    content: ''; position: absolute;
+    inset: -8px; border-radius: 50%;
+  }
+  .skill-node.node-type:hover { transform: translate3d(-50%,-50%,0) scale(1.3); }
+  .skill-node.node-type.selected { transform: translate3d(-50%,-50%,0) scale(1.18) !important; outline:2px solid rgba(var(--sc),.9); outline-offset:3px; }
+  .skill-node.node-type.locked { border-color: rgba(var(--sc),.85); background: radial-gradient(circle, rgba(var(--sc),.35) 0%, rgba(var(--sc),.08) 100%); box-shadow: none; }
+  .skill-node.node-type.available {
+    border-color: rgba(255,200,20,.9);
+    background: rgba(255,220,40,.3);
+    box-shadow: 0 0 6px rgba(255,200,20,.4);
+  }
+  .skill-node.node-type.unlocked {
+    border-color: rgba(var(--sc),1);
+    background: radial-gradient(circle, rgba(var(--sc),.85) 0%, rgba(var(--sc),.5) 60%, rgba(var(--sc),.3) 100%);
+    box-shadow: 0 0 8px rgba(var(--sc),.5);
+  }
+  .skill-node.node-type .lock-icon { bottom: -3px; right: -3px; width: 12px; height: 12px; }
+  .skill-node.node-type .lock-icon svg { width: 7px; height: 7px; }
+
+  /* Stat scaling nodes — original diamond style */
+  .skill-node.node-type-stat {
     width: 20px; height: 20px;
     border-radius: 3px;
     border-width: 2px;
     transform: translate3d(-50%, -50%, 0) rotate(45deg);
   }
-  .skill-node.node-type:hover { transform: translate3d(-50%,-50%,0) rotate(45deg) scale(1.3); }
-  .skill-node.node-type.selected { transform: translate3d(-50%,-50%,0) rotate(45deg) scale(1.18) !important; }
-  .skill-node.node-type.locked { border-color: rgba(var(--sc),.4); background: rgba(var(--sc),.08); }
-  .skill-node.node-type.available {
+  .skill-node.node-type-stat:hover { transform: translate3d(-50%,-50%,0) rotate(45deg) scale(1.3); }
+  .skill-node.node-type-stat.selected { transform: translate3d(-50%,-50%,0) rotate(45deg) scale(1.18) !important; }
+  .skill-node.node-type-stat.locked { border-color: rgba(var(--sc),.4); background: rgba(var(--sc),.08); }
+  .skill-node.node-type-stat.available {
     border-color: rgba(255,230,80,1);
     background: radial-gradient(circle at center, rgba(255,220,40,.45) 0%, rgba(var(--sc),.18) 70%);
     box-shadow: 0 0 10px rgba(255,200,20,.45);
   }
-  .skill-node.node-type.unlocked {
+  .skill-node.node-type-stat.unlocked {
     border-color: rgba(var(--sc),1);
     background: radial-gradient(circle at center, rgba(var(--sc),1) 0%, rgba(var(--sc),.7) 40%, rgba(var(--sc),.25) 100%);
     box-shadow: 0 0 10px rgba(var(--sc),.5);
   }
-  .skill-node.node-type .lock-icon { transform: rotate(-45deg); bottom: -3px; right: -3px; width: 12px; height: 12px; }
-  .skill-node.node-type .lock-icon svg { width: 7px; height: 7px; }
+  .skill-node.node-type-stat .lock-icon { transform: rotate(-45deg); bottom: -3px; right: -3px; width: 12px; height: 12px; }
+  .skill-node.node-type-stat .lock-icon svg { width: 7px; height: 7px; }
 
   /* ULTIMATE label */
   .sk-ultimate-tag {
@@ -1516,7 +1545,7 @@ const RACE_TREES = {
     { id:'rc2', name:'Cero', costSP:8, costCash:0, req:{kido:50},
       desc:'Concentrate your reiatsu into a charged beam that eviscerates anyone hit. Executes low health opponents.', upgradeNote:null },
     { id:'rc3', name:'Kido Node', costSP:2, costCash:0, req:{}, passive:true, noLevel:true,
-      desc:'Increase Kido scaling. Central node — branches into Cero variants and Hierro.', upgradeNote:null },
+      desc:'Increase Kido scaling.', upgradeNote:null },
   ],
   'Quincy': [
     { id:'qrc1', name:'Conjure Weapon', costSP:4, costCash:0, req:{kido:12}, passive:true, noLevel:true,
@@ -1668,11 +1697,11 @@ const SPEED_BRANCHES = [
   { id:'spP7c', name:'Blade Flow', spokeId:'speed', parent:'spP6b', costSP:11, costCash:0, req:{speed:355}, desc:'While you were progging Hakuda, I studied the blade.', upgradeNote:'Lvl 6: Inflict bleed', accentColor:'50,180,255', bx:1184, by:2188 },
   { id:'spP8c', name:'Feint Mastery', spokeId:'speed', parent:'spP7c', costSP:9, costCash:0, req:{speed:380}, noLevel:true, passive:true, desc:'You can cancel basic attacks by flash stepping.', upgradeNote:null, accentColor:'30,130,200', bx:1190, by:2302 },
   { id:'spP9c1', name:'Speed Node', spokeId:'speed', parent:'spP8c', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed scaling.', upgradeNote:null, accentColor:'30,130,200', bx:1138, by:2391 },
-  { id:'spP9c2', name:'Phantom Trifecta', spokeId:'speed', parent:'spP8c', costSP:10, costCash:0, req:{speed:420}, noLevel:true, passive:true, desc:'Landing 3 consecutive attacks on a single opponent causes an afterimage to strike them.', upgradeNote:null, accentColor:'30,130,200', bx:1254, by:2389 },
+  { id:'spP9c2', name:'Phantom Trifecta ⚠ Unobtainable', spokeId:'speed', parent:'spP8c', costSP:10, costCash:0, req:{speed:420}, noLevel:true, passive:true, desc:'Landing 3 consecutive attacks on a single opponent causes an afterimage to strike them. [Speed 420 required — currently unobtainable in-game]', upgradeNote:null, accentColor:'30,130,200', bx:1254, by:2389 },
   { id:'spP7d', name:'Flash Skewer', spokeId:'speed', parent:'spP6b', costSP:9, costCash:0, req:{speed:365}, desc:'Disappear briefly before reappearing to surprise your opponent with a lethal strike.', upgradeNote:'Lvl 2: Your skewer bypasses riposte frames', accentColor:'50,180,255', bx:1352, by:2162 },
   { id:'spP8d', name:'Flash Trick', spokeId:'speed', parent:'spP7d', costSP:3, costCash:0, req:{speed:380}, noLevel:true, passive:true, desc:'Dashing before flash stepping creates a clone.', upgradeNote:null, accentColor:'30,130,200', bx:1326, by:2233 },
   { id:'spP9d', name:'Speed Node', spokeId:'speed', parent:'spP7d', costSP:2, costCash:0, req:{}, noLevel:true, passive:true, desc:'Increase Speed scaling.', upgradeNote:null, accentColor:'30,130,200', bx:1433, by:2216 },
-  { id:'spP10d', name:'High-Speed Movement', spokeId:'speed', parent:'spP9d', costSP:6, costCash:0, req:{speed:420}, desc:'Shunpo to your mouse position — windup scales with teleport distance.', upgradeNote:null, accentColor:'50,180,255', bx:1490, by:2310 }
+  { id:'spP10d', name:'High-Speed Movement ⚠ Unobtainable', spokeId:'speed', parent:'spP9d', costSP:6, costCash:0, req:{speed:420}, desc:'Shunpo to your mouse position — windup scales with teleport distance. [Speed 420 required — currently unobtainable in-game]', upgradeNote:null, accentColor:'50,180,255', bx:1490, by:2310 }
 ];
 
 const QUINCY_BRANCHES = [
@@ -2068,10 +2097,15 @@ function buildTree() {
     if (SPECIAL_IDS.has(sk.id))  node.classList.add('special');
   });
 
-  activeBranches.forEach(br => {
-    if ((br.noLevel && br.passive) || (br.noLevel && br.name.includes('Node'))) {
-      const node = _nodeDOMCache[br.id];
+  const SMALL_CIRCLE_IDS = new Set(['hb_cabsrp','hb_chbarr','hb_crmor','hb_hierro','hb_hsregen','hb_power','hb_rapid','hb_speed','hb_ultra','hb_unpred','hk1','hkH1','hkH11a','hkH4s','hkH7s','hkK4','hkP1','hkP2','hkS1','hkS4','hkS7b','hkV6s','hkV7','qa1','qa4','qa6','qa7a','qa7b','qb1','qb3a','qb3b','qb3c','qrc1','qrc5','sk_bind_resist','sk_elec_energy','sk_geki','sk_react_barrier','sk_reia_enhance','spK7','spP4b','spP5a1','spP6a2','spP8c','spP8d','spP9c2','spS1','spS6','spS8a','stA2','stB2b','stC2','stC3','stC3b','stC5a','stD2','stD3','stD5b','stD6a']);
+  
+  [...activeBranches, ...SPOKES.flatMap(s=>s.skills)].forEach(sk => {
+    if (SMALL_CIRCLE_IDS.has(sk.id)) {
+      const node = _nodeDOMCache[sk.id];
       if (node) node.classList.add('node-type');
+    } else if (sk.noLevel && sk.name.includes('Node')) {
+      const node = _nodeDOMCache[sk.id];
+      if (node) node.classList.add('node-type-stat');
     }
   });
 
@@ -2481,10 +2515,12 @@ function render() {
     const isUltimate = node.classList.contains('ultimate');
     const isSpecial  = node.classList.contains('special');
     const isNodeType = node.classList.contains('node-type');
+    const isNodeTypeStat = node.classList.contains('node-type-stat');
     let cls = 'skill-node';
     if (isUltimate) cls += ' ultimate';
     if (isSpecial)  cls += ' special';
-    if (isNodeType) cls += ' node-type';
+    if (isNodeType && !isUltimate && !isSpecial) cls += ' node-type';
+    if (isNodeTypeStat && !isUltimate && !isSpecial) cls += ' node-type-stat';
     if (editModeActive) cls += ' misc-draggable';
     if (skill.unlocked && !isMaxed) cls += ' unlocked';
     else if (isMaxed)               cls += ' maxed';
@@ -2566,7 +2602,10 @@ function renderSelected() {
   else                     { levelText='Not Unlocked'; levelClass='locked'; }
 
   let html = '';
-  const passiveTag = skill.passive ? ' <span style="font-size:11px;opacity:.6;letter-spacing:.1em">(Passive)</span>' : '';
+  const _skillNode = _nodeDOMCache[skill.id];
+  const _isSmallCircle = _skillNode && _skillNode.classList.contains('node-type');
+  const _isStatNode = _skillNode && _skillNode.classList.contains('node-type-stat');
+  const passiveTag = (skill.passive && (_isSmallCircle || _isStatNode)) ? ' <span style="font-size:11px;opacity:.6;letter-spacing:.1em">(Passive)</span>' : '';
   const isUltimateNode = _nodeDOMCache[skill.id]?.classList.contains('ultimate');
   if (isUltimateNode) html += '<div class="sk-ultimate-tag">✦ Ultimate</div>';
   html += '<div class="sk-name" style="color:'+(isMaxed?'#fde68a':skill.unlocked?'rgb('+sc+')':'#64748b')+'">'+skill.name+passiveTag+'</div>';
