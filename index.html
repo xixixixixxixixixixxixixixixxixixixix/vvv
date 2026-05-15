@@ -231,7 +231,59 @@
     width:56px; height:56px; border-width:2px; z-index:6;
   }
   .skill-node.ultimate.locked {
-    box-shadow: none;
+    background: radial-gradient(circle, rgba(var(--sc),.4) 0%, rgba(var(--sc),.2) 30%, rgba(var(--sc),.08) 60%, rgba(8,4,14,.95) 95%) !important;
+    border-color: rgba(8,2,8,.9) !important;
+    box-shadow: 0 0 12px rgba(var(--sc),.2), inset 0 0 10px rgba(0,0,0,.6) !important;
+  }
+  .skill-node.ultimate.locked::before {
+    content:''; position:absolute; inset:-18px; border-radius:50%;
+    background: radial-gradient(circle, rgba(var(--sc),.18) 0%, rgba(var(--sc),.05) 45%, transparent 75%);
+    filter: blur(6px);
+    pointer-events:none; z-index:-1;
+  }
+  .skill-node.ultimate.locked::after {
+    content:''; position:absolute; inset:-26px; border-radius:50%;
+    pointer-events:none; z-index:-1;
+    background:
+      radial-gradient(circle 1.5px at 18% 14%, rgba(var(--sc),.45), transparent 100%),
+      radial-gradient(circle 1.5px at 82% 22%, rgba(var(--sc),.4),  transparent 100%),
+      radial-gradient(circle 1px   at 8%  58%, rgba(var(--sc),.35), transparent 100%),
+      radial-gradient(circle 2px   at 88% 70%, rgba(var(--sc),.42), transparent 100%),
+      radial-gradient(circle 1.5px at 30% 88%, rgba(var(--sc),.38), transparent 100%),
+      radial-gradient(circle 1px   at 70% 92%, rgba(var(--sc),.35), transparent 100%);
+  }
+  /* === REIATSU FLARE — ultimate unlocked ===
+     Hazy aura cloud (::before, blurred) + dense bright core + drifting particles (::after, static radial gradients).
+     Limited to 6 ultimate nodes so blur stays cheap. */
+  .skill-node.ultimate.unlocked,
+  .skill-node.ultimate.maxed {
+    background: radial-gradient(circle, #fff 0%, rgba(255,235,245,1) 12%, rgba(var(--sc),1) 32%, rgba(var(--sc),.5) 60%, rgba(20,4,12,.92) 95%) !important;
+    border-color: rgba(8,2,8,.92) !important;
+    box-shadow: 0 0 18px rgba(var(--sc),.7), 0 0 40px rgba(var(--sc),.4), 0 0 70px rgba(var(--sc),.18) !important;
+  }
+  .skill-node.ultimate.unlocked::before,
+  .skill-node.ultimate.maxed::before {
+    content:''; position:absolute; inset:-22px; border-radius:50%;
+    background: radial-gradient(circle, rgba(var(--sc),.32) 0%, rgba(var(--sc),.1) 45%, transparent 72%);
+    filter: blur(7px);
+    pointer-events:none; z-index:-1;
+    will-change: auto;
+  }
+  .skill-node.ultimate.unlocked::after,
+  .skill-node.ultimate.maxed::after {
+    content:''; position:absolute; inset:-30px; border-radius:50%;
+    pointer-events:none; z-index:-1;
+    background:
+      radial-gradient(circle 1.5px at 18% 14%, rgba(var(--sc),.95), transparent 100%),
+      radial-gradient(circle 1.5px at 82% 22%, rgba(var(--sc),.85), transparent 100%),
+      radial-gradient(circle 1px   at 8%  58%, rgba(var(--sc),.7),  transparent 100%),
+      radial-gradient(circle 2px   at 88% 70%, rgba(var(--sc),.9),  transparent 100%),
+      radial-gradient(circle 1.5px at 30% 88%, rgba(var(--sc),.8),  transparent 100%),
+      radial-gradient(circle 1px   at 70% 92%, rgba(var(--sc),.7),  transparent 100%);
+  }
+  .skill-node.ultimate.maxed {
+    background: radial-gradient(circle, #fff 0%, #fde68a 12%, rgba(252,211,77,1) 32%, rgba(180,120,30,.55) 60%, rgba(40,20,4,.95) 95%) !important;
+    box-shadow: 0 0 18px rgba(252,211,77,.7), 0 0 40px rgba(252,211,77,.35) !important;
   }
 
   /* SPECIAL (big circle) */
@@ -240,18 +292,43 @@
     background: radial-gradient(circle,rgba(var(--sc),1) 0%,rgba(var(--sc),.85) 25%,rgba(var(--sc),.35) 60%,rgba(3,7,20,.8) 100%);
     border-color: rgba(var(--sc),.9);
   }
+  /* Locked SPECIAL — dim Reiatsu Flare: same shape language as unlocked, just muted. */
   .skill-node.special.locked {
-    background: radial-gradient(circle,rgba(var(--sc),.25) 0%,rgba(var(--sc),.1) 50%,rgba(3,7,20,.9) 100%);
-    border-color: rgba(var(--sc),.3);
-    box-shadow: none;
+    background: radial-gradient(circle, rgba(var(--sc),.35) 0%, rgba(var(--sc),.18) 30%, rgba(var(--sc),.08) 60%, rgba(8,4,14,.95) 95%) !important;
+    border-color: rgba(8,2,8,.85) !important;
+    box-shadow: 0 0 8px rgba(var(--sc),.18), inset 0 0 6px rgba(0,0,0,.55) !important;
+  }
+  .skill-node.special.locked::before {
+    content:''; position:absolute; inset:-14px; border-radius:50%;
+    background: radial-gradient(circle, rgba(var(--sc),.14) 0%, transparent 70%);
+    filter: blur(5px);
+    pointer-events:none; z-index:-1;
   }
   .skill-node.special.available {
     border-color: rgba(255,230,80,1) !important;
     background: radial-gradient(circle,rgba(var(--sc),.5) 0%,rgba(255,220,40,.2) 50%,rgba(3,7,20,.7) 100%);
   }
   .skill-node.special.unlocked {
-    background: radial-gradient(circle,rgba(var(--sc),1) 0%,rgba(var(--sc),.9) 30%,rgba(var(--sc),.45) 65%,rgba(3,7,20,.7) 100%);
-    border-color: rgba(var(--sc),1);
+    background: radial-gradient(circle, #fff 0%, rgba(255,235,245,1) 12%, rgba(var(--sc),1) 32%, rgba(var(--sc),.5) 60%, rgba(20,4,12,.92) 95%) !important;
+    border-color: rgba(8,2,8,.92) !important;
+    box-shadow: 0 0 16px rgba(var(--sc),.65), 0 0 34px rgba(var(--sc),.32), 0 0 60px rgba(var(--sc),.15) !important;
+  }
+  .skill-node.special.unlocked::before {
+    content:''; position:absolute; inset:-20px; border-radius:50%;
+    background: radial-gradient(circle, rgba(var(--sc),.3) 0%, rgba(var(--sc),.1) 45%, transparent 72%);
+    filter: blur(6px);
+    pointer-events:none; z-index:-1;
+  }
+  .skill-node.special.unlocked::after {
+    content:''; position:absolute; inset:-26px; border-radius:50%;
+    pointer-events:none; z-index:-1;
+    background:
+      radial-gradient(circle 1.5px at 18% 14%, rgba(var(--sc),.9), transparent 100%),
+      radial-gradient(circle 1.5px at 82% 22%, rgba(var(--sc),.8), transparent 100%),
+      radial-gradient(circle 1px   at 8%  58%, rgba(var(--sc),.65), transparent 100%),
+      radial-gradient(circle 2px   at 88% 70%, rgba(var(--sc),.85), transparent 100%),
+      radial-gradient(circle 1.5px at 30% 88%, rgba(var(--sc),.75), transparent 100%),
+      radial-gradient(circle 1px   at 70% 92%, rgba(var(--sc),.65), transparent 100%);
   }
 
   .skill-node[data-spoke="hakuda"]   { --sc:255,130,20; }
@@ -261,7 +338,7 @@
   .skill-node[data-spoke="misc"]     { --sc:230,235,255; }
   .skill-node[data-spoke="race"]     { --sc:255,85,178; }
 
-  .skill-node.locked    { border-color:rgba(var(--sc),.18); background:rgba(3,6,14,.92); box-shadow: none; }
+  .skill-node.locked    { border-color:rgba(var(--sc),.18); background:rgba(1,3,10,.97); box-shadow: none; }
   .skill-node.available {
     border-color:rgba(255,230,80,1);
     background:radial-gradient(circle, rgba(255,220,40,.22) 0%, rgba(var(--sc),.1) 65%, transparent 100%);
@@ -269,7 +346,7 @@
   .skill-node.available:hover {
     border-color:rgba(255,240,100,1);
   }
-  .skill-node.unlocked  { border-color:rgba(var(--sc),1); background:radial-gradient(circle, rgba(var(--sc),.4) 0%, rgba(var(--sc),.18) 55%, rgba(3,6,14,.7) 100%); }
+  .skill-node.unlocked  { border-color:rgba(var(--sc),1); background:radial-gradient(circle, rgba(var(--sc),.32) 0%, rgba(var(--sc),.14) 55%, rgba(1,3,10,.88) 100%); }
   .skill-node.maxed     { border-color:rgba(252,211,77,.95); background:linear-gradient(135deg,rgba(160,100,20,.7),rgba(70,45,10,.9)); }
   .skill-node.selected  { transform:translate3d(-50%,-50%,0) scale(1.15) !important; outline:2px solid rgba(var(--sc),.9); outline-offset:3px; }
   .skill-node.ultimate.selected { transform:translate3d(-50%,-50%,0) scale(1.1) !important; outline:3px solid rgba(var(--sc),1); outline-offset:5px; }
@@ -865,55 +942,96 @@
   #save-layout-btn:hover { background:rgba(52,211,153,.28); border-color:rgba(52,211,153,.9); }
   #save-layout-btn.visible { display:block; }
 
-  /* Named passive skills — small circle, inverted: light inside, dark rim */
+  /* Named passive skills — Smolder: tiny muted dot, no border, low-key */
   .skill-node.node-type {
-    width: 18px; height: 18px;
+    width: 16px; height: 16px;
     border-radius: 50%;
-    border-width: 2.5px;
+    border: none;
     transform: translate3d(-50%, -50%, 0);
-    background: rgba(var(--sc),.35);
+    background: radial-gradient(circle, rgba(var(--sc),.18) 0%, rgba(var(--sc),.06) 60%, transparent 100%);
+    box-shadow: none;
+    overflow: visible;
   }
+  /* invisible larger touch target for mobile — keeps visual size but expands tap area */
   .skill-node.node-type::before {
-    content: ''; position: absolute;
-    inset: -8px; border-radius: 50%;
+    content: ""; position: absolute; pointer-events: auto;
+    inset: -14px; border-radius: 50%;
   }
-  .skill-node.node-type:hover { transform: translate3d(-50%,-50%,0) scale(1.3); }
-  .skill-node.node-type.selected { transform: translate3d(-50%,-50%,0) scale(1.18) !important; outline:2px solid rgba(var(--sc),.9); outline-offset:3px; }
-  .skill-node.node-type.locked { border-color: rgba(var(--sc),.85); background: radial-gradient(circle, rgba(var(--sc),.35) 0%, rgba(var(--sc),.08) 100%); box-shadow: none; }
+  .skill-node.node-type:hover { transform: translate3d(-50%,-50%,0) scale(1.35); }
+  .skill-node.node-type.selected { transform: translate3d(-50%,-50%,0) scale(1.2) !important; outline: 1.5px solid rgba(var(--sc),.7); outline-offset: 2px; }
+  /* === SMOLDER — named passive dot ===
+     Warm muted center, bleeds dark fast, no border, low visual weight. */
+  .skill-node.node-type.locked {
+    border: 1px solid rgba(var(--sc),.28);
+    background: radial-gradient(circle, rgba(var(--sc),.18) 0%, rgba(1,2,8,.94) 65%);
+    box-shadow: none;
+  }
   .skill-node.node-type.available {
-    border-color: rgba(255,200,20,.9);
-    background: rgba(255,220,40,.3);
-    box-shadow: 0 0 6px rgba(255,200,20,.4);
+    background: radial-gradient(circle, rgba(255,220,100,.85) 0%, rgba(255,190,40,.5) 40%, rgba(180,110,10,.2) 70%, transparent 100%);
+    box-shadow: 0 0 5px rgba(255,200,40,.5), 0 0 12px rgba(220,160,20,.2);
   }
   .skill-node.node-type.unlocked {
-    border-color: rgba(var(--sc),1);
-    background: radial-gradient(circle, rgba(var(--sc),.85) 0%, rgba(var(--sc),.5) 60%, rgba(var(--sc),.3) 100%);
-    box-shadow: 0 0 8px rgba(var(--sc),.5);
+    border: 1px solid rgba(var(--sc),.55);
+    background: radial-gradient(circle, rgba(var(--sc),.62) 0%, rgba(var(--sc),.28) 50%, rgba(1,2,8,.78) 85%);
+    box-shadow: 0 0 5px rgba(var(--sc),.38), 0 0 12px rgba(var(--sc),.12);
   }
-  .skill-node.node-type .lock-icon { bottom: -3px; right: -3px; width: 12px; height: 12px; }
-  .skill-node.node-type .lock-icon svg { width: 7px; height: 7px; }
+  .skill-node.node-type .lock-icon { bottom: -3px; right: -3px; width: 10px; height: 10px; }
+  .skill-node.node-type .lock-icon svg { width: 6px; height: 6px; }
 
-  /* Stat scaling nodes — original diamond style */
+  /* Stat scaling nodes — Haloed Orb circles (Kido Node, Strength Node, etc.) */
   .skill-node.node-type-stat {
-    width: 20px; height: 20px;
-    border-radius: 3px;
-    border-width: 2px;
-    transform: translate3d(-50%, -50%, 0) rotate(45deg);
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(var(--sc), 0.22);
+    background: radial-gradient(circle, rgba(var(--sc),.38) 0%, rgba(var(--sc),.16) 55%, rgba(3,7,20,.90) 100%);
+    box-shadow: none;
+    transform: translate3d(-50%, -50%, 0);
+    overflow: visible;
   }
-  .skill-node.node-type-stat:hover { transform: translate3d(-50%,-50%,0) rotate(45deg) scale(1.3); }
-  .skill-node.node-type-stat.selected { transform: translate3d(-50%,-50%,0) rotate(45deg) scale(1.18) !important; }
-  .skill-node.node-type-stat.locked { border-color: rgba(var(--sc),.4); background: rgba(var(--sc),.08); }
+  .skill-node.node-type-stat::before {
+    content: ""; position: absolute; pointer-events: none;
+    inset: -9px; border-radius: 50%; z-index: -1;
+    background: none;
+    transition: background .15s ease;
+  }
+  /* invisible larger touch target for mobile */
+  .skill-node.node-type-stat::after {
+    content: ""; position: absolute; pointer-events: auto;
+    inset: -10px; border-radius: 50%;
+  }
+
+  .skill-node.node-type-stat:hover { transform: translate3d(-50%,-50%,0) scale(1.25); z-index: 5; }
+  .skill-node.node-type-stat.selected { transform: translate3d(-50%,-50%,0) scale(1.15) !important; z-index: 6; outline: 2px solid rgba(var(--sc),.9); outline-offset: 3px; }
+
+  /* Locked — moderate tint, clearly darker than unlocked */
+  .skill-node.node-type-stat.locked {
+    border-color: rgba(var(--sc), 0.22);
+    background: radial-gradient(circle, rgba(var(--sc),.38) 0%, rgba(var(--sc),.16) 55%, rgba(3,7,20,.90) 100%);
+    box-shadow: none;
+  }
+  .skill-node.node-type-stat.locked::before { background: none; }
+
+  /* Available — golden orb with warm halo */
   .skill-node.node-type-stat.available {
-    border-color: rgba(255,230,80,1);
-    background: radial-gradient(circle at center, rgba(255,220,40,.45) 0%, rgba(var(--sc),.18) 70%);
-    box-shadow: 0 0 10px rgba(255,200,20,.45);
+    border-color: rgba(255,200,20,.9);
+    background: radial-gradient(circle, #fff 0%, rgba(255,235,150,1) 25%, rgba(255,200,20,.85) 65%, rgba(40,20,2,.6) 100%);
+    box-shadow: 0 0 8px rgba(255,200,20,.65), 0 0 18px rgba(255,200,20,.28);
   }
+  .skill-node.node-type-stat.available::before {
+    background: radial-gradient(circle, rgba(255,200,20,.22) 0%, rgba(255,180,10,.08) 52%, transparent 75%);
+  }
+
+  /* Unlocked — bright accent orb with soft halo */
   .skill-node.node-type-stat.unlocked {
-    border-color: rgba(var(--sc),1);
-    background: radial-gradient(circle at center, rgba(var(--sc),1) 0%, rgba(var(--sc),.7) 40%, rgba(var(--sc),.25) 100%);
-    box-shadow: 0 0 10px rgba(var(--sc),.5);
+    border-color: rgba(var(--sc), 0.92);
+    background: radial-gradient(circle, #fff 0%, rgba(255,235,248,.95) 16%, rgba(var(--sc),1) 50%, rgba(var(--sc),.52) 80%, rgba(8,4,18,.45) 100%);
+    box-shadow: 0 0 10px rgba(var(--sc),.75), 0 0 22px rgba(var(--sc),.32);
   }
-  .skill-node.node-type-stat .lock-icon { transform: rotate(-45deg); bottom: -3px; right: -3px; width: 12px; height: 12px; }
+  .skill-node.node-type-stat.unlocked::before {
+    background: radial-gradient(circle, rgba(var(--sc),.22) 0%, rgba(var(--sc),.07) 52%, transparent 75%);
+  }
+
+  .skill-node.node-type-stat .lock-icon { bottom: -3px; right: -3px; width: 12px; height: 12px; z-index: 7; }
   .skill-node.node-type-stat .lock-icon svg { width: 7px; height: 7px; }
 
   /* ULTIMATE label */
@@ -1965,6 +2083,23 @@ function getNodePos(skillId) {
 const NODE_R = 14;   // regular node radius (28px diameter)
 const CORE_R = 58;   // center orb no-go radius
 
+/* Per-shape radii so connection lines visually touch each node.
+   Regular circle 28px -> 14, Ultimate 56 -> 28, Special 52 -> 26,
+   Small circle (.node-type) 16 -> 8, Stat orb (.node-type-stat) 22 -> 11. */
+const ULTIMATE_NODE_IDS = new Set(['stA6','hkK9a','hkS9b','hkH12a','qb12','sk_heaven_culling']);
+const SPECIAL_NODE_IDS  = new Set(['stD5a','stD6b','hkS7a','hkK9b','hkH12b','spS9b','spP7c','spK8','qb9','qa10b','sk_prism_seal','sk_goryu']);
+const SMALL_NODE_IDS    = new Set(['hb_cabsrp','hb_chbarr','hb_crmor','hb_hierro','hb_hsregen','hb_power','hb_rapid','hb_speed','hb_ultra','hb_unpred','hk1','hkH1','hkH11a','hkH4s','hkH7s','hkK4','hkP1','hkP2','hkS1','hkS4','hkS7b','hkV6s','hkV7','qa1','qa4','qa6','qa7a','qa7b','qb1','qb3a','qb3b','qb3c','qrc1','qrc5','sk_bind_resist','sk_elec_energy','sk_geki','sk_react_barrier','sk_reia_enhance','spK7','spP4b','spP5a1','spP6a2','spP8c','spP8d','spP9c2','spS1','spS6','spS8a','stA2','stB2b','stC2','stC3','stC3b','stC5a','stD2','stD3','stD5b','stD6a']);
+function getNodeR(skillId) {
+  if (!skillId) return NODE_R;
+  if (ULTIMATE_NODE_IDS.has(skillId)) return 28;
+  if (SPECIAL_NODE_IDS.has(skillId))  return 26;
+  if (SMALL_NODE_IDS.has(skillId))    return 8;
+  // Diamond (stat) nodes: skill has noLevel and name includes "Node"
+  const sk = (typeof ALL_SKILLS !== 'undefined') ? ALL_SKILLS.find(s => s.id === skillId) : null;
+  if (sk && sk.noLevel && sk.name && sk.name.includes('Node')) return 10;
+  return NODE_R;
+}
+
 function shortenLine(ln, x1, y1, x2, y2, r1, r2) {
   const dx = x2-x1, dy = y2-y1;
   const d = Math.sqrt(dx*dx+dy*dy);
@@ -1992,7 +2127,8 @@ function buildTree() {
       const from = i === 0 ? { x: CENTER, y: CENTER } : polar(spoke.angle, TIER_RADII[i-1]);
       const to   = polar(spoke.angle, TIER_RADII[i]);
       const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      shortenLine(ln, from.x, from.y, to.x, to.y, i===0 ? CORE_R : NODE_R, NODE_R);
+      const prevId = i===0 ? null : spoke.skills[i-1].id;
+      shortenLine(ln, from.x, from.y, to.x, to.y, i===0 ? CORE_R : getNodeR(prevId), getNodeR(sk.id));
       ln.setAttribute('id', 'line-' + sk.id);
       ln.setAttribute('stroke-linecap', 'round');
       linesG.appendChild(ln);
@@ -2005,7 +2141,7 @@ function buildTree() {
     if (br.parent === null || br.parent === undefined) return;
     const pPos = getLivePos(br.parent);
     const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    shortenLine(ln, pPos.x, pPos.y, br.bx, br.by, NODE_R, NODE_R);
+    shortenLine(ln, pPos.x, pPos.y, br.bx, br.by, getNodeR(br.parent), getNodeR(br.id));
     ln.setAttribute('id', 'line-' + br.id);
     ln.setAttribute('stroke-linecap', 'round');
     linesG.appendChild(ln);
@@ -3183,8 +3319,15 @@ function updateBranchLine(branchId) {
     }
     if(!found) parentPos=childPos;
   }
-  const r1 = (!br && (() => { for(const sp of SPOKES){ const idx=sp.skills.findIndex(s=>s.id===branchId); if(idx===0) return true; } return false; })()) ? CORE_R : NODE_R;
-  shortenLine(ln, parentPos.x, parentPos.y, childPos.x, childPos.y, r1, NODE_R);
+  let parentIdForR = br ? br.parent : null;
+  if (!br) {
+    for (const sp of SPOKES) {
+      const idx = sp.skills.findIndex(s=>s.id===branchId);
+      if (idx>0) { parentIdForR = sp.skills[idx-1].id; break; }
+    }
+  }
+  const r1 = (!br && (() => { for(const sp of SPOKES){ const idx=sp.skills.findIndex(s=>s.id===branchId); if(idx===0) return true; } return false; })()) ? CORE_R : getNodeR(parentIdForR);
+  shortenLine(ln, parentPos.x, parentPos.y, childPos.x, childPos.y, r1, getNodeR(branchId));
 }
 
 function updateNodeAndChildLines(nodeId) {
@@ -3194,11 +3337,11 @@ function updateNodeAndChildLines(nodeId) {
     for (let i=0; i<spoke.skills.length; i++) {
       if (spoke.skills[i].id===nodeId) {
         const ln=_lineDOMCache[nodeId];
-        if(ln){ const pp=i===0?{x:CENTER,y:CENTER}:getLivePos(spoke.skills[i-1].id); const cp=getLivePos(nodeId); shortenLine(ln,pp.x,pp.y,cp.x,cp.y,i===0?CORE_R:NODE_R,NODE_R); }
+        if(ln){ const pp=i===0?{x:CENTER,y:CENTER}:getLivePos(spoke.skills[i-1].id); const cp=getLivePos(nodeId); shortenLine(ln,pp.x,pp.y,cp.x,cp.y,i===0?CORE_R:getNodeR(spoke.skills[i-1].id),getNodeR(nodeId)); }
       }
       if (i>0&&spoke.skills[i-1].id===nodeId) {
         const childId=spoke.skills[i].id; const childLn=_lineDOMCache[childId];
-        if(childLn){ const pp=getLivePos(nodeId); const cp=getLivePos(childId); shortenLine(childLn,pp.x,pp.y,cp.x,cp.y,NODE_R,NODE_R); }
+        if(childLn){ const pp=getLivePos(nodeId); const cp=getLivePos(childId); shortenLine(childLn,pp.x,pp.y,cp.x,cp.y,getNodeR(nodeId),getNodeR(childId)); }
       }
     }
   });
