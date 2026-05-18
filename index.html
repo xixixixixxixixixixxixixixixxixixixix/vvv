@@ -1113,6 +1113,48 @@
   .heading { font-family: 'Cinzel', Georgia, serif; }
   .mono    { font-family: 'Share Tech Mono', 'Courier New', monospace; }
 
+  /* ===================== DESKTOP RESPONSIVE — prevent TL/BL overlap ===================== */
+  /* Base: clamp hud-tl height so it never grows into hud-bl's space */
+  @media (min-width: 769px) {
+    .hud-tl {
+      max-height: calc(100vh - 36px - 36px - 240px);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .hud-tl::-webkit-scrollbar { display: none; }
+  }
+  /* Narrow desktop: shrink panel widths to prevent left panels from getting too wide */
+  @media (max-width: 1200px) and (min-width: 769px) {
+    .hud-tl { width: clamp(240px, 22vw, 320px); }
+    .hud-tr { width: clamp(220px, 21vw, 290px); }
+    .hud-bl { width: clamp(230px, 21vw, 300px); }
+    .hud-br { width: clamp(240px, 22vw, 320px); }
+  }
+  @media (max-width: 1000px) and (min-width: 769px) {
+    .hud-tl { width: clamp(195px, 19vw, 255px); }
+    .hud-tr { width: clamp(185px, 18vw, 240px); }
+    .hud-bl { width: clamp(190px, 19vw, 245px); }
+    .hud-br { width: clamp(195px, 19vw, 255px); }
+    .level-num { font-size: 30px; }
+    .panel { padding: 9px 11px; }
+    .stat-row .name { font-size: 12px; }
+    .stat-row .val  { font-size: 12px; }
+    .btn-tiny { width: 20px; height: 20px; font-size: 11px; }
+  }
+  @media (max-width: 860px) and (min-width: 769px) {
+    .hud-tl { width: clamp(170px, 17vw, 210px); }
+    .hud-tr { width: clamp(160px, 16vw, 200px); }
+    .hud-bl { width: clamp(165px, 17vw, 205px); }
+    .hud-br { width: clamp(170px, 17vw, 210px); }
+    .level-num { font-size: 24px; }
+    .panel { padding: 7px 9px; }
+    .panel-title { font-size: 11px; }
+    .stat-row .name { font-size: 11px; }
+    .stat-row .val  { font-size: 11px; }
+    .btn-tiny { width: 18px; height: 18px; font-size: 10px; }
+    .hint-strip { display: none; }
+  }
+
   /* ===================== MOBILE RESPONSIVE ===================== */
   @media (max-width: 768px) {
     #save-toast { bottom: 70px; min-width: calc(100vw - 40px); max-width: calc(100vw - 40px); }
@@ -1548,6 +1590,10 @@
   </div>
 
   <div id="skill-tooltip" style="display:none;"></div>
+  <div id="bp-tip" style="display:none;position:fixed;left:0;top:0;z-index:999;pointer-events:none;width:200px;background:rgba(6,14,31,.97);border:1px solid rgba(80,210,255,.35);border-radius:3px;padding:6px 9px;box-shadow:0 4px 16px rgba(0,0,0,.5);will-change:transform;">
+    <div id="bp-tip-name" style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-bottom:3px;"></div>
+    <div id="bp-tip-desc" style="font-family:'Exo 2',sans-serif;font-size:11px;font-weight:500;color:rgba(180,205,235,.85);line-height:1.5;"></div>
+  </div>
 </div>
 
 <script>
@@ -1616,17 +1662,17 @@ const SP_PER_UPGRADE         = 2;
 const AF_PER_UPGRADE         = 1;
 
 const BUILD_STATS = [
-  { id:'reserves', name:'Reserves', accent:'#4dd2ff' },
-  { id:'haste',    name:'Haste',    accent:'#34d399' },
-  { id:'potency',  name:'Potency',  accent:'#f87171' },
-  { id:'mettle',   name:'Mettle',   accent:'#fbbf24' },
-  { id:'shunpo',   name:'Shunpo',   accent:'#a78bfa' },
+  { id:'reserves', name:'Reserves', accent:'#4dd2ff', desc:'Increases maximum reiatsu capacity.' },
+  { id:'haste',    name:'Haste',    accent:'#34d399', desc:'Decreases skill cooldowns. Slightly increases passive reiatsu regen.' },
+  { id:'potency',  name:'Potency',  accent:'#f87171', desc:'Increases stat scaling. Slightly increases melee posture damage.' },
+  { id:'mettle',   name:'Mettle',   accent:'#fbbf24', desc:'Increases maximum posture.' },
+  { id:'shunpo',   name:'Shunpo',   accent:'#a78bfa', desc:'Increases shunpo stamina and shunpo speed.' },
 ];
 const ATTRIBUTES = [
-  { id:'hakuda',   name:'Hakuda',   pos:'top',    color:'#ff8214' },
-  { id:'strength', name:'Strength', pos:'right',  color:'#ff3c50' },
-  { id:'kido',     name:'Kido',     pos:'bottom', color:'#ff50b4' },
-  { id:'speed',    name:'Speed',    pos:'left',   color:'#32b4ff' },
+  { id:'hakuda',   name:'Hakuda',   pos:'bottom', color:'#ff8214' },
+  { id:'strength', name:'Strength', pos:'left',   color:'#ff3c50' },
+  { id:'kido',     name:'Kido',     pos:'right',  color:'#ff50b4' },
+  { id:'speed',    name:'Speed',    pos:'top',    color:'#32b4ff' },
 ];
 
 const SPOKE_COLORS = {
@@ -2529,6 +2575,30 @@ const elFuBtn       = document.getElementById('free-upgrade-btn');
 const elRaceDot     = document.getElementById('race-dot');
 const elRaceBadge   = document.getElementById('race-badge-text');
 
+const _bpTip = document.getElementById('bp-tip');
+const _bpTipName = document.getElementById('bp-tip-name');
+const _bpTipDesc = document.getElementById('bp-tip-desc');
+const _BTP_W = 200, _BTP_H = 58;
+let _bpTipRaf = false, _bpTipX = 0, _bpTipY = 0;
+function _showBpTip(e, stat) {
+  _bpTipName.textContent = stat.name;
+  _bpTipName.style.color = stat.accent;
+  _bpTipDesc.textContent = stat.desc || '';
+  _bpTip.style.display = 'block';
+  _bpTipX = e.clientX; _bpTipY = e.clientY;
+  _applyBpTipPos();
+}
+function _applyBpTipPos() {
+  const tx = Math.min(_bpTipX + 14, window.innerWidth - _BTP_W - 8);
+  const ty = _bpTipY + _BTP_H + 18 > window.innerHeight ? _bpTipY - _BTP_H - 8 : _bpTipY + 14;
+  _bpTip.style.transform = 'translate3d('+tx+'px,'+ty+'px,0)';
+}
+function _moveBpTip(e) {
+  _bpTipX = e.clientX; _bpTipY = e.clientY;
+  if (!_bpTipRaf) { _bpTipRaf = true; requestAnimationFrame(() => { _applyBpTipPos(); _bpTipRaf = false; }); }
+}
+function _hideBpTip() { _bpTip.style.display = 'none'; _bpTipRaf = false; }
+
 let _bpRowCache = null;
 function ensureBPRows() {
   if (_bpRowCache) return;
@@ -2552,6 +2622,11 @@ function ensureBPRows() {
       inc: row.querySelectorAll('button')[1],
     };
     _bpRowCache[stat.id].vl.addEventListener('click', () => startBPEdit(stat.id));
+    const nm = _bpRowCache[stat.id].nm;
+    nm.style.cursor = 'default';
+    nm.addEventListener('mouseenter', e => _showBpTip(e, stat));
+    nm.addEventListener('mousemove',  e => _moveBpTip(e));
+    nm.addEventListener('mouseleave', _hideBpTip);
   });
 }
 
