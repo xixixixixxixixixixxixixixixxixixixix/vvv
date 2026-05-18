@@ -1113,45 +1113,50 @@
   .heading { font-family: 'Cinzel', Georgia, serif; }
   .mono    { font-family: 'Share Tech Mono', 'Courier New', monospace; }
 
-  /* ===================== DESKTOP RESPONSIVE — prevent TL/BL overlap ===================== */
-  /* Base: clamp hud-tl height so it never grows into hud-bl's space */
+  /* ===================== DESKTOP RESPONSIVE ===================== */
+  /* Always split left column by vh so TL and BL never overlap.
+     hud-tl bottom edge = 18 + (54vh-18) = 54vh
+     hud-bl top edge    = 100vh - 18 - (42vh-18) = 58vh
+     → guaranteed 4vh gap between them at every window height.      */
   @media (min-width: 769px) {
     .hud-tl {
-      max-height: calc(100vh - 36px - 36px - 240px);
-      overflow-y: auto;
-      scrollbar-width: none;
+      max-height: calc(54vh - 18px);
+      overflow-y: auto; scrollbar-width: none;
     }
     .hud-tl::-webkit-scrollbar { display: none; }
+    .hud-bl {
+      max-height: calc(42vh - 18px);
+      overflow-y: auto; scrollbar-width: none;
+    }
+    .hud-bl::-webkit-scrollbar { display: none; }
+    /* Widths: scale with vw so panels shrink as window narrows */
+    .hud-tl { width: clamp(220px, 22vw, 320px); }
+    .hud-tr { width: clamp(200px, 20vw, 290px); }
+    .hud-bl { width: clamp(200px, 21vw, 300px); }
+    .hud-br { width: clamp(220px, 22vw, 320px); }
   }
-  /* Narrow desktop: shrink panel widths to prevent left panels from getting too wide */
-  @media (max-width: 1200px) and (min-width: 769px) {
-    .hud-tl { width: clamp(240px, 22vw, 320px); }
-    .hud-tr { width: clamp(220px, 21vw, 290px); }
-    .hud-bl { width: clamp(230px, 21vw, 300px); }
-    .hud-br { width: clamp(240px, 22vw, 320px); }
-  }
-  @media (max-width: 1000px) and (min-width: 769px) {
-    .hud-tl { width: clamp(195px, 19vw, 255px); }
-    .hud-tr { width: clamp(185px, 18vw, 240px); }
-    .hud-bl { width: clamp(190px, 19vw, 245px); }
-    .hud-br { width: clamp(195px, 19vw, 255px); }
-    .level-num { font-size: 30px; }
-    .panel { padding: 9px 11px; }
+  /* Tighten spacing as viewport width drops */
+  @media (max-width: 1100px) and (min-width: 769px) {
+    .level-num  { font-size: 30px; }
+    .panel      { padding: 9px 11px; }
+    .panel-title { font-size: 11px; }
     .stat-row .name { font-size: 12px; }
     .stat-row .val  { font-size: 12px; }
-    .btn-tiny { width: 20px; height: 20px; font-size: 11px; }
+    .btn-tiny   { width: 20px; height: 20px; font-size: 11px; }
+    .attr-stat .ctrl .val { font-size: 10px; }
   }
-  @media (max-width: 860px) and (min-width: 769px) {
-    .hud-tl { width: clamp(170px, 17vw, 210px); }
-    .hud-tr { width: clamp(160px, 16vw, 200px); }
-    .hud-bl { width: clamp(165px, 17vw, 205px); }
-    .hud-br { width: clamp(170px, 17vw, 210px); }
-    .level-num { font-size: 24px; }
-    .panel { padding: 7px 9px; }
-    .panel-title { font-size: 11px; }
+  @media (max-width: 920px) and (min-width: 769px) {
+    .level-num  { font-size: 24px; }
+    .panel      { padding: 7px 8px; }
+    .panel-title { font-size: 10px; }
+    .panel-sub  { font-size: 9px; }
+    .stat-row   { padding: 3px 2px; }
     .stat-row .name { font-size: 11px; }
-    .stat-row .val  { font-size: 11px; }
-    .btn-tiny { width: 18px; height: 18px; font-size: 10px; }
+    .stat-row .val  { font-size: 11px; width: 26px; }
+    .btn-tiny   { width: 18px; height: 18px; font-size: 10px; }
+    .attr-stat .name { font-size: 9px; }
+    .attr-stat .ctrl .val { font-size: 9px; width: 22px; }
+    .attr-stat .ctrl { padding: 2px 3px; }
     .hint-strip { display: none; }
   }
 
