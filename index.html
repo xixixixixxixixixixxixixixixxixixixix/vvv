@@ -15,6 +15,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8462804459957316"
      crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Exo+2:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=local_fire_department,lock" />
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 100%; height: 100%; }
@@ -379,7 +380,7 @@
   .hud { position:absolute; z-index:5; }
   .hud-tl { top:18px; left:18px; width:320px; }
   .hud-tr { top:18px; right:18px; width:290px; text-align:right; }
-  .hud-bl { bottom:18px; left:18px; width:300px; }
+  .hud-bl { bottom:18px; left:18px; width:400px; }
   .hud-br { bottom:18px; right:18px; width:320px; }
   .hud-bc { bottom:14px; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; }
 
@@ -415,6 +416,11 @@
   .level-num { font-family:'Cinzel',serif; font-size:38px; font-weight:900; letter-spacing:.08em; line-height:1; margin-top:2px; color:#67e8f9; }
 
   .bp-row-top { display:flex; align-items:baseline; justify-content:space-between; }
+  .bp-row-top .panel-title, .attr-panel-head .panel-title, .essence-header .essence-title {
+    flex: 1 1 auto; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: normal;
+    cursor: pointer; line-height: 1.2; padding-right: 4px;
+  }
+  .bp-row-top, .attr-panel-head, .essence-header { cursor: pointer; }
   .bp-counter { font-family:'Share Tech Mono',monospace; font-size:13px; }
   .bp-counter b { color:#67e8f9; font-size:15px; font-weight:700; }
   .bp-counter span { color:#475569; }
@@ -515,25 +521,56 @@
 
   /* diamond */
   .attr-panel-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px; }
-  .diamond-wrap { position:relative; width:100%; aspect-ratio:1/1; margin-top:6px; }
+  .diamond-wrap { position:relative; width:68%; max-width:200px; aspect-ratio:1/1; margin:32px auto; left:0; }
   .diamond-wrap svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-  .attr-stat { position:absolute; display:flex; flex-direction:column; align-items:center; gap:3px; z-index:2; }
-  .attr-stat.top    { top:-4px;    left:50%; transform:translateX(-50%); }
-  .attr-stat.right  { right:-4px;  top:50%;  transform:translateY(-50%); }
-  .attr-stat.bottom { bottom:-4px; left:50%; transform:translateX(-50%); }
-  .attr-stat.left   { left:-4px;   top:50%;  transform:translateY(-50%); }
-  .attr-stat .name { font-family:'Cinzel',serif; font-size:10px; letter-spacing:.2em; text-transform:uppercase; font-weight:700; color:rgba(255,255,255,.6); }
-  .attr-stat .name.has { color:#ffffff; text-shadow:0 0 8px rgba(255,255,255,.5); }
-  .attr-stat .ctrl { display:flex; align-items:center; gap:3px; background:rgba(10,10,26,.92); border:1px solid rgba(180,180,200,.35); border-radius:3px; padding:3px 4px; }
-  .attr-stat .ctrl .val { font-family:'Share Tech Mono',monospace; font-size:11px; width:28px; text-align:center; color:#94a3b8; cursor:text; }
-  .attr-stat .ctrl .val.has { color:#ffffff; font-weight:700; }
-  .attr-stat .ctrl .btn-tiny { width:18px; height:18px; font-size:11px; }
+  .attr-stat { position:absolute; display:flex; flex-direction:column; align-items:center; gap:2px; z-index:2; text-align:center; }
+  .attr-stat.top    { top:5%;    left:50%; transform:translate(-50%, -100%); margin-top:-8px; }
+  .attr-stat.bottom { bottom:5%; left:50%; transform:translate(-50%, 100%); margin-bottom:-8px; }
+  .attr-stat.left   { left:5%;   top:50%; transform:translate(-100%, -50%); margin-left:-2px; }
+  .attr-stat.right  { right:5%;  top:50%; transform:translate(100%, -50%); margin-right:-2px; }
+  .attr-stat .name { font-family:'Cinzel',serif; font-size:12px; letter-spacing:.08em; font-weight:400 !important; text-transform:uppercase; color:rgba(255,255,255,.6); transition:color .15s ease, text-shadow .15s ease; }
+  .attr-stat .name.has { color:#ffffff; text-shadow:0 0 10px rgba(255,255,255,.6); font-weight:400 !important; }
+  .attr-stat .val {
+    font-family:'Share Tech Mono',monospace; font-size:12px; color:#94a3b8; cursor:pointer; line-height:18px;
+    transition: all 0.15s ease;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    padding: 1px 0;
+    background: rgba(0, 0, 0, 0.2);
+    display: inline-block;
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .attr-stat .val.has {
+    color:#ffffff; font-weight:700;
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .attr-stat .val:hover {
+    border-color: rgba(80, 180, 255, 0.6);
+    background: rgba(80, 180, 255, 0.15);
+    color: #ffffff;
+    box-shadow: 0 0 6px rgba(80, 180, 255, 0.2);
+  }
+  .attr-stat .ctrl { display:flex; align-items:center; gap:4px; }
+  .attr-stat .ctrl .btn-tiny {
+    width:20px; height:20px; font-size:12px; border-radius:3px;
+    background:rgba(10,15,30,0.85); border:1px solid rgba(255,255,255,0.22);
+    color:#ffffff; font-family:monospace; display:flex; align-items:center; justify-content:center;
+    padding:0; cursor:pointer; transition:all 0.15s ease;
+  }
+  .attr-stat .ctrl .btn-tiny:hover:not(:disabled) {
+    background:rgba(80,180,255,0.2); border-color:rgba(80,180,255,0.65);
+    box-shadow:0 0 6px rgba(80,180,255,0.3);
+  }
+  .attr-stat .ctrl .btn-tiny:disabled { opacity:.2; cursor:not-allowed; }
   .attr-edit-input {
     font-family:'Share Tech Mono',monospace; font-size:11px;
-    width:36px; text-align:center;
+    width:32px; text-align:center;
     background:rgba(4,10,28,.98); border:1px solid rgba(120,200,255,.7);
-    border-radius:2px; color:#a5e7ff; outline:none; padding:1px 2px;
-    box-shadow:0 0 8px rgba(80,180,255,.3);
+    border-radius:2px; color:#a5e7ff; outline:none; padding:1px 1px;
+    box-shadow:0 0 6px rgba(80,180,255,.3);
   }
 
   /* SELECTED SKILL PANEL */
@@ -752,12 +789,19 @@
   .ctr-frag-fill { background:linear-gradient(90deg,rgba(100,60,200,.6),#c4b5fd); }
 
   /* TOOLTIP */
+  @keyframes popTooltip {
+    0% { opacity: 0; transform: scale(0.85) translateY(5px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
   #skill-tooltip {
+    animation: popTooltip 0.15s ease-out forwards;
     display:none; position:fixed; z-index:100; pointer-events:none;
     background:rgba(4,9,22,.98); border:1px solid rgba(80,140,220,.45);
     border-radius:6px; padding:13px 15px; min-width:210px; max-width:260px;
-    left:0; top:0;
-    will-change: transform;
+    will-change: left, top;
+  }
+  #bp-tip {
+    animation: popTooltip 0.15s ease-out forwards;
   }
   .tt-name { font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:#e2e8f0; margin-bottom:2px; letter-spacing:.04em; }
   .tt-level { font-family:'Exo 2',sans-serif; font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px; }
@@ -790,18 +834,41 @@
   .essence-panel .corner.bl { bottom:-1px; left:-1px; border-bottom:2px solid; border-left:2px solid; }
   .essence-panel .corner.br { bottom:-1px; right:-1px; border-bottom:2px solid; border-right:2px solid; }
   .essence-header {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px;
+    display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 7px;
   }
+  /* Make charms panel sit above other HUD panels to avoid being overlapped */
+  #charms-panel { z-index: 60; }
   .essence-title {
     font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700;
     letter-spacing: .22em; text-transform: uppercase; color: #a5e7ff;
+    white-space: normal; line-height: 1.2; flex: 1; padding-right: 4px;
   }
   .essence-counter {
     font-family: 'Exo 2', sans-serif; font-size: 12px; font-weight: 800;
     color: #67e8f9; letter-spacing: .1em;
     -webkit-font-smoothing: antialiased;
+    white-space: nowrap; flex-shrink: 0;
   }
   .essence-slots { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+  /* Charms slots layout: show icons side-by-side */
+  .charms-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; justify-items: center; margin-bottom: 4px; padding: 4px; }
+  .charm-slot { width:100%; min-width:0; height:105px; display:flex; flex-direction:column; align-items:center; position:relative; cursor:pointer; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); user-select: none; }
+  .charm-slot:hover { transform: scale(1.05); }
+  .charm-icon { width:44px; height:44px; border-radius:50%; background:#071826; border:1px solid rgba(255,255,255,0.04); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:13px; }
+  .charm-icon.empty { background:transparent; border:1px dashed rgba(148,163,184,0.12); color:rgba(148,163,184,0.45); font-size: 24px; font-weight: 400; }
+  .charm-slot-title { width:100%; font-size:11px; font-weight:800; margin-top:8px; color:#e2e8f0; text-align:center; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-overflow:ellipsis; white-space:normal; }
+  .charm-slot-tier { font-size:10px; color:rgba(255,180,100,0.95); margin-top:2px; }
+  .charms-unlock-msg { margin-top:6px; font-size:11px; color:rgba(255,210,120,0.95); }
+
+  /* Charm tooltip */
+  #charm-tooltip { display:none; position:fixed; z-index:260; pointer-events:none; background: rgba(6,14,31,.98); border:1px solid rgba(80,140,220,.35); border-radius:6px; padding:10px; width:300px; box-shadow:0 8px 32px rgba(0,0,0,.7); animation: popTooltip 0.15s ease-out forwards; }
+  #charm-tooltip .charm-tooltip-title { font-family:'Cinzel',serif; font-size:13px; font-weight:700; letter-spacing:.12em; color:#ffb86b; margin-bottom:6px; }
+  #charm-tooltip .charm-tooltip-tier { font-family:'Cinzel',serif; font-size:11px; font-weight:700; color:#ffd; margin-bottom:6px; }
+  #charm-tooltip .charm-tooltip-desc { font-size:12px; color:#cbd5e1; margin-bottom:8px; font-style: italic; }
+  #charm-tooltip[data-tier="Tier 1"] .charm-tooltip-title, #charm-tooltip[data-tier="Tier 1"] .charm-tooltip-tier { color: #62666B; }
+  #charm-tooltip[data-tier="Tier 2"] .charm-tooltip-title, #charm-tooltip[data-tier="Tier 2"] .charm-tooltip-tier { color: #D3F9AA; }
+  #charm-tooltip[data-tier="Tier 3"] .charm-tooltip-title, #charm-tooltip[data-tier="Tier 3"] .charm-tooltip-tier { color: #F78B59; }
+  #charm-tooltip[data-tier="Tier 4"] .charm-tooltip-title, #charm-tooltip[data-tier="Tier 4"] .charm-tooltip-tier { color: #FE1888; }
   .essence-chip {
     display: flex; flex-direction: column; gap: 4px; padding: 7px 10px;
     background: rgba(34,150,220,.1); border: 1px solid rgba(80,140,220,.3);
@@ -870,11 +937,27 @@
   .essence-dropdown::-webkit-scrollbar { width: 3px; }
   .essence-dropdown::-webkit-scrollbar-thumb { background: rgba(80,140,220,.3); border-radius: 2px; }
   .essence-dropdown.hidden { display: none; }
+  /* Dropdowns: prefer showing to the left of the panel on desktop to avoid overlap */
+  @media (min-width: 720px) {
+    #charms-dropdown, #essence-dropdown {
+      left: auto !important;
+      right: calc(100% + 8px) !important;
+      top: 0 !important;
+      width: 320px;
+      z-index: 120;
+    }
+  }
+  .essence-remove-btn {
+    background: transparent; border: none; color: rgba(255,255,255,0.9); cursor: pointer;
+    font-size: 14px; padding: 2px 6px; border-radius: 3px; transition: background .12s ease;
+  }
+  .essence-remove-btn:hover { background: rgba(255,255,255,0.04); color: #fff; }
   .essence-drop-header {
     padding: 7px 11px 5px; border-bottom: 1px solid rgba(80,140,220,.12);
     font-family: 'Exo 2', sans-serif; font-size: 9px; font-weight: 800; letter-spacing: .28em;
     text-transform: uppercase; color: rgba(165,231,255,.4);
     display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10; background: #060c1c;
   }
   .essence-drop-close {
     background: none; border: none; color: rgba(148,163,184,.4); cursor: pointer;
@@ -1132,7 +1215,7 @@
     /* Widths: scale with vw so panels shrink as window narrows */
     .hud-tl { width: clamp(220px, 22vw, 320px); }
     .hud-tr { width: clamp(200px, 20vw, 290px); }
-    .hud-bl { width: clamp(200px, 21vw, 300px); }
+    .hud-bl { width: 380px; }
     .hud-br { width: clamp(220px, 22vw, 320px); }
   }
   /* Tighten spacing as viewport width drops */
@@ -1143,7 +1226,6 @@
     .stat-row .name { font-size: 12px; }
     .stat-row .val  { font-size: 12px; }
     .btn-tiny   { width: 20px; height: 20px; font-size: 11px; }
-    .attr-stat .ctrl .val { font-size: 10px; }
   }
   @media (max-width: 920px) and (min-width: 769px) {
     .level-num  { font-size: 24px; }
@@ -1154,9 +1236,6 @@
     .stat-row .name { font-size: 11px; }
     .stat-row .val  { font-size: 11px; width: 26px; }
     .btn-tiny   { width: 18px; height: 18px; font-size: 10px; }
-    .attr-stat .name { font-size: 9px; }
-    .attr-stat .ctrl .val { font-size: 9px; width: 22px; }
-    .attr-stat .ctrl { padding: 2px 3px; }
     .hint-strip { display: none; }
   }
 
@@ -1217,9 +1296,9 @@
     .hud-tl, .hud-tr, .hud-bl, .hud-br {
       transition: transform 0.22s ease, opacity 0.22s ease;
     }
-    .hud-tl { width: 200px; }
-    .hud-tr { width: 190px; }
-    .hud-bl { width: 200px; }
+    .hud-tl { width: 200px; top: 60px; }
+    .hud-tr { width: 190px; top: 60px; }
+    .hud-bl { width: 360px; }
     .hud-br { width: 200px; }
     .hud-tl.mob-hidden { transform: translate(-110%, 0); opacity: 0; pointer-events: none; }
     .hud-tr.mob-hidden { transform: translate(110%, 0);  opacity: 0; pointer-events: none; }
@@ -1233,7 +1312,9 @@
     .stat-row .name { font-size: 11px; }
     .stat-row .val  { font-size: 11px; }
     .race-badge { font-size: 9px; padding: 5px 10px; margin-bottom: 6px; }
-    .attr-stat .name { font-size: 8px; }
+    .diamond-wrap { width: 58%; margin: 36px auto; }
+    .attr-stat .name { font-size: 12px; font-weight: 400 !important; }
+    .attr-stat .val { font-size: 11px; }
     .hint-strip { display: none; }
     .panel { padding: 8px 10px; }
     .sk-name  { font-size: 13px; }
@@ -1281,7 +1362,7 @@
   @media (min-width: 481px) and (max-width: 768px) {
     .hud-tl { width: 240px; }
     .hud-tr { width: 220px; }
-    .hud-bl { width: 240px; }
+    .hud-bl { width: 360px; }
     .hud-br { width: 240px; }
   }
 
@@ -1310,6 +1391,51 @@
   .mob-panel-toggle.br { bottom: 12px; right: 18px; }
   .mob-panel-toggle.active { background: rgba(80,140,220,0.25); border-color: rgba(110,210,255,0.7); color: #67e8f9; }
 
+  /* --- Panel Minimize --- */
+  .min-btn {
+    background: transparent; border: none; color: rgba(255,255,255,0.4);
+    font-size: 16px; line-height: 1; cursor: pointer; padding: 0 4px;
+    transition: color 0.2s ease; outline: none;
+    font-family: monospace;
+  }
+  .min-btn:hover { color: #fff; }
+  .panel-content-wrap {
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+    max-height: 1000px;
+    opacity: 1;
+    overflow: hidden;
+  }
+  .panel.minimized .panel-content-wrap {
+    max-height: 0 !important; opacity: 0 !important; margin: 0 !important; padding: 0 !important;
+  }
+  .essence-panel.minimized .panel-content-wrap {
+    max-height: 0 !important; opacity: 0 !important; margin: 0 !important; padding: 0 !important;
+  }
+
+  /* Charm specific styles */
+  .charm-buff { color: #00fa9a; font-size: 11px; margin-top: 3px; font-family: 'Exo 2', sans-serif; }
+  .charm-nerf { color: #ff4c4c; font-size: 11px; margin-top: 3px; font-family: 'Exo 2', sans-serif; }
+  .charm-buff b, .charm-nerf b { font-weight:700; }
+  .charm-title { font-family:'Cinzel',serif; font-size:13px; font-weight:700; letter-spacing:.12em; color:#ffb86b; margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-overflow:ellipsis; white-space:normal; }
+  .charm-tier { font-family:'Cinzel',serif; font-size:11px; font-weight:700; color:#ffd; margin-bottom:6px; }
+  .charm-desc { font-size:12px; color:#cbd5e1; margin-bottom:8px; font-style: italic; }
+  .charm-chip { padding: 8px 10px; background: rgba(255,140,0,.08); border: 1px solid rgba(255,140,0,.3); border-radius: 3px; margin-bottom:4px; }
+  .charm-drop-item { padding: 8px 10px; border-bottom: 1px solid rgba(255,140,0,.2); cursor: pointer; transition: background 0.15s; }
+  .charm-drop-item:hover { background: rgba(255,140,0,.15); }
+  .charm-drop-item[data-tier="Tier 1"] .charm-title, .charm-drop-item[data-tier="Tier 1"] .charm-tier { color: #62666B; }
+  .charm-drop-item[data-tier="Tier 1"]:hover { background: rgba(98, 102, 107, 0.15); }
+  .charm-drop-item[data-tier="Tier 2"] .charm-title, .charm-drop-item[data-tier="Tier 2"] .charm-tier { color: #D3F9AA; }
+  .charm-drop-item[data-tier="Tier 2"]:hover { background: rgba(211, 249, 170, 0.15); }
+  .charm-drop-item[data-tier="Tier 3"] .charm-title, .charm-drop-item[data-tier="Tier 3"] .charm-tier { color: #F78B59; }
+  .charm-drop-item[data-tier="Tier 3"]:hover { background: rgba(247, 139, 89, 0.15); }
+  .charm-drop-item[data-tier="Tier 4"] .charm-title, .charm-drop-item[data-tier="Tier 4"] .charm-tier { color: #FE1888; }
+  .charm-drop-item[data-tier="Tier 4"]:hover { background: rgba(254, 24, 136, 0.15); }
+  .charm-tier-header { background: rgba(255,140,0,0.15); color: #ffb86b; padding: 6px 10px; font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,140,0,0.3); }
+  .charm-tier-header:hover { background: rgba(255,140,0,0.25); }
+  .charm-tier-content { max-height: 250px; overflow-y: auto; }
+  .charm-tier-content::-webkit-scrollbar { width: 3px; }
+  .charm-tier-content::-webkit-scrollbar-thumb { background: rgba(255,140,0,.3); border-radius: 2px; }
+  #charms-dropdown { max-height: none !important; }
 </style>
 </head>
 <body>
@@ -1390,6 +1516,10 @@
     <div class="rs-credits-badge">
       <div class="rs-credits-line">VV Builder built by</div>
       <div class="rs-credits-names">Bryceexi &amp; Zentubaa</div>
+      <div class="rs-credits-contrib" style="font-family:'Exo 2',sans-serif; font-size:8px; font-weight:800; letter-spacing:.25em; text-transform:uppercase; color:rgba(120,160,220,0.55); margin-top:2px; display:flex; align-items:center; gap:4px;">
+        <span>Contributor:</span>
+        <span style="color:#50c8ff; font-family:'Cinzel',serif; font-weight:700; letter-spacing:.1em;">GerlachSG</span>
+      </div>
     </div>
   </div>
 </div>
@@ -1448,12 +1578,17 @@
       <span class="corner bl"></span><span class="corner br"></span>
       <div class="bp-row-top">
         <h3 class="panel-title">Build Points</h3>
-        <div class="bp-counter"><b id="bp-remaining">400</b><span> / 400</span></div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="bp-counter"><b id="bp-remaining">400</b><span> / 400</span></div>
+          <button class="min-btn" onclick="toggleMinimize(this.closest('.panel'))">−</button>
+        </div>
       </div>
-      <div class="panel-sub">Distribute</div>
-      <div class="bp-bar"><div class="fill" id="bp-fill" style="width:0%"></div><div class="ticks"></div></div>
-      <div id="bp-stats"></div>
-      <div class="panel-foot" style="display:none"></div>
+      <div class="panel-content-wrap">
+        <div class="panel-sub">Distribute</div>
+        <div class="bp-bar"><div class="fill" id="bp-fill" style="width:0%"></div><div class="ticks"></div></div>
+        <div id="bp-stats"></div>
+        <div class="panel-foot" style="display:none"></div>
+      </div>
     </div>
     <!-- HINT STRIP -->
     <div class="hint-strip">
@@ -1476,16 +1611,46 @@
     <div class="essence-panel" id="essence-panel">
       <div class="essence-header">
         <span class="essence-title">Skill Essence</span>
-        <span class="essence-counter" id="essence-counter">0 / 2</span>
-      </div>
-      <div class="essence-slots" id="essence-slots"></div>
-      <button class="essence-add-btn" id="essence-add-btn">+ Choose Essence</button>
-      <div class="essence-dropdown hidden" id="essence-dropdown">
-        <div class="essence-drop-header">
-          Choose an Essence
-          <button class="essence-drop-close" id="essence-drop-close">✕</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="essence-counter" id="essence-counter">0 / 2</span>
+          <button class="min-btn" onclick="toggleMinimize(this.closest('.essence-panel'))">−</button>
         </div>
-        <div id="essence-list"></div>
+      </div>
+      <div class="panel-content-wrap">
+        <div class="essence-slots" id="essence-slots"></div>
+        <button class="essence-add-btn" id="essence-add-btn">+ Choose Essence</button>
+        <div class="essence-dropdown hidden" id="essence-dropdown">
+          <div class="essence-drop-header">
+            Choose an Essence
+            <button class="essence-drop-close" id="essence-drop-close">✕</button>
+          </div>
+          <div id="essence-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spirit Charms -->
+    <div class="essence-panel charms-panel" id="charms-panel">
+      <div class="essence-header">
+        <span class="essence-title" style="color: #ff8c00;">Spirit Charms</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="essence-counter" id="charms-counter" style="color: #ff8c00;">0 / 3</span>
+          <button class="min-btn" onclick="toggleMinimize(this.closest('.essence-panel'))">−</button>
+        </div>
+      </div>
+      <div class="panel-content-wrap">
+        <div class="essence-slots charms-slots" id="charms-slots"></div>
+
+        <div class="essence-dropdown hidden" id="charms-dropdown" style="border-color: rgba(255,140,0,0.5);">
+          <div class="essence-drop-header" style="border-bottom-color: rgba(255,140,0,0.3); flex-wrap: wrap; gap: 6px;">
+            <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+              <span>Equip a Charm</span>
+              <button class="essence-drop-close" id="charms-drop-close">✕</button>
+            </div>
+            <input type="text" id="charms-search" placeholder="Search charms..." style="width:100%; background:rgba(0,0,0,.4); border:1px solid rgba(255,140,0,.3); color:#fff; font-size:11px; padding:4px 6px; border-radius:3px; outline:none; margin-bottom:4px; font-family:'Exo 2',sans-serif;">
+          </div>
+          <div id="charms-list"></div>
+        </div>
       </div>
     </div>
 
@@ -1514,13 +1679,17 @@
     <div class="panel violet">
       <span class="corner tl"></span><span class="corner tr"></span>
       <span class="corner bl"></span><span class="corner br"></span>
-      <div class="attr-panel-head">
+      <div class="attr-panel-head" style="display:flex; justify-content:space-between; align-items:center;">
         <h3 class="panel-title">Attributes</h3>
-        <div class="bp-counter"><b id="ap-remaining" style="color:#e2e8f0">400</b><span> / 400</span></div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="bp-counter"><b id="ap-remaining" style="color:#e2e8f0">400</b><span> / 400</span></div>
+          <button class="min-btn" onclick="toggleMinimize(this.closest('.panel'))">−</button>
+        </div>
       </div>
-      <div class="panel-sub" style="color:rgba(220,225,240,.5)">Allocate</div>
-      <div class="diamond-wrap">
-        <svg viewBox="0 0 200 200">
+      <div class="panel-content-wrap">
+        <div class="panel-sub" style="color:rgba(220,225,240,.5)">Allocate</div>
+        <div class="diamond-wrap">
+          <svg viewBox="0 0 200 200">
           <defs>
             <linearGradient id="dGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stop-color="rgba(255,255,255,0.5)"></stop>
@@ -1532,23 +1701,33 @@
               <stop offset="100%" stop-color="rgba(8,12,25,0.98)"></stop>
             </linearGradient>
           </defs>
-          <polygon points="100,18 182,100 100,182 18,100" fill="url(#dFill)" stroke="url(#dGrad)" stroke-width="1.5"></polygon>
-          <polygon points="100,42 158,100 100,158 42,100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="3 4"></polygon>
-          <line x1="100" y1="18" x2="100" y2="182" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"></line>
-          <line x1="18" y1="100" x2="182" y2="100" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"></line>
-          <polygon id="attr-poly" points="100,82 118,100 100,118 82,100" fill="rgba(80,180,255,0.5)" stroke="rgba(150,210,255,0.8)" stroke-width="1.5"></polygon>
+          <polygon points="100,10 190,100 100,190 10,100" fill="url(#dFill)" stroke="url(#dGrad)" stroke-width="1.5"></polygon>
+          <polygon points="100,65 135,100 100,135 65,100" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="2 3"></polygon>
+          <polygon points="100,35 165,100 100,165 35,100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="3 4"></polygon>
+          <line x1="100" y1="10" x2="100" y2="190" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"></line>
+          <line x1="10" y1="100" x2="190" y2="100" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"></line>
+          <polygon id="attr-poly" points="100,88 112,100 100,112 88,100" fill="rgba(80,180,255,0.5)" stroke="rgba(150,210,255,0.8)" stroke-width="1.5"></polygon>
         </svg>
         <div id="attr-stats"></div>
+      </div>
       </div>
     </div>
   </div>
 
   <!-- BR: Selected Skill -->
   <div class="hud hud-br">
-    <div class="panel slate" id="sel-panel">
+    <div class="panel slate" id="sel-panel" style="position:relative;">
       <span class="corner tl"></span><span class="corner tr"></span>
       <span class="corner bl"></span><span class="corner br"></span>
-      <div id="sel-content"><div class="sel-empty"><div class="head">No Skill Selected</div><div class="sub">Click a node in the skill tree</div></div></div>
+      <div class="bp-row-top" style="align-items:center;">
+        <h3 class="panel-title" id="sel-panel-title" title="Selected Skill">Skills</h3>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="min-btn" onclick="toggleMinimize(this.closest('.panel'))" style="z-index:10;">−</button>
+        </div>
+      </div>
+      <div class="panel-content-wrap" style="padding-top:14px;">
+        <div id="sel-content"><div class="sel-empty"><div class="head">No Skill Selected</div><div class="sub">Click a node in the skill tree</div></div></div>
+      </div>
     </div>
   </div>
 
@@ -1595,7 +1774,7 @@
   </div>
 
   <div id="skill-tooltip" style="display:none;"></div>
-  <div id="bp-tip" style="display:none;position:fixed;left:0;top:0;z-index:999;pointer-events:none;width:200px;background:rgba(6,14,31,.97);border:1px solid rgba(80,210,255,.35);border-radius:3px;padding:6px 9px;box-shadow:0 4px 16px rgba(0,0,0,.5);will-change:transform;">
+  <div id="bp-tip" style="display:none;position:fixed;z-index:999;pointer-events:none;width:200px;background:rgba(6,14,31,.97);border:1px solid rgba(80,210,255,.35);border-radius:3px;padding:6px 9px;box-shadow:0 4px 16px rgba(0,0,0,.5);will-change:left,top;">
     <div id="bp-tip-name" style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-bottom:3px;"></div>
     <div id="bp-tip-desc" style="font-family:'Exo 2',sans-serif;font-size:11px;font-weight:500;color:rgba(180,205,235,.85);line-height:1.5;"></div>
   </div>
@@ -2338,7 +2517,8 @@ function positionTooltip(cx, cy) {
   let tx = cx + 16, ty = cy + 16;
   if (tx + _ttW > window.innerWidth  - 8) tx = cx - _ttW - 12;
   if (ty + _ttH > window.innerHeight - 8) ty = cy - _ttH - 12;
-  tooltip.style.transform = 'translate3d('+tx+'px,'+ty+'px,0)';
+  tooltip.style.left = tx + 'px';
+  tooltip.style.top = ty + 'px';
 }
 
 function updateTooltipContent(skillId) {
@@ -2547,6 +2727,8 @@ document.addEventListener('DOMContentLoaded', () => {});
     e.stopPropagation();
     if (addBtn.disabled) return;
     dd.classList.toggle('hidden');
+    const charmsDrop = document.getElementById('charms-dropdown');
+    if (charmsDrop) charmsDrop.classList.add('hidden');
     renderEssencePanel();
   });
   if (closeBtn) closeBtn.addEventListener('click', e => { e.stopPropagation(); closeEssenceDropdown(); });
@@ -2596,7 +2778,8 @@ function _showBpTip(e, stat) {
 function _applyBpTipPos() {
   const tx = Math.min(_bpTipX + 14, window.innerWidth - _BTP_W - 8);
   const ty = _bpTipY + _BTP_H + 18 > window.innerHeight ? _bpTipY - _BTP_H - 8 : _bpTipY + 14;
-  _bpTip.style.transform = 'translate3d('+tx+'px,'+ty+'px,0)';
+  _bpTip.style.left = tx + 'px';
+  _bpTip.style.top = ty + 'px';
 }
 function _moveBpTip(e) {
   _bpTipX = e.clientX; _bpTipY = e.clientY;
@@ -2643,13 +2826,15 @@ function ensureAPRows() {
   ATTRIBUTES.forEach(attr => {
     const wrap = document.createElement('div');
     wrap.className = 'attr-stat ' + attr.pos;
+    
     wrap.innerHTML =
-      '<div class="name" id="aps-nm-'+attr.id+'">'+attr.name+'</div>' +
+      '<span class="name" id="aps-nm-'+attr.id+'">'+attr.name+'</span>' +
       '<div class="ctrl">' +
         '<button class="btn-tiny violet" data-act="ap-" data-id="'+attr.id+'">−</button>' +
         '<span class="val" id="aps-vl-'+attr.id+'" title="Click to type a value">0</span>' +
         '<button class="btn-tiny violet" data-act="ap+" data-id="'+attr.id+'">+</button>' +
       '</div>';
+      
     elAttrStats.appendChild(wrap);
     const cache = {
       nm: wrap.querySelector('#aps-nm-'+attr.id),
@@ -2664,11 +2849,41 @@ function ensureAPRows() {
 }
 
 /* ===================== RENDER ===================== */
+function updateBPSegments() {
+  if (!elBpFill) return;
+  const used = usedBP();
+  if (!used) {
+    elBpFill.style.background = 'linear-gradient(90deg,#06b6d4,#22d3ee,#67e8f9)';
+    return;
+  }
+  const parts = [];
+  BUILD_STATS.forEach(stat => {
+    const v = state.buildStats[stat.id] || 0;
+    if (v > 0) parts.push({ color: stat.accent || '#67e8f9', value: v });
+  });
+  if (parts.length === 0) {
+    elBpFill.style.background = 'linear-gradient(90deg,#06b6d4,#22d3ee,#67e8f9)';
+    return;
+  }
+  let acc = 0;
+  const stops = [];
+  parts.forEach(p => {
+    const pct = (p.value / used) * 100;
+    const start = acc;
+    const end = acc + pct;
+    stops.push(p.color + ' ' + start + '%');
+    stops.push(p.color + ' ' + end + '%');
+    acc = end;
+  });
+  elBpFill.style.background = 'linear-gradient(90deg,' + stops.join(', ') + ')';
+}
+
 function render() {
   ensureBPRows();
   const usedB = usedBP(), remB = TOTAL_BUILD_POINTS - usedB;
   elBpRemaining.textContent = remB;
   elBpFill.style.width = (usedB / TOTAL_BUILD_POINTS * 100) + '%';
+  updateBPSegments();
   BUILD_STATS.forEach(stat => {
     const v = state.buildStats[stat.id];
     const c = _bpRowCache[stat.id];
@@ -2697,6 +2912,23 @@ function render() {
     c.dec.disabled = (v === 0);
     c.inc.disabled = (remA === 0);
   });
+
+  // Update Attributes SVG Polygon dynamically (Xenoverse-style)
+  const v_speed = state.attrStats['speed'] || 0;
+  const v_kido = state.attrStats['kido'] || 0;
+  const v_hakuda = state.attrStats['hakuda'] || 0;
+  const v_strength = state.attrStats['strength'] || 0;
+
+  const r_speed = 12 + (62 - 12) * (v_speed / 400);
+  const r_kido = 12 + (62 - 12) * (v_kido / 400);
+  const r_hakuda = 12 + (62 - 12) * (v_hakuda / 400);
+  const r_strength = 12 + (62 - 12) * (v_strength / 400);
+
+  const polyPoints = `100,${100 - r_speed} ${100 + r_kido},100 100,${100 + r_hakuda} ${100 - r_strength},100`;
+  const attrPoly = document.getElementById('attr-poly');
+  if (attrPoly) {
+    attrPoly.setAttribute('points', polyPoints);
+  }
 
   elFragNum.textContent = state.fragments;
   const _ctrSpNum = document.getElementById('ctr-sp-num');
@@ -2776,17 +3008,109 @@ function render() {
   renderSelected();
 }
 
-/* Delegated click — attached once */
 (function initDelegation() {
-  document.addEventListener('click', e => {
+  // All button actions (bp+, bp-, ap+, ap-) are fully managed by the accelerating hold-to-adjust
+  // handlers below on mousedown and touchstart. This avoids double-firing on tap/click.
+
+  let holdTimer = null;
+  let holdCount = 0;
+  let activeAct = null;
+  let activeId = null;
+
+  function stopHold() {
+    if (holdTimer) {
+      clearTimeout(holdTimer);
+      holdTimer = null;
+    }
+    activeAct = null;
+    activeId = null;
+    holdCount = 0;
+  }
+
+  function startHold(act, id) {
+    stopHold();
+    activeAct = act;
+    activeId = id;
+    holdCount = 1;
+    
+    if (activeAct === 'bp+') {
+      adjustBP(activeId, +1, 1);
+    } else if (activeAct === 'bp-') {
+      adjustBP(activeId, -1, 1);
+    } else if (activeAct === 'ap+') {
+      adjustAP(activeId, +1, 1);
+    } else if (activeAct === 'ap-') {
+      adjustAP(activeId, -1, 1);
+    }
+    
+    scheduleNextHoldTick();
+  }
+
+  function scheduleNextHoldTick() {
+    if (!activeAct || !activeId) return;
+    
+    let delay = 250 - (holdCount - 1) * 25;
+    if (delay < 25) delay = 25;
+    
+    holdTimer = setTimeout(() => {
+      if (!activeAct || !activeId) return;
+      
+      let changed = false;
+      if (activeAct === 'bp+') {
+        if (remainingBP() > 0) {
+          adjustBP(activeId, +1, 1);
+          changed = true;
+        }
+      } else if (activeAct === 'bp-') {
+        if ((state.buildStats[activeId] || 0) > 0) {
+          adjustBP(activeId, -1, 1);
+          changed = true;
+        }
+      } else if (activeAct === 'ap+') {
+        if (remainingAP() > 0) {
+          adjustAP(activeId, +1, 1);
+          changed = true;
+        }
+      } else if (activeAct === 'ap-') {
+        if ((state.attrStats[activeId] || 0) > 0) {
+          adjustAP(activeId, -1, 1);
+          changed = true;
+        }
+      }
+      
+      if (changed) {
+        holdCount++;
+        scheduleNextHoldTick();
+      } else {
+        stopHold();
+      }
+    }, delay);
+  }
+
+  document.addEventListener('mousedown', e => {
     const b = e.target.closest('[data-act]');
     if (!b) return;
-    const act = b.dataset.act, id = b.dataset.id;
-    if      (act === 'bp+') adjustBP(id, +1, 1);
-    else if (act === 'bp-') adjustBP(id, -1, 1);
-    else if (act === 'ap+') adjustAP(id, +1, 1);
-    else if (act === 'ap-') adjustAP(id, -1, 1);
+    const act = b.dataset.act;
+    if (act === 'bp+' || act === 'ap+' || act === 'bp-' || act === 'ap-') {
+      if (e.button !== 0) return;
+      startHold(act, b.dataset.id);
+    }
   });
+
+  document.addEventListener('touchstart', e => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const act = b.dataset.act;
+    if (act === 'bp+' || act === 'ap+' || act === 'bp-' || act === 'ap-') {
+      e.preventDefault();
+      startHold(act, b.dataset.id);
+    }
+  }, { passive: false });
+
+  document.addEventListener('mouseup', () => stopHold());
+  document.addEventListener('mouseleave', () => stopHold());
+  document.addEventListener('touchend', () => stopHold());
+  document.addEventListener('touchcancel', () => stopHold());
 })();
 
 function renderSelected() {
@@ -2802,6 +3126,7 @@ function renderSelected() {
   }
   const skill = getSkill(state.selectedId);
   if (!skill) { panel.classList.add('slate'); host.innerHTML=''; return; }
+  
   const spoke   = SPOKES.find(s => s.id === skill.spokeId);
   const isMaxed = skill.level >= MAX_SKILL_LEVEL;
   const avail   = isAvailable(skill);
@@ -3082,6 +3407,9 @@ function reset() {
   state=makeState();
   Object.keys(_nodeStateCache).forEach(k=>delete _nodeStateCache[k]);
   Object.keys(_lineStateCache).forEach(k=>delete _lineStateCache[k]);
+  equippedCharms = [];
+  squad12Unlocked = false;
+  renderEquippedCharms();
   render();
 }
 
@@ -3162,6 +3490,9 @@ function applyTrunkOverrides() {
 function selectRace(race) {
   currentRace = race;
   buildSpokes(race);
+  equippedCharms = [];
+  squad12Unlocked = false;
+  renderEquippedCharms();
   state = makeState();
   Object.keys(_nodeStateCache).forEach(k=>delete _nodeStateCache[k]);
   Object.keys(_lineStateCache).forEach(k=>delete _lineStateCache[k]);
@@ -3277,18 +3608,24 @@ viewport.addEventListener('wheel', e => {
   e.preventDefault();
   const factor = e.deltaY > 0 ? 0.92 : 1.08;
   const rect = viewport.getBoundingClientRect();
-  _pendingWheel = { factor, mx: e.clientX - rect.left, my: e.clientY - rect.top };
+  _pendingWheel = { factor, mx: e.clientX - rect.left, my: e.clientY - rect.top, cx: e.clientX, cy: e.clientY };
   if (!_wheelRaf) {
     _wheelRaf = true;
     requestAnimationFrame(() => {
       if (_pendingWheel) {
-        const { factor: f, mx, my } = _pendingWheel; _pendingWheel = null;
+        const { factor: f, mx, my, cx, cy } = _pendingWheel; _pendingWheel = null;
         const newScale = Math.min(2.0, Math.max(0.15, scale * f));
         pan.x = mx - (mx - pan.x) * (newScale / scale);
         pan.y = my - (my - pan.y) * (newScale / scale);
         scale = newScale;
         pan = clampPan(pan.x, pan.y, scale);
         applyTransform();
+        if (isPanning) {
+          panOrigin.x = pan.x;
+          panOrigin.y = pan.y;
+          mouseOrigin.x = cx;
+          mouseOrigin.y = cy;
+        }
       }
       _wheelRaf = false;
     });
@@ -3546,6 +3883,8 @@ function encodeBuild() {
     sp: state.skillPoints,
     fg: state.fragments,
     st: state.soulTokens,
+    ch: equippedCharms.map(c => c.id),
+    s12: squad12Unlocked ? 1 : 0
   };
 
   const json = JSON.stringify(data);
@@ -3611,6 +3950,16 @@ function applyBuildData(data) {
   // Restore essences
   state.essences      = Array.isArray(data.es) ? data.es.slice() : [];
   state.essenceLevels = typeof data.el === 'object' && data.el ? Object.assign({}, data.el) : {};
+
+  // Restore charms
+  if (Array.isArray(data.ch)) {
+    data.ch.forEach(id => {
+      const charm = SPIRIT_CHARMS.find(c => c.id === id);
+      if (charm) equippedCharms.push(charm);
+    });
+  }
+  squad12Unlocked = !!data.s12;
+  renderEquippedCharms();
 
   return true;
 }
@@ -3787,6 +4136,9 @@ function _applyLoadedBuild(vvCode) {
   const loadEl = document.getElementById('tree-loading');
   currentRace = data.r;
   buildSpokes(data.r);
+  equippedCharms = [];
+  squad12Unlocked = false;
+  renderEquippedCharms();
   state = makeState();
   Object.keys(_nodeStateCache).forEach(k=>delete _nodeStateCache[k]);
   Object.keys(_lineStateCache).forEach(k=>delete _lineStateCache[k]);
@@ -4018,6 +4370,800 @@ function _handleDoubleTap(nodeId) {
     }
   }, { passive: true });
 })();
+
+/* ===================== UI MINIMIZE ===================== */
+function toggleMinimize(panel) {
+  panel.classList.toggle('minimized');
+  const btn = panel.querySelector('.min-btn');
+  if (btn) {
+    btn.textContent = panel.classList.contains('minimized') ? '+' : '−';
+  }
+}
+
+// Allow clicking anywhere on a minimized panel to restore it (except the min button)
+document.addEventListener('click', function(e) {
+  const panel = e.target.closest('.panel.minimized, .essence-panel.minimized');
+  if (!panel) return;
+  if (e.target.closest('.min-btn')) return;
+  // ignore clicks on header elements here — header has its own toggle handler
+  if (e.target.closest('.bp-row-top, .attr-panel-head, .essence-header')) return;
+  toggleMinimize(panel);
+});
+
+// Header click toggles minimize/maximize for main HUD panels (ignores clicks on interactive controls)
+document.addEventListener('click', function(e) {
+  const header = e.target.closest('.hud .bp-row-top, .hud .attr-panel-head, .hud .essence-header');
+  if (!header) return;
+  if (e.target.closest('button, a, input')) return;
+  const panel = header.closest('.panel, .essence-panel');
+  if (!panel) return;
+  toggleMinimize(panel);
+});
+
+/* ===================== SPIRIT CHARMS ===================== */
+const SPIRIT_CHARMS = [
+
+// Tier 4
+{
+  id: 'charm_a_song_of_fire_and_thunder',
+  title: 'A Song of Fire and Thunder',
+  tier: 'Tier 4',
+  desc: 'I AM FIRE. I AM LIGHTNING. I AM FLAME GIVEN FORM!',
+  buffs: [
+    'When above 1.25x AP, your melee attacks are imbued in flame, dealing more damage. If below 25% max hp, your high-damaging melee attacks have a chance to inflict scorch (10s CD)',
+    'When above 1.2x AP, your kido attacks are inflict thunder, dealing more stun. If below 25% max hp, your high-damaging kido attacks have a chance to inflict electroshock (10s CD)'
+  ],
+  nerfs: []
+},
+
+// Tier 3
+{
+  id: 'charm_adrenaline_junkie',
+  title: 'Adrenaline Junkie',
+  tier: 'Tier 3',
+  desc: 'Thrill-seeking taken to the extreme.',
+  buffs: [
+    'Gain 1% output on hit up to 110% (not including multi hit techniques)',
+    'If you do not get hit/hit an enemy for 30 seconds, automatically return to 100%'
+  ],
+  nerfs: ['Lose 1% output when getting hit, down to 10%']
+},
+{
+  id: 'charm_await_the_opening',
+  title: 'Await the Opening',
+  tier: 'Tier 3',
+  desc: 'Be patient, take every advantage.',
+  buffs: ['Your parries now posture break'],
+  nerfs: ['Your parries are worth 50% as much posture damage']
+},
+{
+  id: 'charm_blazing_spirit',
+  title: 'Blazing Spirit',
+  tier: 'Tier 3',
+  desc: 'An eternal unwavering flame.',
+  buffs: ['Parrying a basic melee attack ignites your blade with spirit flames (5s CD, +10% damage)'],
+  nerfs: ['Basic melee attacks not ignited by flame deal reduced damage (-2% damage)']
+},
+{
+  id: 'charm_blademaster',
+  title: 'Blademaster',
+  tier: 'Tier 3',
+  desc: 'An ancient charm, belonging to a blade master.',
+  buffs: [
+    'Your bladed basic attacks inflict deep gash stacks on your opponent',
+    'Upon reaching 3 deep gash stacks, deal 110% of all of the damage you would have done normally'
+  ],
+  nerfs: ['Your bladed basic attacks deal 90% less damage']
+},
+{
+  id: 'charm_curtain_call',
+  title: 'Curtain Call',
+  tier: 'Tier 3',
+  desc: 'The final curtain drops.',
+  buffs: ['As long as your reiatsu is at 100%, your basic attacks have percent lifesteal'],
+  nerfs: ['You no longer passively regenerate reiatsu']
+},
+{
+  id: 'charm_heavenly_restriction',
+  title: 'Heavenly Restriction',
+  tier: 'Tier 3',
+  desc: "It is recorded amongst seiretei notes that certain shinigami born thousands of years ago... could never utilize techniques... (Does not fully stack with Warrior's Spirit)",
+  buffs: [
+    'Your physical attacks are up to 35% more potent, scaling with level',
+    'You gain up to 15% more movement speed, and up to 25% more kido defense each scaling with level',
+    'Your critical attacks now proc kill confirmed'
+  ],
+  nerfs: ['You cannot use abilities to any capacity']
+},
+{
+  id: 'charm_haze_of_death',
+  title: 'Haze of Death',
+  tier: 'Tier 3',
+  desc: "You're dead after this.",
+  buffs: ['Your critical attack applies Cursed status effect for 7s, increasing the damage your opponent takes by 30% (50s CD)'],
+  nerfs: []
+},
+{
+  id: 'charm_kill_confirmed',
+  title: 'Kill Confirmed',
+  tier: 'Tier 3',
+  desc: 'How many friends did you bring? Doesn\'t matter.',
+  buffs: ['Knocking on opponent will cause them to succumb to your spiritual pressure and cause their head to blow off'],
+  nerfs: ['Blowing their head off will reduce your output by 5% (Scaling with nearby enemies) temporarily']
+},
+{
+  id: 'charm_last_man_standing',
+  title: 'Last Man Standing',
+  tier: 'Tier 3',
+  desc: "JOJO! This is the last of my ham-... That's not the right shonen",
+  buffs: ['If an ally is to be knocked within 90 meters of you, siphon the enemies HP pack and gain a percent of it yourself'],
+  nerfs: ['Your regeneration from all sources is cut in half']
+},
+{
+  id: 'charm_raid_boss',
+  title: 'Raid Boss',
+  tier: 'Tier 3',
+  desc: "You don't feel your wounds then, or the ache in your back from the weight of the armour, or the sweat running down into your eyes. You stop feeling, you stop thinking, you stop being you, there is only the fight, the foe, this man and then the next and the next and the next, and you know they are afraid and tired but you're not, you're alive, and death is all around you but their swords move so slowly, and you can dance through them laughing.",
+  buffs: [
+    'For every nearby enemy gain a stack of battle fever, for every nearby ally lose a stack of battle fever, up to 10 stacks',
+    'For every stack of battle fever gain a 5% incoming defense, and 3% more damage, both increasing up to 3.5 times',
+    'At 3 stacks gain weaker Curtain Call, at 4 stacks become immune to movement slow, at 5 stacks your lifesteal doubles at 30%, finally at 7 stacks your m1s periodically proc Perfect Flash'
+  ],
+  nerfs: ['When your battle fever is empty and allies are nearby take 10% more damage']
+},
+{
+  id: 'charm_shonen_syndrome',
+  title: 'Shonen Syndrome',
+  tier: 'Tier 3',
+  desc: "Hmph. I'm an avenger.",
+  buffs: [
+    'Yell out the move you are about to use',
+    'Upgrades the move by 2 levels (Does not work past level 6)'
+  ],
+  nerfs: ['25 second cooldown between upgrades']
+},
+{
+  id: 'charm_strugglers_spirit',
+  title: "Struggler's Spirit",
+  tier: 'Tier 3',
+  desc: 'Growth is often a lonely road.',
+  buffs: [
+    'Landing three basic attacks when below 25% HP will bolster your strength (75s CD)',
+    'You take 20% less damage when your health is below 25%'
+  ],
+  nerfs: []
+},
+{
+  id: 'charm_soul_snatcher',
+  title: 'Soul Snatcher',
+  tier: 'Tier 3',
+  desc: "I'm mister body catcher",
+  buffs: [
+    'Landing any kido ability on a opponent who is less than 11% HP will activate “Soul Snatcher”',
+    'Enemies with “Soul Snatcher” activated on them will immediately be knocked after a short delay'
+  ],
+  nerfs: []
+},
+{
+  id: 'charm_the_incopable',
+  title: 'The Incopable',
+  tier: 'Tier 3',
+  desc: "They think you're a monster? Prove them right.",
+  buffs: [
+    'Your innate base output is up to 105% depending on level, this goes up to 120% based on missing HP',
+    'Gain access to a reliquary attached to your waist, this is the source of your power. It glows based on missing HP'
+  ],
+  nerfs: [
+    'You can no longer use transformations or racial abilities, and effects of hollow traits are disabled',
+    'You can not access your racial progression boss fights'
+  ]
+},
+{
+  id: 'charm_undying_soul',
+  title: 'Undying Soul',
+  tier: 'Tier 3',
+  desc: "Why don't I bleed...?",
+  buffs: ['Unleash a second wind when defeated'],
+  nerfs: ['Your death is certain when your health runs out']
+},
+{
+  id: 'charm_ultimate_sacrifice',
+  title: 'Ultimate Sacrifice',
+  tier: 'Tier 3',
+  desc: "I don't care... I'll use everything",
+  buffs: [
+    'Break your current limits and go beyond when popping Aura',
+    'Your rage is born from deep within your heart. Nothing can stop it (Uncancellable Aura)'
+  ],
+  nerfs: [
+    'You build aura more slowly',
+    'The ultimate sacrifice... has the ultimate price'
+  ]
+},
+{
+  id: 'charm_youre_in_my_range',
+  title: "You're in my range",
+  tier: 'Tier 3',
+  desc: "Crazy Diamond's range is 2 meters...",
+  buffs: [
+    '35% defense towards gap-close abilities',
+    'Your next basic attack or critical is empowered after being attacked by a gap-close ability (45s CD)'
+  ],
+  nerfs: [
+    'You take 15% more damage from attacks that hit you outside of a 25 stud range'
+  ]
+},
+
+// Tier 2
+{
+  id: 'charm_frugal',
+  title: 'Frugal',
+  tier: 'Tier 2',
+  desc: 'Wealth is quiet. Rich is loud. Poor is flashy.',
+  buffs: ['You lose 80% less cash from dying to players'],
+  nerfs: ["You don't gain cash from players"]
+},
+{
+  id: 'charm_golem',
+  title: 'Golem',
+  tier: 'Tier 2',
+  desc: 'Become a stone fortress.',
+  buffs: [
+    'Taking 25% base damage within 2.5s will activate rock armor for 15s (45s CD)',
+    'While rock-armored, gain 7.5% damage resistance'
+  ],
+  nerfs: []
+},
+{
+  id: 'charm_heat_burst',
+  title: 'Heat Burst',
+  tier: 'Tier 2',
+  desc: 'HE POPPED HEAT?!',
+  buffs: [
+    'Replaces your Aura with Heat',
+    'When Heat activates, automatically heal 37% of your maximum health and gain max AP'
+  ],
+  nerfs: ['Lose access to Aura based theme buff']
+},
+{
+  id: 'charm_indomitable_spirit',
+  title: 'Indomitable Spirit',
+  tier: 'Tier 2',
+  desc: 'Confidence is key.',
+  buffs: ['Gain 5% of your health back from winning clashes'],
+  nerfs: ['Lose 5% of your health upon losing clashes']
+},
+{
+  id: 'charm_lizards_spirit',
+  title: "Lizard's Spirit",
+  tier: 'Tier 2',
+  desc: 'Shed some skin, regenerate some health.',
+  buffs: ['When your health reaches below 50%, heal 7.5% (9m CD)'],
+  nerfs: []
+},
+{
+  id: 'charm_mysterious_stranger_him',
+  title: 'Mysterious Stranger (Him)',
+  tier: 'Tier 2',
+  desc: "When the wind whistles, you know he's there.",
+  buffs: [
+    'The mysterious stranger has a 8 percent chance to aid you when dealing physical melee damage (30s CD)'
+  ],
+  nerfs: []
+},
+{
+  id: 'charm_mysterious_stranger_her',
+  title: 'Mysterious Stranger (Her)',
+  tier: 'Tier 2',
+  desc: "When the wind whistles, you know she's there.",
+  buffs: [
+    'The mysterious stranger has a 8 percent chance to aid you when dealing ranged kido damage (30s CD)'
+  ],
+  nerfs: []
+},
+{
+  id: 'charm_perfect_flash',
+  title: 'Perfect Flash',
+  tier: 'Tier 2',
+  desc: 'The unseen blade is the deadliest.',
+  buffs: [
+    'Landing a melee Basic/Critical attack out of combat deals 2.5x dmg, this also applies to full-hp opponents (60s CD)'
+  ],
+  nerfs: []
+},
+{
+  id: 'charm_ranged_warrior',
+  title: 'Ranged Warrior',
+  tier: 'Tier 2',
+  desc: 'Seems to try to keep distance from its current bearer.',
+  buffs: ['6% kido/ranged damage'],
+  nerfs: ['3% damage vulnerability']
+},
+{
+  id: 'charm_relentless_hunter',
+  title: 'Relentless Hunter',
+  tier: 'Tier 2',
+  desc: 'They can run, but they can never escape.',
+  buffs: [
+    'As an invader, completely prevent extraction as long as you live',
+    'Combat tag all mission-goers as soon as you spawn into an invade'
+  ],
+  nerfs: []
+},
+{
+  id: 'charm_side_character',
+  title: 'Side Character',
+  tier: 'Tier 2',
+  desc: "If you're already bad at PVP, you could always stick to PVE.",
+  buffs: ['Deal 7.5% more damage to NPCs'],
+  nerfs: ['Take 4% more damage from players']
+},
+{
+  id: 'charm_silent_shadows',
+  title: 'Silent Shadows',
+  tier: 'Tier 2',
+  desc: 'Like a rat, sneaking around...',
+  buffs: ['Your visible aura is reduced by 60%.'],
+  nerfs: []
+},
+{
+  id: 'charm_superiority_complex',
+  title: 'Superiority Complex',
+  tier: 'Tier 2',
+  desc: 'Adversity breeds excellence...',
+  buffs: [
+    'Blade-catching an opponent will cause you to mock them, increasing aura gain on the blade catch (30s CD)',
+    'Mocked opponents instantly lose 0.2x AP and take 15% increased posture damage for a short duration'
+  ],
+  nerfs: []
+},
+{
+  id: 'charm_surgeons_spirit',
+  title: "Surgeon's Spirit",
+  tier: 'Tier 2',
+  desc: 'I feel rejuvenated...?',
+  buffs: ['All heals towards you are increased by 30%'],
+  nerfs: ['You no longer receive HP packs from knocking players']
+},
+{
+  id: 'charm_swarm',
+  title: 'Swarm',
+  tier: 'Tier 2',
+  desc: "You're dead after this.",
+  buffs: ['Landing your critical attack will spawn 1 friendly Dragonfly Hollow'],
+  nerfs: []
+},
+{
+  id: 'charm_tools_of_the_trade',
+  title: 'Tools of the Trade',
+  tier: 'Tier 2',
+  desc: 'The right tool for the wrong job.',
+  buffs: [
+    'You have absolute mastery over your weaponry, your heavy attack is never red, gain riposte on the attack anyway (Does not work for heavy attacks that are never red to begin with)'
+  ],
+  nerfs: []
+},
+{
+  id: 'charm_wraiths_spirit',
+  title: "Wraith's Spirit",
+  tier: 'Tier 2',
+  desc: 'Though unknown, the shadows produced from this spirit surround you and protect you.',
+  buffs: [
+    "Getting hit by 3 different attacks in quick succession will cause you to turn into a invincible wraith momentarily"
+  ],
+  nerfs: ['You take 5% more damage from melee attacks']
+},
+{
+  id: 'charm_backline_buster',
+  title: 'Backline Buster',
+  tier: 'Tier 2',
+  desc: "You just don't fit in with this crowd.",
+  buffs: [
+    'Hitting an opponent then hitting a different opponent shortly after procs Perfect Flash (35s CD)'
+  ],
+  nerfs: []
+},
+{
+  id: 'charm_close_and_personal',
+  title: 'Close & Personal',
+  tier: 'Tier 2',
+  desc: "Don't run!",
+  buffs: ['5% weapon/hakudo damage'],
+  nerfs: ['2% damage vulnerability']
+},
+{
+  id: 'charm_factotums_spirit',
+  title: "Factotum's Spirit",
+  tier: 'Tier 2',
+  desc: 'Determination surges through you',
+  buffs: ['5% increased EXP goin'],
+  nerfs: ['30% increased EXP loss']
+},
+{
+  id: 'charm_frostwalker',
+  title: 'Frostwalker',
+  tier: 'Tier 2',
+  desc: 'This once belonged to a prestigious king, which commanded two armies in his lifetime, now it’s yours.',
+  buffs: [
+    'Dealing a high-damage kido blow will embue you in frost, this effect lasts 12.5s or until consumed.',
+    'While frosted your next basic attack will freeze your opponent. (25s CD)'
+  ],
+  nerfs: []
+},
+
+
+// Tier 1
+{
+  id: 'charm_at_the_ready',
+  title: 'At the Reedy',
+  tier: 'Tier 1',
+  desc: 'Always ready.',
+  buffs: ['Gain permanent 25% ability haste when invaded'],
+  nerfs: []
+},
+{
+  id: 'charm_battle_hardened',
+  title: 'Battle Hardened',
+  tier: 'Tier 1',
+  desc: 'A hundred scars. What is one more?',
+  buffs: ['You visually bleed on hits at lower health'],
+  nerfs: []
+},
+{
+  id: 'charm_critical_blows',
+  title: 'Critical Blows',
+  tier: 'Tier 1',
+  desc: 'Critically acclaimed.',
+  buffs: ['7.5% increased critical attack damage'],
+  nerfs: []
+},
+{
+  id: 'charm_defensive_regen',
+  title: 'Defensive Regen',
+  tier: 'Tier 1',
+  desc: 'Wait for your chance...',
+  buffs: ['You regenerate 25% more reiatsu from parries'],
+  nerfs: ['Your base reiatsu regeneration is reduced by 35%']
+},
+{
+  id: 'charm_domination',
+  title: 'Domination',
+  tier: 'Tier 1',
+  desc: 'For fighters who rarely get hit.',
+  buffs: ['Max AP is increased by 0.15x'],
+  nerfs: []
+},
+{
+  id: 'charm_fortified_fighter',
+  title: 'Fortified Fighter',
+  tier: 'Tier 1',
+  desc: 'Secure on all fronts.',
+  buffs: ['Gain 15% defense when posture broken.'],
+  nerfs: []
+},
+{
+  id: 'charm_flashmaster',
+  title: 'Flashmaster',
+  tier: 'Tier 1',
+  desc: 'The will of Goji.',
+  buffs: ['+7.5 shunpo stamina'],
+  nerfs: []
+},
+{
+  id: 'charm_giant_fighter',
+  title: 'Giant Fighter',
+  tier: 'Tier 1',
+  desc: 'This charm belonged to a certain speedrunner...',
+  buffs: ['10% more domoge to Bosses'],
+  nerfs: ['2.5% less damage to non-boss NPCs']
+},
+{
+  id: 'charm_head_hunter',
+  title: 'Head Hunter',
+  tier: 'Tier 1',
+  desc: 'THE LIST KEEPS ON GETTING BIGGER.',
+  buffs: ['Deal 5% more domoge towards players with active transformation/shikai if you have neither'],
+  nerfs: []
+},
+{
+  id: 'charm_prey_turned_predator',
+  title: 'Prey Turned Predator',
+  tier: 'Tier 1',
+  desc: "They think I'm stuck here with them?",
+  buffs: ['If someone invades you while you are on a mission, they get combat tagged'],
+  nerfs: []
+},
+{
+  id: 'charm_resourceful_spirit',
+  title: 'Resourceful Spirit',
+  tier: 'Tier 1',
+  desc: 'No need to reinvent the wheel.',
+  buffs: ['Your aerial launcher is counted as a critical attack, dealing slightly more damage and applying all critical attack effects'],
+  nerfs: []
+},
+{
+  id: 'charm_trouble_in_paradise',
+  title: 'Trouble in Paradise',
+  tier: 'Tier 1',
+  desc: 'Home court advantage!',
+  buffs: ['Deal 10% more domoge when fighting in a Homeworld'],
+  nerfs: []
+},
+
+
+];
+
+let maxCharmSlots = 3;
+let equippedCharms = [];
+
+function formatCharmText(text) {
+  if (!text) return '';
+  // Bold numeric values (including percentages and decimals)
+  return text.replace(/(\d+(?:\.\d+)?%?)/g, '<b>$1</b>');
+}
+
+let charmsSearchQuery = '';
+
+function renderCharmsDropdown() {
+  const list = document.getElementById('charms-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  const searchInput = document.getElementById('charms-search');
+  if (searchInput && !searchInput.oninput) {
+    searchInput.oninput = (e) => {
+      charmsSearchQuery = e.target.value.toLowerCase();
+      renderCharmsDropdown();
+    };
+  }
+
+  const tiers = ['Tier 4', 'Tier 3', 'Tier 2', 'Tier 1'];
+  const tierColors = {
+    'Tier 1': { bg: 'rgba(98, 102, 107, 0.15)', border: 'rgba(98, 102, 107, 0.3)', color: '#a0a5ac' },
+    'Tier 2': { bg: 'rgba(211, 249, 170, 0.15)', border: 'rgba(211, 249, 170, 0.3)', color: '#D3F9AA' },
+    'Tier 3': { bg: 'rgba(247, 139, 89, 0.15)', border: 'rgba(247, 139, 89, 0.3)', color: '#F78B59' },
+    'Tier 4': { bg: 'rgba(254, 24, 136, 0.15)', border: 'rgba(254, 24, 136, 0.3)', color: '#FE1888' }
+  };
+  tiers.forEach(tier => {
+    let tierCharms = SPIRIT_CHARMS.filter(c => c.tier === tier && !equippedCharms.find(ec => ec.id === c.id));
+    
+    if (charmsSearchQuery) {
+      tierCharms = tierCharms.filter(c => c.title.toLowerCase().includes(charmsSearchQuery) || c.desc.toLowerCase().includes(charmsSearchQuery));
+    }
+
+    if (tierCharms.length === 0) return;
+
+    const tierHeader = document.createElement('div');
+    tierHeader.className = 'charm-tier-header';
+    tierHeader.innerHTML = `<span>${tier}</span><span class="charm-tier-toggle">${charmsSearchQuery ? '▼' : '▶'}</span>`;
+    const tc = tierColors[tier];
+    tierHeader.style.background = tc.bg;
+    tierHeader.style.borderBottom = '1px solid ' + tc.border;
+    tierHeader.style.color = tc.color;
+    tierHeader.onmouseenter = () => tierHeader.style.background = tc.bg.replace('0.15', '0.25');
+    tierHeader.onmouseleave = () => tierHeader.style.background = tc.bg;
+    list.appendChild(tierHeader);
+
+    const tierContent = document.createElement('div');
+    tierContent.className = 'charm-tier-content';
+    if (!charmsSearchQuery) tierContent.style.display = 'none';
+
+    tierHeader.onclick = () => {
+      const isHidden = tierContent.style.display === 'none';
+      tierContent.style.display = isHidden ? 'block' : 'none';
+      tierHeader.querySelector('.charm-tier-toggle').textContent = isHidden ? '▼' : '▶';
+    };
+
+    tierCharms.forEach(charm => {
+      const div = document.createElement('div');
+      div.className = 'charm-drop-item';
+      div.setAttribute('data-tier', charm.tier);
+      let buffsHtml = charm.buffs.map(b => `<div class="charm-buff">- ${formatCharmText(b)}</div>`).join('');
+      let nerfsHtml = charm.nerfs.map(n => `<div class="charm-nerf">- ${formatCharmText(n)}</div>`).join('');
+      div.innerHTML = `
+        <div class="charm-title">${charm.title}</div>
+        <div class="charm-tier">${charm.tier}</div>
+        <div class="charm-desc">${charm.desc}</div>
+        ${buffsHtml}
+        ${nerfsHtml}
+      `;
+      div.onclick = () => {
+        equipCharm(charm);
+        if (searchInput) { searchInput.value = ''; charmsSearchQuery = ''; }
+        document.getElementById('charms-dropdown').classList.add('hidden');
+      };
+      tierContent.appendChild(div);
+    });
+
+    list.appendChild(tierContent);
+  });
+}
+
+function ensureCharmTooltip() {
+  if (document.getElementById('charm-tooltip')) return;
+  const tt = document.createElement('div');
+  tt.id = 'charm-tooltip';
+  tt.innerHTML = `
+    <div class="charm-tooltip-title"></div>
+    <div class="charm-tooltip-tier"></div>
+    <div class="charm-tooltip-desc"></div>
+    <div class="charm-tooltip-buffs"></div>
+    <div class="charm-tooltip-nerfs"></div>
+  `;
+  document.body.appendChild(tt);
+}
+
+let dropCloseTimeout = null;
+
+function showCharmTooltip(charm, anchor) {
+  ensureCharmTooltip();
+  if (dropCloseTimeout) clearTimeout(dropCloseTimeout);
+  dropCloseTimeout = setTimeout(() => {
+    const drop = document.getElementById('charms-dropdown');
+    if (drop) drop.classList.add('hidden');
+  }, 1000);
+  const tt = document.getElementById('charm-tooltip');
+  if (!tt) return;
+  tt.setAttribute('data-tier', charm.tier || '');
+  tt.querySelector('.charm-tooltip-title').textContent = charm.title || '';
+  tt.querySelector('.charm-tooltip-tier').textContent = charm.tier || '';
+  tt.querySelector('.charm-tooltip-desc').textContent = charm.desc || '';
+  tt.querySelector('.charm-tooltip-buffs').innerHTML = (charm.buffs||[]).map(b => `<div class="charm-buff">- ${formatCharmText(b)}</div>`).join('');
+  tt.querySelector('.charm-tooltip-nerfs').innerHTML = (charm.nerfs||[]).map(n => `<div class="charm-nerf">- ${formatCharmText(n)}</div>`).join('');
+  const rect = anchor.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const w = 320;
+  let left = rect.right + 8;
+  if (left + w > vw) left = rect.left - 8 - w;
+  tt.style.left = Math.max(8, left) + 'px';
+  tt.style.top = Math.max(8, rect.top) + 'px';
+  tt.style.display = 'block';
+}
+
+function hideCharmTooltip() {
+  if (dropCloseTimeout) clearTimeout(dropCloseTimeout);
+  const tt = document.getElementById('charm-tooltip'); if (tt) tt.style.display = 'none';
+}
+
+let squad12Unlocked = false;
+
+function renderEquippedCharms() {
+  maxCharmSlots = (typeof currentRace !== 'undefined' && currentRace === 'Shinigami') ? 4 : 3;
+  if (equippedCharms.length > maxCharmSlots) equippedCharms = equippedCharms.slice(0, maxCharmSlots);
+  const container = document.getElementById('charms-slots');
+  if (!container) return;
+  container.innerHTML = '';
+  container.style.maxWidth = 'none';
+  container.style.justifyContent = 'flex-start';
+  container.style.margin = '0';
+
+  for (let i = 0; i < maxCharmSlots; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'charm-slot';
+    if (maxCharmSlots === 3 && i === 2) { slot.style.gridColumn = '1 / -1'; }
+    
+    if (i === 3 && !squad12Unlocked) {
+      const icon = document.createElement('div'); icon.className = 'charm-icon empty'; 
+      icon.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px; color: rgba(255,140,0,0.5);">lock</span>'; 
+      slot.appendChild(icon);
+      const titleDiv = document.createElement('div'); titleDiv.className = 'charm-slot-title'; titleDiv.textContent = 'Locked'; slot.appendChild(titleDiv);
+      const tierDiv = document.createElement('div'); tierDiv.className = 'charm-slot-tier'; tierDiv.textContent = 'Squad 12'; slot.appendChild(tierDiv);
+      
+      const showLockTooltip = () => {
+        ensureCharmTooltip();
+        const tt = document.getElementById('charm-tooltip');
+        if (!tt) return;
+        tt.querySelector('.charm-tooltip-title').textContent = 'Locked Slot';
+        tt.querySelector('.charm-tooltip-tier').textContent = '';
+        tt.querySelector('.charm-tooltip-desc').textContent = 'This slot is available only for Squad 12 members. Click to unlock.';
+        tt.querySelector('.charm-tooltip-buffs').innerHTML = '';
+        tt.querySelector('.charm-tooltip-nerfs').innerHTML = '';
+        const rect = slot.getBoundingClientRect();
+        const vw = window.innerWidth;
+        const w = 320;
+        let left = rect.right + 8;
+        if (left + w > vw) left = rect.left - 8 - w;
+        tt.style.left = Math.max(8, left) + 'px';
+        tt.style.top = Math.max(8, rect.top) + 'px';
+        tt.style.display = 'block';
+      };
+      
+      slot.addEventListener('mouseenter', showLockTooltip);
+      slot.addEventListener('mouseleave', hideCharmTooltip);
+      slot.addEventListener('click', () => {
+        squad12Unlocked = true;
+        hideCharmTooltip();
+        renderEquippedCharms();
+      });
+    } else {
+      const charm = equippedCharms[i] || null;
+      if (charm) {
+        let tColor = '';
+        let tBg = '';
+        let tBorder = '';
+        if (charm.tier === 'Tier 1') { tColor = '#62666B'; tBg = 'linear-gradient(135deg,#505357,#2b2d2f)'; tBorder = 'rgba(98,102,107,.14)'; }
+        else if (charm.tier === 'Tier 2') { tColor = '#D3F9AA'; tBg = 'linear-gradient(135deg,#c2e899,#8ba96e)'; tBorder = 'rgba(211,249,170,.14)'; }
+        else if (charm.tier === 'Tier 3') { tColor = '#F78B59'; tBg = 'linear-gradient(135deg,#f78b59,#c76a40)'; tBorder = 'rgba(247,139,89,.14)'; }
+        else if (charm.tier === 'Tier 4') { tColor = '#FE1888'; tBg = 'linear-gradient(135deg,#e8167c,#9e0f54)'; tBorder = 'rgba(254,24,136,.14)'; }
+        else { tColor = '#ffad5c'; tBg = 'linear-gradient(135deg,#ffad5c,#ff8c00)'; tBorder = 'rgba(255,140,0,.14)'; }
+
+        const icon = document.createElement('div'); icon.className = 'charm-icon';
+        icon.innerHTML = '<span class="material-symbols-outlined" style="font-size:24px;">local_fire_department</span>';
+        icon.style.background = tBg;
+        icon.style.border = '1px solid ' + tBorder;
+        slot.appendChild(icon);
+        const titleDiv = document.createElement('div'); titleDiv.className = 'charm-slot-title'; titleDiv.textContent = charm.title; titleDiv.style.color = tColor; slot.appendChild(titleDiv);
+        const tierDiv = document.createElement('div'); tierDiv.className = 'charm-slot-tier'; tierDiv.textContent = charm.tier || ''; tierDiv.style.color = tColor; tierDiv.style.fontWeight = '800'; tierDiv.style.fontSize = '9px'; slot.appendChild(tierDiv);
+        slot.addEventListener('mouseenter', ()=> showCharmTooltip(charm, slot));
+        slot.addEventListener('mouseleave', hideCharmTooltip);
+        slot.addEventListener('click', (e) => {
+          e.stopPropagation();
+          unequipCharm(charm.id);
+        });
+      } else {
+        const icon = document.createElement('div'); icon.className = 'charm-icon empty'; icon.textContent = '+'; slot.appendChild(icon);
+        const titleDiv = document.createElement('div'); titleDiv.className = 'charm-slot-title'; titleDiv.textContent = 'Empty'; slot.appendChild(titleDiv);
+        const tierDiv = document.createElement('div'); tierDiv.className = 'charm-slot-tier'; tierDiv.textContent = ''; slot.appendChild(tierDiv);
+        slot.addEventListener('click', (e) => {
+          e.stopPropagation();
+          renderCharmsDropdown();
+          document.getElementById('charms-dropdown').classList.remove('hidden');
+          const essDrop = document.getElementById('essence-dropdown');
+          if (essDrop) essDrop.classList.add('hidden');
+        });
+      }
+      if (i === 3) {
+        const squad12Div = document.createElement('div');
+        squad12Div.className = 'charms-unlock-msg';
+        squad12Div.style.marginTop = '2px';
+        squad12Div.style.fontSize = '9px';
+        squad12Div.textContent = 'Squad 12 Only';
+        slot.appendChild(squad12Div);
+      }
+    }
+    container.appendChild(slot);
+  }
+  const counter = document.getElementById('charms-counter'); if (counter) counter.textContent = `${equippedCharms.length} / ${maxCharmSlots}`;
+}
+
+function equipCharm(charm) {
+  const maxEquip = (maxCharmSlots === 4 && squad12Unlocked) ? 4 : 3;
+  if (equippedCharms.length >= maxEquip) return;
+  equippedCharms.push(charm);
+  if (document.startViewTransition) document.startViewTransition(() => renderEquippedCharms());
+  else renderEquippedCharms();
+}
+
+window.unequipCharm = function(charmId) {
+  equippedCharms = equippedCharms.filter(c => c.id !== charmId);
+  hideCharmTooltip();
+  if (document.startViewTransition) document.startViewTransition(() => renderEquippedCharms());
+  else renderEquippedCharms();
+};
+
+const charmsDropClose = document.getElementById('charms-drop-close');
+if (charmsDropClose) {
+  charmsDropClose.addEventListener('click', () => {
+    document.getElementById('charms-dropdown').classList.add('hidden');
+    const searchInput = document.getElementById('charms-search');
+    if (searchInput) { searchInput.value = ''; charmsSearchQuery = ''; renderCharmsDropdown(); }
+  });
+}
+document.addEventListener('click', (e) => {
+  const drop = document.getElementById('charms-dropdown');
+  if (drop && !drop.classList.contains('hidden')) {
+    if (!drop.contains(e.target) && !e.target.closest('.charm-slot') && !e.target.closest('#essence-add-btn')) {
+      drop.classList.add('hidden');
+      const searchInput = document.getElementById('charms-search');
+      if (searchInput) { searchInput.value = ''; charmsSearchQuery = ''; renderCharmsDropdown(); }
+    }
+  }
+});
+
+
+
+// Initialize Charms
+renderEquippedCharms();
 
 </script>
 
