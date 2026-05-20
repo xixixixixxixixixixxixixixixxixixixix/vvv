@@ -380,7 +380,7 @@
   .hud { position:absolute; z-index:5; }
   .hud-tl { top:18px; left:18px; width:320px; }
   .hud-tr { top:18px; right:18px; width:290px; text-align:right; }
-  .hud-bl { bottom:18px; left:18px; width:300px; }
+  .hud-bl { bottom:18px; left:18px; width:400px; }
   .hud-br { bottom:18px; right:18px; width:320px; }
   .hud-bc { bottom:14px; left:50%; transform:translateX(-50%); display:flex; gap:8px; align-items:center; }
 
@@ -521,25 +521,26 @@
 
   /* diamond */
   .attr-panel-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px; }
-  .diamond-wrap { position:relative; width:68%; max-width:200px; aspect-ratio:1/1; margin:32px auto; left:5px; }
+  .diamond-wrap { position:relative; width:68%; max-width:200px; aspect-ratio:1/1; margin:32px auto; left:0; }
   .diamond-wrap svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
   .attr-stat { position:absolute; display:flex; flex-direction:column; align-items:center; gap:2px; z-index:2; text-align:center; }
-  .attr-stat.top    { top:5%;    left:50%; transform:translate(-50%, -100%); margin-top:2px; }
-  .attr-stat.bottom { bottom:5%; left:50%; transform:translate(-50%, 100%); margin-bottom:2px; }
-  .attr-stat.left   { left:5%;   top:50%; transform:translate(-100%, -50%); margin-left:2px; }
-  .attr-stat.right  { right:5%;  top:50%; transform:translate(100%, -50%); margin-right:2px; }
-  .attr-stat .name { font-family:'Exo 2',sans-serif; font-size:13px; letter-spacing:.04em; font-weight:800; color:rgba(255,255,255,.6); transition:color .15s ease, text-shadow .15s ease; }
-  .attr-stat .name.has { color:#ffffff; text-shadow:0 0 10px rgba(255,255,255,.6); }
+  .attr-stat.top    { top:5%;    left:50%; transform:translate(-50%, -100%); margin-top:-8px; }
+  .attr-stat.bottom { bottom:5%; left:50%; transform:translate(-50%, 100%); margin-bottom:-8px; }
+  .attr-stat.left   { left:5%;   top:50%; transform:translate(-100%, -50%); margin-left:-2px; }
+  .attr-stat.right  { right:5%;  top:50%; transform:translate(100%, -50%); margin-right:-2px; }
+  .attr-stat .name { font-family:'Cinzel',serif; font-size:12px; letter-spacing:.08em; font-weight:400 !important; text-transform:uppercase; color:rgba(255,255,255,.6); transition:color .15s ease, text-shadow .15s ease; }
+  .attr-stat .name.has { color:#ffffff; text-shadow:0 0 10px rgba(255,255,255,.6); font-weight:400 !important; }
   .attr-stat .val {
-    font-family:'Share Tech Mono',monospace; font-size:12px; color:#94a3b8; cursor:pointer; line-height:1;
+    font-family:'Share Tech Mono',monospace; font-size:12px; color:#94a3b8; cursor:pointer; line-height:18px;
     transition: all 0.15s ease;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 3px;
-    padding: 1px 5px;
+    padding: 1px 0;
     background: rgba(0, 0, 0, 0.2);
     display: inline-block;
-    min-width: 18px;
+    width: 32px;
     text-align: center;
+    flex-shrink: 0;
   }
   .attr-stat .val.has {
     color:#ffffff; font-weight:700;
@@ -1214,7 +1215,7 @@
     /* Widths: scale with vw so panels shrink as window narrows */
     .hud-tl { width: clamp(220px, 22vw, 320px); }
     .hud-tr { width: clamp(200px, 20vw, 290px); }
-    .hud-bl { width: clamp(200px, 21vw, 300px); }
+    .hud-bl { width: 380px; }
     .hud-br { width: clamp(220px, 22vw, 320px); }
   }
   /* Tighten spacing as viewport width drops */
@@ -1297,7 +1298,7 @@
     }
     .hud-tl { width: 200px; top: 60px; }
     .hud-tr { width: 190px; top: 60px; }
-    .hud-bl { width: 200px; }
+    .hud-bl { width: 360px; }
     .hud-br { width: 200px; }
     .hud-tl.mob-hidden { transform: translate(-110%, 0); opacity: 0; pointer-events: none; }
     .hud-tr.mob-hidden { transform: translate(110%, 0);  opacity: 0; pointer-events: none; }
@@ -1312,7 +1313,7 @@
     .stat-row .val  { font-size: 11px; }
     .race-badge { font-size: 9px; padding: 5px 10px; margin-bottom: 6px; }
     .diamond-wrap { width: 58%; margin: 36px auto; }
-    .attr-stat .name { font-size: 12px; }
+    .attr-stat .name { font-size: 12px; font-weight: 400 !important; }
     .attr-stat .val { font-size: 11px; }
     .hint-strip { display: none; }
     .panel { padding: 8px 10px; }
@@ -1361,7 +1362,7 @@
   @media (min-width: 481px) and (max-width: 768px) {
     .hud-tl { width: 240px; }
     .hud-tr { width: 220px; }
-    .hud-bl { width: 240px; }
+    .hud-bl { width: 360px; }
     .hud-br { width: 240px; }
   }
 
@@ -2826,35 +2827,14 @@ function ensureAPRows() {
     const wrap = document.createElement('div');
     wrap.className = 'attr-stat ' + attr.pos;
     
-    const nameRow = 
-      '<div style="display:flex; gap:6px; align-items:center; justify-content:center;">' +
-        '<span class="name" id="aps-nm-'+attr.id+'">'+attr.name+'</span>' +
+    wrap.innerHTML =
+      '<span class="name" id="aps-nm-'+attr.id+'">'+attr.name+'</span>' +
+      '<div class="ctrl">' +
+        '<button class="btn-tiny violet" data-act="ap-" data-id="'+attr.id+'">−</button>' +
         '<span class="val" id="aps-vl-'+attr.id+'" title="Click to type a value">0</span>' +
+        '<button class="btn-tiny violet" data-act="ap+" data-id="'+attr.id+'">+</button>' +
       '</div>';
-
-    if (attr.id === 'strength' || attr.id === 'kido') {
-      wrap.innerHTML =
-        '<span class="val" id="aps-vl-'+attr.id+'" title="Click to type a value">0</span>' +
-        '<span class="name" id="aps-nm-'+attr.id+'">'+attr.name+'</span>' +
-        '<div class="ctrl">' +
-          '<button class="btn-tiny violet" data-act="ap-" data-id="'+attr.id+'">−</button>' +
-          '<button class="btn-tiny violet" data-act="ap+" data-id="'+attr.id+'">+</button>' +
-        '</div>';
-    } else if (attr.pos === 'bottom') {
-      wrap.innerHTML =
-        '<div class="ctrl">' +
-          '<button class="btn-tiny violet" data-act="ap-" data-id="'+attr.id+'">−</button>' +
-          '<button class="btn-tiny violet" data-act="ap+" data-id="'+attr.id+'">+</button>' +
-        '</div>' +
-        nameRow;
-    } else {
-      wrap.innerHTML =
-        nameRow +
-        '<div class="ctrl">' +
-          '<button class="btn-tiny violet" data-act="ap-" data-id="'+attr.id+'">−</button>' +
-          '<button class="btn-tiny violet" data-act="ap+" data-id="'+attr.id+'">+</button>' +
-        '</div>';
-    }
+      
     elAttrStats.appendChild(wrap);
     const cache = {
       nm: wrap.querySelector('#aps-nm-'+attr.id),
