@@ -796,10 +796,29 @@
   }
   #skill-tooltip {
     animation: popTooltip 0.15s ease-out forwards;
-    display:none; position:fixed; z-index:100; pointer-events:none;
+    display:none; position:fixed; z-index:9999; pointer-events:none;
     background:rgba(4,9,22,.98); border:1px solid rgba(80,140,220,.45);
     border-radius:6px; padding:13px 15px; min-width:210px; max-width:260px;
     will-change: left, top;
+  }
+  /* VIDEO PREVIEW PANEL */
+  #skill-video-preview {
+    display:none; position:fixed; z-index:9999; pointer-events:none;
+    background:rgba(4,9,22,.98); border:1px solid rgba(80,140,220,.55);
+    border-radius:6px; overflow:hidden; width:280px; min-height:40px;
+    box-shadow:0 8px 32px rgba(0,0,0,.8);
+    animation: popTooltip 0.15s ease-out forwards;
+    will-change: left, top;
+  }
+  #skill-video-preview video {
+    display:block; width:100%; height:auto;
+    border-radius:0 0 4px 4px;
+  }
+  #skill-video-preview .vp-label {
+    font-family:'Exo 2',sans-serif; font-size:10px; font-weight:800;
+    letter-spacing:.2em; text-transform:uppercase;
+    color:rgba(80,210,255,.7); padding:6px 10px 5px;
+    text-align:center; border-bottom:1px solid rgba(80,140,220,.25);
   }
   #bp-tip {
     animation: popTooltip 0.15s ease-out forwards;
@@ -1775,6 +1794,7 @@
   </div>
 
   <div id="skill-tooltip" style="display:none;"></div>
+  <div id="skill-video-preview"><div class="vp-label">Preview</div><video autoplay loop muted playsinline src=""></video></div>
   <div id="bp-tip" style="display:none;position:fixed;z-index:999;pointer-events:none;width:200px;background:rgba(6,14,31,.97);border:1px solid rgba(80,210,255,.35);border-radius:3px;padding:6px 9px;box-shadow:0 4px 16px rgba(0,0,0,.5);will-change:left,top;">
     <div id="bp-tip-name" style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-bottom:3px;"></div>
     <div id="bp-tip-desc" style="font-family:'Exo 2',sans-serif;font-size:11px;font-weight:500;color:rgba(180,205,235,.85);line-height:1.5;"></div>
@@ -2169,7 +2189,7 @@ const BASE_SPOKES = [
   ]},
   { id:'strength', label:'Strength', angle:0, skills:[
     { id:'st1', name:'Heavy Kick', costSP:6, costCash:0, req:{strength:24}, desc:'Kick the target away, inflicting decent posture damage.', upgradeNote:'Lvl 3: Apply concussion prone to enemies' },
-    { id:'st2', name:'Thrust',     costSP:8, costCash:0, req:{strength:40}, desc:'Lunge forwards dealing light posture damage, the speed you travel increases with time.', upgradeNote:'Lvl 6: Thrust is rotatable during startup' },
+    { id:'st2', name:'Thrust',     costSP:8, costCash:0, req:{strength:40}, desc:'Lunge forwards dealing light posture damage, the speed you travel increases with time.', upgradeNote:'Lvl 6: Thrust is rotatable during startup', video:'https://i.gyazo.com/14652d9f2efeba35b7a2b3fed9a351fa.mp4' },
   ]},
   { id:'speed', label:'Speed', angle:90, skills:[
     { id:'sp_ace',   name:'Aerial Ace',   costSP:2, costCash:75, req:{speed:10}, desc:'Counter mid-air opponents with a fast shunpo attack.', upgradeNote:null },
@@ -2485,11 +2505,33 @@ function buildTree() {
   });
 }
 
+/* ===================== SKILL VIDEO MAP ===================== */
+// Add skill id → video URL here for any move you want previewed on hover
+const SKILL_VIDEOS = {
+  'spP6b': 'https://files.catbox.moe/equuzi.mp4',
+  'stA6': 'https://files.catbox.moe/w107ia.mp4',
+  'qa9': 'https://files.catbox.moe/n6eole.mp4',
+  'hk2': 'https://files.catbox.moe/jj3av2.mp4',
+  'mcB4a': 'https://files.catbox.moe/ch0nmh.mp4',
+  'stD4': 'https://files.catbox.moe/elho5o.mp4',
+  'stB2': 'https://files.catbox.moe/0jwrv2.mp4',
+  'spS2': 'https://files.catbox.moe/z3gs4f.mp4',
+  'hkV5s': 'https://files.catbox.moe/5rlh5n.mp4',
+  'hkS7b': 'https://files.catbox.moe/bvegss.mp4',
+  'hkS5a': 'https://files.catbox.moe/667x4s.mp4',
+  'spK9': 'https://files.catbox.moe/4j70ch.mp4',
+  'spK4': 'https://files.catbox.moe/ebqdgs.mp4',
+  'spP3': 'https://files.catbox.moe/ic36rk.mp4'
+};
+
 /* ===================== TOOLTIP ===================== */
 const tooltip = document.getElementById('skill-tooltip');
+const videoPreview = document.getElementById('skill-video-preview');
+const videoEl = videoPreview ? videoPreview.querySelector('video') : null;
 let tooltipSkillId = null;
 // Fixed estimates — avoids forced synchronous layout on every hover
 const _ttW = 265, _ttH = 180;
+const _vpW = 288; // video panel width + gap
 
 let _lastTooltipSkillKey = null;
 
@@ -2498,9 +2540,21 @@ function showTooltip(skillId, e) {
   tooltipSkillId = skillId;
   updateTooltipContent(skillId);
   tooltip.style.display = 'block';
+  // Show video preview if this skill has a mapped video
+  const vidUrl = SKILL_VIDEOS[skillId];
+  if (vidUrl && videoEl && videoPreview) {
+    if (videoEl.getAttribute('src') !== vidUrl) {
+      videoEl.src = vidUrl;
+      videoEl.load();
+    }
+    videoPreview.style.display = 'block';
+  } else if (videoPreview) {
+    videoPreview.style.display = 'none';
+    if (videoEl) { videoEl.src = ''; }
+  }
   positionTooltip(e.clientX, e.clientY);
 }
-function hideTooltip() { tooltip.style.display = 'none'; tooltipSkillId = null; _lastTooltipSkillKey = null; }
+function hideTooltip() { tooltip.style.display = 'none'; if (videoPreview) videoPreview.style.display = 'none'; tooltipSkillId = null; _lastTooltipSkillKey = null; }
 
 let _ttRafPending = false, _ttPX = 0, _ttPY = 0;
 function moveTooltip(e) {
@@ -2520,6 +2574,27 @@ function positionTooltip(cx, cy) {
   if (ty + _ttH > window.innerHeight - 8) ty = cy - _ttH - 12;
   tooltip.style.left = tx + 'px';
   tooltip.style.top = ty + 'px';
+  // Position video panel on the SAME side as the tooltip relative to cursor,
+  // but further out — so video sits next to the tooltip, on the side away
+  // from the cursor. They end up side-by-side, barely touching, and the
+  // cursor side stays uncluttered.
+  if (videoPreview && videoPreview.style.display !== 'none') {
+    const actualTtW = tooltip.offsetWidth || _ttW;
+    const vpW = videoPreview.offsetWidth || 280;
+    const GAP = 4;
+    let vx;
+    if (tx < cx) {
+      // tooltip flipped to the LEFT of cursor -> put video further LEFT of tooltip
+      vx = tx - vpW - GAP;
+      if (vx < 8) vx = tx + actualTtW + GAP; // safety: if no room on left, fall back to right
+    } else {
+      // tooltip is on the RIGHT of cursor -> put video further RIGHT of tooltip
+      vx = tx + actualTtW + GAP;
+      if (vx + vpW > window.innerWidth - 8) vx = tx - vpW - GAP; // safety: if no room on right, fall back to left
+    }
+    videoPreview.style.left = vx + 'px';
+    videoPreview.style.top = ty + 'px';
+  }
 }
 
 function updateTooltipContent(skillId) {
@@ -5186,4 +5261,17 @@ renderEquippedCharms();
     </div>
   </div>
 
-</body></html>
+
+<script>
+// ---- Casual source-view deterrent ----
+// Blocks right-click context menu, Ctrl+U (view source), and Ctrl+S (save page).
+// Note: doesn't stop view-source: URL prefix, browser menu, or DevTools.
+document.addEventListener('contextmenu', function(e){ e.preventDefault(); }, false);
+document.addEventListener('keydown', function(e){
+  // Ctrl+U  -> view source
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) { e.preventDefault(); return false; }
+  // Ctrl+S  -> save page
+  if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); return false; }
+}, false);
+</script>
+</body></html>l
