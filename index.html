@@ -5152,50 +5152,75 @@
         const key = skillObj.name.toLowerCase().replace(/\s+/g, '');
         const actualFile = _videoIndex[key];
         if (actualFile) {
-          vidUrl = `https://github.com/vvvvvvvvvvvvvuvvvvvvvvvv/skills/blob/main/${encodeURIComponent(actualFile)}?raw=true`;
+          // Use raw.githubusercontent.com directly — skips the redirect that breaks loading
+          vidUrl = `https://raw.githubusercontent.com/vvvvvvvvvvvvvuvvvvvvvvvv/skills/main/${encodeURIComponent(actualFile)}`;
         }
       }
 
       const vpMissing = document.getElementById('vp-missing');
       const vpLoading = document.getElementById('vp-loading');
 
+      // Track which URL is currently being requested so stale handlers can bail out
+      window._currentVidUrl = vidUrl;
+
       if (vidUrl && videoEl && videoPreview) {
-        if (videoEl.getAttribute('src') !== vidUrl) {
-          videoEl.src = vidUrl;
+        videoPreview.style.display = 'block';
+
+        // If we're already showing this exact video and it's loaded, just keep showing it
+        if (videoEl.getAttribute('src') === vidUrl && videoEl.readyState >= 2) {
+          if (vpMissing) vpMissing.style.display = 'none';
+          if (vpLoading) vpLoading.style.display = 'none';
+          videoEl.style.display = 'block';
+          videoEl.play().catch(() => {});
+        } else {
+          // New video OR same video but not loaded yet — set up loading from scratch
           videoEl.style.display = 'none';
           if (vpMissing) vpMissing.style.display = 'none';
           if (vpLoading) vpLoading.style.display = 'block';
-          
+
+          // Clear any previous handlers
+          videoEl.onerror = null;
+          videoEl.onloadeddata = null;
+          videoEl.oncanplay = null;
+
           let retries = 0;
-          videoEl.onerror = () => { 
-            if (retries < 1) {
+          const maxRetries = 3;
+          const thisUrl = vidUrl;
+
+          const tryLoad = () => {
+            videoEl.src = thisUrl;
+            videoEl.load();
+          };
+
+          videoEl.onerror = () => {
+            // Bail if user has hovered away or onto a different skill
+            if (window._currentVidUrl !== thisUrl) return;
+            if (retries < maxRetries) {
               retries++;
               setTimeout(() => {
-                if (videoEl.getAttribute('src') === vidUrl) {
-                  videoEl.src = vidUrl;
-                  videoEl.load();
-                }
-              }, 1500);
+                if (window._currentVidUrl === thisUrl) tryLoad();
+              }, 600 * retries); // 600ms, 1.2s, 1.8s
             } else {
               videoEl.style.display = 'none';
               if (vpLoading) vpLoading.style.display = 'none';
               if (vpMissing) vpMissing.style.display = 'block';
             }
           };
-          
-          videoEl.onloadeddata = () => {
-             if (videoEl.getAttribute('src') === vidUrl) {
-               if (vpLoading) vpLoading.style.display = 'none';
-               videoEl.style.display = 'block';
-             }
+
+          videoEl.oncanplay = () => {
+            // Bail if user has moved on
+            if (window._currentVidUrl !== thisUrl) return;
+            if (vpLoading) vpLoading.style.display = 'none';
+            if (vpMissing) vpMissing.style.display = 'none';
+            videoEl.style.display = 'block';
+            videoEl.play().catch(() => {});
           };
-          
-          videoEl.load();
+
+          tryLoad();
         }
-        videoPreview.style.display = 'block';
       } else if (videoPreview) {
         videoPreview.style.display = 'none';
-        if (videoEl) { videoEl.src = ''; }
+        if (videoEl) { videoEl.removeAttribute('src'); videoEl.load(); }
       }
       positionTooltip(e.clientX, e.clientY);
     }
@@ -7929,7 +7954,7 @@
           const link = document.createElement('link');
           link.rel = 'prefetch';
           link.as = 'video';
-          link.href = `https://github.com/vvvvvvvvvvvvvuvvvvvvvvvv/skills/blob/main/${encodeURIComponent(actualFile)}?raw=true`;
+          link.href = `https://raw.githubusercontent.com/vvvvvvvvvvvvvuvvvvvvvvvv/skills/main/${encodeURIComponent(actualFile)}`;
           document.head.appendChild(link);
         });
       });
