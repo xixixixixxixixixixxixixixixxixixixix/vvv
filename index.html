@@ -4051,7 +4051,6 @@
       padding: 8px 12px;
       box-shadow: 0 0 22px rgba(20, 60, 120, 0.3);
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      backdrop-filter: blur(4px);
     }
 
     #skill-search-box:focus-within {
@@ -4121,7 +4120,6 @@
       scrollbar-color: rgba(80, 160, 230, 0.4) transparent;
       display: none;
       animation: ssDrop 0.16s ease both;
-      backdrop-filter: blur(6px);
     }
 
     #skill-search-results.open {
@@ -4358,7 +4356,7 @@
 
     @media (max-width: 768px) {
       #skill-search-wrap {
-        top: 104px;
+        top: 122px;
         width: clamp(150px, calc(100vw - 130px), 320px);
       }
 
@@ -6082,8 +6080,15 @@
       if (_ctrSpFill) _ctrSpFill.style.width = Math.max(0, (state.skillPoints / TOTAL_SKILL_POINTS) * 100) + '%';
       if (_ctrFragFill) _ctrFragFill.style.width = Math.max(0, (state.fragments / TOTAL_FRAGMENTS) * 100) + '%';
       elSpNum.textContent = state.skillPoints;
-      // Character level = number of skill points spent (each SP = 1 level), starting at 0.
-      if (elCharLevel) elCharLevel.textContent = Math.max(0, TOTAL_SKILL_POINTS - state.skillPoints);
+      // Each level requires ALL of: 1 SP, 4 BP and 4 AP. So your level is
+      // limited by whichever you've invested in least. Starts at 0.
+      if (elCharLevel) {
+        const spSpent = Math.max(0, TOTAL_SKILL_POINTS - state.skillPoints);
+        const bpSpent = usedBP();
+        const apSpent = usedAP();
+        const lvl = Math.min(spSpent, Math.floor(bpSpent / 4), Math.floor(apSpent / 4));
+        elCharLevel.textContent = lvl;
+      }
       elRyoNum.textContent = state.soulTokens.toLocaleString();
       const _spFill = document.getElementById('sp-bar-fill');
       const _fragFill = document.getElementById('frag-bar-fill');
