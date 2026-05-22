@@ -445,28 +445,24 @@
     }
 
     /* Quick glow when a node is located via search. Only animates box-shadow
-       and brightness so the node's positioning transform is left untouched. */
+       so the node's positioning transform is left untouched and it stays cheap. */
     .skill-node.search-flash {
       animation: nodeSearchGlow 1.5s ease-out;
-      z-index: 7 !important;
+      z-index: 7;
     }
 
     @keyframes nodeSearchGlow {
       0% {
         box-shadow: 0 0 0 0 rgba(125, 240, 255, 0);
-        filter: brightness(1);
       }
       15% {
         box-shadow: 0 0 18px 8px rgba(125, 240, 255, 0.95), 0 0 38px 16px rgba(103, 232, 249, 0.6);
-        filter: brightness(1.9);
       }
       55% {
         box-shadow: 0 0 14px 5px rgba(125, 240, 255, 0.7), 0 0 30px 12px rgba(103, 232, 249, 0.4);
-        filter: brightness(1.4);
       }
       100% {
         box-shadow: 0 0 0 0 rgba(125, 240, 255, 0);
-        filter: brightness(1);
       }
     }
 
@@ -1440,7 +1436,15 @@
 
     /* SELECTED SKILL PANEL */
     #sel-content {
-      padding-right: 22px;
+      padding-right: 0;
+    }
+
+    /* Only the first line (skill name / empty-state head) needs to clear the
+       absolutely-positioned minimize button — not the whole panel content. */
+    #sel-content > .sk-name:first-child,
+    #sel-content > .sk-ultimate-tag:first-child,
+    #sel-content .sel-empty .head {
+      padding-right: 24px;
     }
 
     .sel-empty {
@@ -4238,7 +4242,9 @@
     }
 
     /* Locator drawn over a found node — a steady bright ring that lingers,
-       plus expanding sonar pulses and a label tag to make the node obvious. */
+       plus expanding sonar pulses and a label tag to make the node obvious.
+       Hidden entirely (display:none) when inactive so it never adds paint
+       cost to panning/zooming the tree. */
     #search-locator {
       position: absolute;
       z-index: 6;
@@ -4246,6 +4252,11 @@
       border-radius: 50%;
       transform: translate(-50%, -50%);
       opacity: 0;
+      display: none;
+    }
+
+    #search-locator.ping {
+      display: block;
     }
 
     #search-locator .sl-ring {
@@ -5884,6 +5895,7 @@
     const elAttrStats = document.getElementById('attr-stats');
     const elFragNum = document.getElementById('frag-num');
     const elSpNum = document.getElementById('sp-num');
+    const elCharLevel = document.getElementById('char-level');
     const elRyoNum = document.getElementById('ryo-num');
     const elFrCount = document.getElementById('free-refund-count');
     const elFuCount = document.getElementById('free-upgrade-count');
@@ -6071,8 +6083,7 @@
       if (_ctrFragFill) _ctrFragFill.style.width = Math.max(0, (state.fragments / TOTAL_FRAGMENTS) * 100) + '%';
       elSpNum.textContent = state.skillPoints;
       // Character level = number of skill points spent (each SP = 1 level), starting at 0.
-      const _charLevel = document.getElementById('char-level');
-      if (_charLevel) _charLevel.textContent = Math.max(0, TOTAL_SKILL_POINTS - state.skillPoints);
+      if (elCharLevel) elCharLevel.textContent = Math.max(0, TOTAL_SKILL_POINTS - state.skillPoints);
       elRyoNum.textContent = state.soulTokens.toLocaleString();
       const _spFill = document.getElementById('sp-bar-fill');
       const _fragFill = document.getElementById('frag-bar-fill');
@@ -8394,8 +8405,10 @@
       };
       function categoryLabel(sk) {
         const base = SPOKE_LABELS[sk.spokeId] || (sk.spokeId ? sk.spokeId : 'Tree');
-        if (sk.tier === -1) return base + ' · Passive';
-        return base + ' Tree';
+        // A node is a Passive if the data marks it passive (these are the
+        // small/special nodes); otherwise it's a usable Skill (regular circles).
+        const kind = sk.passive ? 'Passive' : 'Skill';
+        return base + ' · ' + kind;
       }
       function colorFor(sk) {
         if (sk.spokeId === 'race') return RACE_COLORS[currentRace] || '#ff55b2';
@@ -8643,6 +8656,10 @@
         // Force reflow so the animation restarts on repeated searches.
         void locator.offsetWidth;
         locator.classList.add('ping');
+        // Clear it once the animation finishes so the element leaves the
+        // render tree again (it's display:none without .ping).
+        clearTimeout(locator._clearTimer);
+        locator._clearTimer = setTimeout(() => locator.classList.remove('ping'), 3700);
 
         // Briefly glow the actual node circle so it's unmistakable.
         const node = (typeof _nodeDOMCache !== 'undefined') ? _nodeDOMCache[skillId] : null;
