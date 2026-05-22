@@ -444,6 +444,32 @@
       transform: translate3d(-50%, -50%, 0) scale(1.18);
     }
 
+    /* Quick glow when a node is located via search. Only animates box-shadow
+       and brightness so the node's positioning transform is left untouched. */
+    .skill-node.search-flash {
+      animation: nodeSearchGlow 1.5s ease-out;
+      z-index: 7 !important;
+    }
+
+    @keyframes nodeSearchGlow {
+      0% {
+        box-shadow: 0 0 0 0 rgba(125, 240, 255, 0);
+        filter: brightness(1);
+      }
+      15% {
+        box-shadow: 0 0 18px 8px rgba(125, 240, 255, 0.95), 0 0 38px 16px rgba(103, 232, 249, 0.6);
+        filter: brightness(1.9);
+      }
+      55% {
+        box-shadow: 0 0 14px 5px rgba(125, 240, 255, 0.7), 0 0 30px 12px rgba(103, 232, 249, 0.4);
+        filter: brightness(1.4);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(125, 240, 255, 0);
+        filter: brightness(1);
+      }
+    }
+
     .skill-node.shift-ready {
       outline: 2px solid rgba(110, 230, 255, .85);
       outline-offset: 3px;
@@ -878,7 +904,7 @@
 
     .level-num {
       font-family: 'Cinzel', serif;
-      font-size: 38px;
+      font-size: 28px;
       font-weight: 900;
       letter-spacing: .08em;
       line-height: 1;
@@ -4211,27 +4237,112 @@
       font-family: 'Share Tech Mono', monospace;
     }
 
-    /* Pulsing locator ring drawn over a found node */
+    /* Locator drawn over a found node — a steady bright ring that lingers,
+       plus expanding sonar pulses and a label tag to make the node obvious. */
     #search-locator {
       position: absolute;
-      z-index: 4;
+      z-index: 6;
       pointer-events: none;
       border-radius: 50%;
-      border: 2px solid rgba(103, 232, 249, 0.9);
-      box-shadow: 0 0 0 2px rgba(103, 232, 249, 0.25), 0 0 26px rgba(103, 232, 249, 0.6);
       transform: translate(-50%, -50%);
       opacity: 0;
     }
 
-    #search-locator.ping {
-      animation: locatorPing 1.5s ease-out 2;
+    #search-locator .sl-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 3px solid rgba(125, 240, 255, 1);
+      box-shadow:
+        0 0 0 3px rgba(103, 232, 249, 0.35),
+        0 0 30px 6px rgba(103, 232, 249, 0.75),
+        inset 0 0 14px rgba(103, 232, 249, 0.5);
     }
 
-    @keyframes locatorPing {
-      0% { opacity: 0; transform: translate(-50%, -50%) scale(2.4); }
-      18% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+    /* Two expanding "sonar" pulses that radiate outward. */
+    #search-locator .sl-pulse {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(125, 240, 255, 0.8);
+      opacity: 0;
+    }
+
+    #search-locator .sl-label {
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      transform: translate(-50%, -8px);
+      white-space: nowrap;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #061018;
+      background: linear-gradient(180deg, #9af0ff, #4fd6f5);
+      padding: 3px 9px;
+      border-radius: 4px;
+      box-shadow: 0 3px 14px rgba(0, 0, 0, 0.55), 0 0 16px rgba(103, 232, 249, 0.6);
+    }
+
+    #search-locator .sl-label::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #4fd6f5;
+    }
+
+    #search-locator.ping {
+      animation: locatorHold 3.6s ease-out forwards;
+    }
+
+    #search-locator.ping .sl-ring {
+      animation: ringPop 3.6s ease-out forwards;
+    }
+
+    #search-locator.ping .sl-pulse {
+      animation: sonar 1.4s ease-out 3;
+    }
+
+    #search-locator.ping .sl-pulse.delay {
+      animation-delay: 0.7s;
+    }
+
+    #search-locator.ping .sl-label {
+      animation: labelFloat 3.6s ease-out forwards;
+    }
+
+    /* Container fades out at the very end. */
+    @keyframes locatorHold {
+      0% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* The solid ring snaps in, breathes, and stays bright. */
+    @keyframes ringPop {
+      0% { transform: scale(2.6); opacity: 0; }
+      14% { transform: scale(0.92); opacity: 1; }
+      24% { transform: scale(1.06); }
+      34% { transform: scale(1); }
+      55% { transform: scale(1.08); }
+      75% { transform: scale(1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes sonar {
+      0% { transform: scale(1); opacity: 0.9; }
+      100% { transform: scale(2.6); opacity: 0; }
+    }
+
+    @keyframes labelFloat {
+      0% { opacity: 0; transform: translate(-50%, 2px); }
+      16% { opacity: 1; transform: translate(-50%, -8px); }
+      85% { opacity: 1; transform: translate(-50%, -8px); }
+      100% { opacity: 0; transform: translate(-50%, -12px); }
     }
 
     @media (max-width: 768px) {
@@ -4406,7 +4517,7 @@
     <div class="hud hud-tl">
       <div class="level-block">
         <div class="row"><span class="lbl mono">Character</span><span class="line"></span></div>
-        <div class="level-num"><span>LVL </span><span class="mono">100</span></div>
+        <div class="level-num"><span>LVL </span><span class="mono" id="char-level">0</span></div>
       </div>
       <div class="panel cyan" id="bp-panel">
         <span class="corner tl"></span><span class="corner tr"></span>
@@ -4621,7 +4732,7 @@
           <circle cx="1200" cy="1200" r="95" fill="url(#coreGlow)"></circle>
         </svg>
         <div class="core"></div>
-        <div id="node-layer"><div id="search-locator"></div></div>
+        <div id="node-layer"><div id="search-locator"><span class="sl-pulse"></span><span class="sl-pulse delay"></span><span class="sl-ring"></span><span class="sl-label"></span></div></div>
       </div>
     </div>
 
@@ -5959,6 +6070,9 @@
       if (_ctrSpFill) _ctrSpFill.style.width = Math.max(0, (state.skillPoints / TOTAL_SKILL_POINTS) * 100) + '%';
       if (_ctrFragFill) _ctrFragFill.style.width = Math.max(0, (state.fragments / TOTAL_FRAGMENTS) * 100) + '%';
       elSpNum.textContent = state.skillPoints;
+      // Character level = number of skill points spent (each SP = 1 level), starting at 0.
+      const _charLevel = document.getElementById('char-level');
+      if (_charLevel) _charLevel.textContent = Math.max(0, TOTAL_SKILL_POINTS - state.skillPoints);
       elRyoNum.textContent = state.soulTokens.toLocaleString();
       const _spFill = document.getElementById('sp-bar-fill');
       const _fragFill = document.getElementById('frag-bar-fill');
@@ -8315,21 +8429,91 @@
         return before + '<mark>' + mid + '</mark>' + after;
       }
 
+      // Levenshtein edit distance (capped) — used for typo tolerance.
+      function editDistance(a, b) {
+        const al = a.length, bl = b.length;
+        if (Math.abs(al - bl) > 3) return 99; // too different, bail early
+        const dp = new Array(bl + 1);
+        for (let j = 0; j <= bl; j++) dp[j] = j;
+        for (let i = 1; i <= al; i++) {
+          let prev = dp[0];
+          dp[0] = i;
+          for (let j = 1; j <= bl; j++) {
+            const tmp = dp[j];
+            dp[j] = Math.min(
+              dp[j] + 1,        // deletion
+              dp[j - 1] + 1,    // insertion
+              prev + (a[i - 1] === b[j - 1] ? 0 : 1) // substitution
+            );
+            prev = tmp;
+          }
+        }
+        return dp[bl];
+      }
+
+      // Does every character of q appear in order within name? (loose fuzzy match)
+      function isSubsequence(q, name) {
+        let i = 0;
+        for (let j = 0; j < name.length && i < q.length; j++) {
+          if (name[j] === q[i]) i++;
+        }
+        return i === q.length;
+      }
+
+      // Returns a score for how well `q` matches the skill name.
+      // Lower is better; returns Infinity if it shouldn't be shown at all.
+      function nameScore(name, q) {
+        const nl = name.toLowerCase();
+        if (nl === q) return 0;                       // exact
+        if (nl.startsWith(q)) return 1;               // name starts with query
+
+        // Any individual word starts with the query (e.g. "blade" -> "Blade Flow")
+        const words = nl.split(/[\s\-]+/);
+        for (const w of words) {
+          if (w.startsWith(q)) return 2;
+        }
+
+        const idx = nl.indexOf(q);
+        if (idx !== -1) return 3 + idx / 200;         // substring anywhere
+
+        // Typo tolerance: compare query against the whole name and each word.
+        // Allow up to ~1 edit per 4 chars (min 1, max 3).
+        const maxEdits = Math.min(3, Math.max(1, Math.floor(q.length / 4)));
+        let best = 99;
+        best = Math.min(best, editDistance(q, nl));
+        for (const w of words) {
+          best = Math.min(best, editDistance(q, w));
+          // also test query against the start of longer words
+          if (w.length > q.length) best = Math.min(best, editDistance(q, w.slice(0, q.length)));
+        }
+        if (best <= maxEdits) return 10 + best;       // close misspelling
+
+        // Loose subsequence match (e.g. "blflw" -> "Blade Flow"), only for q>=3.
+        if (q.length >= 3 && isSubsequence(q, nl)) return 30;
+
+        return Infinity;
+      }
+
       function rank(list, q) {
-        const ql = q.toLowerCase();
+        const ql = q.toLowerCase().trim();
+        if (!ql) return [];
         const scored = [];
         for (const s of list) {
-          const nl = s.name.toLowerCase();
-          const ni = nl.indexOf(ql);
-          let score = -1;
-          if (nl === ql) score = 0;
-          else if (nl.startsWith(ql)) score = 1;
-          else if (ni !== -1) score = 2 + ni / 100;
-          else if (s.desc && s.desc.toLowerCase().includes(ql)) score = 50;
-          if (score >= 0) scored.push({ s, score });
+          let score = nameScore(s.name, ql);
+          // Description match only as a weak last resort, and only for
+          // queries long enough to be meaningful (avoids flooding results).
+          if (score === Infinity && ql.length >= 4 && s.desc &&
+              s.desc.toLowerCase().includes(ql)) {
+            score = 80;
+          }
+          if (score !== Infinity) scored.push({ s, score });
         }
-        scored.sort((a, b) => a.score - b.score || a.s.name.localeCompare(b.s.name));
-        return scored.map(x => x.s).slice(0, 40);
+        scored.sort((a, b) =>
+          a.score - b.score ||
+          a.s.name.length - b.s.name.length ||
+          a.s.name.localeCompare(b.s.name)
+        );
+        return scored.map(x => x.s).slice(0, 25);
       }
 
       function isUnlocked(id) {
@@ -8405,15 +8589,15 @@
         const VW = (typeof getVW === 'function') ? getVW() : window.innerWidth;
         const VH = (typeof getVH === 'function') ? getVH() : window.innerHeight;
 
-        // Zoom in a touch if currently zoomed far out, for a clear view.
-        const targetScale = Math.min(2.0, Math.max(scale, 0.85));
+        // Zoom in for a clear view if currently zoomed far out.
+        const targetScale = Math.min(2.0, Math.max(scale, 1.1));
         scale = targetScale;
 
         // Centre the node in the viewport.
         let target = { x: VW / 2 - pos.x * scale, y: VH / 2 - pos.y * scale };
         if (typeof clampPan === 'function') target = clampPan(target.x, target.y, scale);
 
-        animatePan(target.x, target.y, () => placeLocator(pos, sk.id));
+        animatePan(target.x, target.y, () => placeLocator(pos, sk.id, sk.name));
 
         closeDropdown();
         input.blur();
@@ -8444,19 +8628,30 @@
         _panAnim = requestAnimationFrame(step);
       }
 
-      // Position + pulse the locator ring over a node (tree-space coords).
-      function placeLocator(pos, skillId) {
+      // Position + pulse the locator over a node (tree-space coords).
+      function placeLocator(pos, skillId, name) {
         if (!locator) return;
         const r = (typeof getNodeR === 'function') ? getNodeR(skillId) : 14;
-        const size = Math.max(34, r * 2 + 22);
+        const size = Math.max(40, r * 2 + 26);
         locator.style.width = size + 'px';
         locator.style.height = size + 'px';
         locator.style.left = pos.x + 'px';
         locator.style.top = pos.y + 'px';
+        const label = locator.querySelector('.sl-label');
+        if (label) label.textContent = name || 'Found';
         locator.classList.remove('ping');
         // Force reflow so the animation restarts on repeated searches.
         void locator.offsetWidth;
         locator.classList.add('ping');
+
+        // Briefly glow the actual node circle so it's unmistakable.
+        const node = (typeof _nodeDOMCache !== 'undefined') ? _nodeDOMCache[skillId] : null;
+        if (node) {
+          node.classList.remove('search-flash');
+          void node.offsetWidth;
+          node.classList.add('search-flash');
+          setTimeout(() => node.classList.remove('search-flash'), 1600);
+        }
       }
 
       function closeDropdown() {
